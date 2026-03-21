@@ -72,24 +72,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="12dp">
 
-            <!-- 第一行：三个开关 -->
+            <!-- 第一行：三个开关 + 轮询间隔 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="10dp">
 
                 <CheckBox
                     android:id="@+id/cbAutoFeedback"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_weight="1"
                     android:text="自动反馈"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
                     android:checked="true"/>
@@ -97,11 +97,11 @@
                 <CheckBox
                     android:id="@+id/cbAutoAccept"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_weight="1"
                     android:text="自动接单"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
                     android:checked="true"/>
@@ -109,43 +109,43 @@
                 <CheckBox
                     android:id="@+id/cbAutoRevert"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
+                    android:layout_height="32dp"
                     android:layout_weight="1"
                     android:text="自动回单"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
                     android:checked="true"/>
             </LinearLayout>
 
-            <!-- 第二行：轮询设置 -->
+            <!-- 第二行：轮询间隔 + 阈值设置 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="轮询间隔"
+                    android:text="轮询"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etIntervalMin"
-                    android:layout_width="56dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
@@ -155,21 +155,21 @@
                     android:layout_height="wrap_content"
                     android:text="~"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="4dp"/>
 
                 <EditText
                     android:id="@+id/etIntervalMax"
-                    android:layout_width="56dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="120"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
@@ -179,38 +179,36 @@
                     android:layout_height="wrap_content"
                     android:text="秒"
                     android:textColor="@color/text_tertiary"
-                    android:textSize="13sp"
-                    android:layout_marginStart="6dp"/>
-            </LinearLayout>
+                    android:textSize="11sp"
+                    android:layout_marginStart="4dp"/>
 
-            <!-- 第三行：阈值设置 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="20dp"
+                    android:background="@color/divider"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
 
                 <!-- 反馈阈值 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="反馈阈值"
+                    android:text="反馈"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etFeedbackMin"
-                    android:layout_width="48dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_width="40dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="70"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
@@ -220,46 +218,52 @@
                     android:layout_height="wrap_content"
                     android:text="~"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginStart="6dp"/>
+                    android:layout_marginStart="2dp"/>
 
                 <EditText
                     android:id="@+id/etFeedbackMax"
-                    android:layout_width="48dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="6dp"
+                    android:layout_width="40dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="20dp"
+                    android:background="@color/divider"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"/>
 
                 <!-- 接单阈值 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="接单阈值"
+                    android:text="接单"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="20dp"/>
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etAcceptMin"
-                    android:layout_width="48dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_width="40dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="60"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
@@ -269,27 +273,27 @@
                     android:layout_height="wrap_content"
                     android:text="~"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginStart="6dp"/>
+                    android:layout_marginStart="2dp"/>
 
                 <EditText
                     android:id="@+id/etAcceptMax"
-                    android:layout_width="48dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="6dp"
+                    android:layout_width="40dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="6dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:inputType="number"
                     android:gravity="center"/>
             </LinearLayout>
 
-            <!-- 第四行：控制按钮 -->
+            <!-- 第三行：控制按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -299,26 +303,26 @@
                 <Button
                     android:id="@+id/btnStartMonitor"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
                     android:text="开启监控"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_inverse"
                     android:background="@drawable/bg_button_primary_gradient"
-                    android:layout_marginEnd="8dp"/>
+                    android:layout_marginEnd="6dp"/>
 
                 <Button
                     android:id="@+id/btnStopMonitor"
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
                     android:text="停止监控"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_inverse"
                     android:background="@drawable/bg_button_gray"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginStart="6dp"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -329,7 +333,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="14dp"
+        android:padding="10dp"
         android:background="@color/background_secondary"
         android:gravity="center_vertical"
         app:layout_constraintTop_toBottomOf="@id/controlPanel"
@@ -342,16 +346,16 @@
             android:layout_height="wrap_content"
             android:text="就绪"
             android:textColor="@color/success"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:drawableStart="@drawable/ic_status_dot"
-            android:drawablePadding="6dp"/>
+            android:drawablePadding="4dp"/>
 
         <View
             android:layout_width="1dp"
-            android:layout_height="16dp"
+            android:layout_height="14dp"
             android:background="@color/divider"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
 
         <TextView
             android:id="@+id/tvRoundComplete"
@@ -359,22 +363,22 @@
             android:layout_height="wrap_content"
             android:text=""
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"/>
+            android:textSize="12sp"/>
 
         <View
             android:layout_width="1dp"
-            android:layout_height="16dp"
+            android:layout_height="14dp"
             android:background="@color/divider"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
 
         <TextView
             android:id="@+id/tvPowerOutageCountStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="停电 0"
+            android:text="停电: 0"
             android:textColor="@color/error"
-            android:textSize="13sp"/>
+            android:textSize="12sp"/>
 
         <View
             android:layout_width="0dp"
@@ -387,7 +391,7 @@
             android:layout_height="wrap_content"
             android:text=""
             android:textColor="@color/info"
-            android:textSize="13sp"/>
+            android:textSize="12sp"/>
     </LinearLayout>
 
     <!-- 分割线 -->

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>铁塔运维助手 - 布局预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #F5F7FA;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #1F2937;
+        }
+        
+        /* 顶部标题栏 */
+        .header {
+            height: 56px;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid #E5E7EB;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2563EB;
+        }
+        
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-info {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        .btn-logout {
+            padding: 4px 12px;
+            border: 1px solid #2563EB;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #2563EB;
+            background: transparent;
+        }
+        
+        /* 控制面板 - 三行设计 */
+        .control-panel {
+            margin: 10px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .checkbox-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .checkbox-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #2563EB;
+            border-radius: 3px;
+            background: #2563EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+        
+        .checkbox-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #1F2937;
+        }
+        
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 2px;
+        }
+        
+        .input-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #6B7280;
+        }
+        
+        .input-field {
+            width: 40px;
+            height: 28px;
+            background: #F9FAFB;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #1F2937;
+        }
+        
+        .divider {
+            width: 1px;
+            height: 16px;
+            background: #E5E7EB;
+            margin: 0 4px;
+        }
+        
+        .input-unit {
+            font-size: 10px;
+            color: #9CA3AF;
+        }
+        
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            flex: 1;
+            height: 36px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: #FFFFFF;
+            border: none;
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+            color: #FFFFFF;
+            border: none;
+        }
+        
+        /* 状态栏 */
+        .status-bar-main {
+            background: #FFFFFF;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid #E5E7EB;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10B981;
+        }
+        
+        .status-text {
+            font-size: 11px;
+        }
+        
+        .status-ready { color: #10B981; }
+        .status-error { color: #EF4444; }
+        .status-info { color: #3B82F6; }
+        
+        .divider-line {
+            width: 1px;
+            height: 12px;
+            background: #E5E7EB;
+        }
+        
+        .spacer {
+            flex: 1;
+        }
+        
+        /* Tab栏 */
+        .tab-bar {
+            background: #FFFFFF;
+            display: flex;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .tab-item {
+            flex: 1;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #6B7280;
+            position: relative;
+        }
+        
+        .tab-item.active {
+            color: #2563EB;
+        }
+        
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: #2563EB;
+            border-radius: 2px 2px 0 0;
+        }
+        
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            background: #F5F7FA;
+            padding: 8px;
+            overflow-y: auto;
+        }
+        
+        /* 表头 */
+        .table-header {
+            display: flex;
+            background: #EEF2F6;
+            padding: 8px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #6B7280;
+            align-items: center;
+        }
+        
+        .th-num { width: 24px; text-align: center; }
+        .th-name { flex: 1; margin-left: 4px; }
+        .th-volt { width: 46px; text-align: right; margin-left: 4px; }
+        .th-load { width: 44px; text-align: right; margin-left: 4px; }
+        .th-type { width: 40px; text-align: center; margin-left: 4px; }
+        .th-time { width: 80px; text-align: right; margin-left: 4px; }
+        
+        /* 列表项 */
+        .list-item {
+            background: #FFFFFF;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .list-item-num {
+            width: 24px;
+            color: #9CA3AF;
+            text-align: center;
+        }
+        
+        .list-item-name {
+            flex: 1;
+            color: #1F2937;
+            font-weight: bold;
+            margin-left: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .list-item-volt {
+            width: 46px;
+            color: #1F2937;
+            text-align: right;
+            margin-left: 4px;
+        }
+        
+        .list-item-load {
+            width: 44px;
+            color: #1F2937;
+            text-align: right;
+            margin-left: 4px;
+        }
+        
+        .list-item-type {
+            width: 40px;
+            text-align: center;
+            margin-left: 4px;
+        }
+        
+        .tag {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        
+        .tag-warning {
+            background: #FEF3C7;
+            color: #B45309;
+        }
+        
+        .list-item-time {
+            width: 80px;
+            color: #9CA3AF;
+            text-align: right;
+            margin-left: 4px;
+            font-size: 9px;
+        }
+        
+        /* 登录界面 */
+        .login-content {
+            flex: 1;
+            background: #F5F7FA;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .login-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2563EB;
+            margin-bottom: 4px;
+        }
+        
+        .login-subtitle {
+            font-size: 12px;
+            color: #9CA3AF;
+            letter-spacing: 0.1;
+            margin-bottom: 24px;
+        }
+        
+        .login-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .login-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 6px;
+        }
+        
+        .login-select {
+            height: 44px;
+            background: #F9FAFB;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1F2937;
+        }
+        
+        .login-input {
+            height: 44px;
+            background: #F9FAFB;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 0 12px;
+            font-size: 14px;
+            color: #1F2937;
+        }
+        
+        .login-btn {
+            height: 48px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <!-- 登录界面 -->
+            <div class="login-content">
+                <div class="login-logo">🏢</div>
+                <div class="login-title">铁塔运维助手</div>
+                <div class="login-subtitle">Tower Operations</div>
+                
+                <div class="login-card">
+                    <div class="login-label">选择账号</div>
+                    <div class="login-select">请选择账号 ▾</div>
+                    
+                    <div class="login-label">图形验证码</div>
+                    <div style="display:flex;gap:8px;margin-bottom:12px;">
+                        <div style="flex:2;height:44px;background:#F9FAFB;border:1px solid #D1D5DB;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:12px;">点击加载验证码</div>
+                        <div style="flex:1;height:44px;background:#6B7280;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:bold;">刷新</div>
+                    </div>
+                    <input class="login-input" placeholder="请输入图形验证码">
+                    
+                    <div class="login-label">短信验证码 / PIN码</div>
+                    <div style="display:flex;gap:8px;margin-bottom:12px;">
+                        <input class="login-input" style="flex:1;margin-bottom:0;" placeholder="请输入PIN码">
+                        <div style="width:90px;height:44px;border:1px solid #2563EB;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#2563EB;font-size:11px;font-weight:bold;">获取验证码</div>
+                    </div>
+                    
+                    <div class="login-btn">登 录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
