@@ -484,7 +484,7 @@ public class ShuyunMonitorFragment extends Fragment {
         if (btnStartShuyun != null) btnStartShuyun.setEnabled(false);
         if (btnStopShuyun != null) btnStopShuyun.setEnabled(true);
         if (tvShuyunStatus != null) {
-            tvShuyunStatus.setText("监控运行中");
+            tvShuyunStatus.setText("监控中");
             tvShuyunStatus.setTextColor(0xFF10B981);
         }
 
@@ -498,7 +498,7 @@ public class ShuyunMonitorFragment extends Fragment {
         monitorThread = new Thread(() -> {
             while (isRunning && getContext() != null) {
                 try {
-                    final String statusText = "监控运行中...";
+                    final String statusText = "监控中...";
                     mainHandler.post(() -> {
                         if (tvShuyunStatus != null) tvShuyunStatus.setText(statusText);
                     });

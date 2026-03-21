@@ -154,14 +154,13 @@
 
             <Spinner
                 android:id="@+id/spinnerAppAccount"
-                android:layout_width="0dp"
+                android:layout_width="100dp"
                 android:layout_height="26dp"
-                android:layout_weight="1"
                 android:layout_marginStart="6dp"
                 android:background="@drawable/bg_spinner"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"
-                android:dropDownWidth="120dp" />
+                android:dropDownWidth="140dp" />
 
             <TextView
                 android:id="@+id/tvImei"

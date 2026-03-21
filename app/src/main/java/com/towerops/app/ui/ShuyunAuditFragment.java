@@ -42,7 +42,7 @@ public class ShuyunAuditFragment extends Fragment {
 
     // 区县经理代号
     private static final String[] COUNTY_CODES = {"36745", "31950"};
-    private static final String[] COUNTY_NAMES = {"市区(36745)", "其他(31950)"};
+    private static final String[] COUNTY_NAMES = {"平阳(36745)", "泰顺(31950)"};
 
     // 主线程Handler
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -143,14 +143,16 @@ public class ShuyunAuditFragment extends Fragment {
     }
 
     private void startCountyAudit() {
-        if (callback == null) {
-            Toast.makeText(getContext(), "请先在监控页面登录", Toast.LENGTH_SHORT).show();
-            return;
+        // 优先从 Session 获取登录信息，兼容 callback 为 null 的情况
+        Session s = Session.get();
+        if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
+            pcToken = s.shuyunPcToken;
+        } else if (callback != null) {
+            pcToken = callback.getPcToken();
         }
 
-        pcToken = callback.getPcToken();
         if (pcToken == null || pcToken.isEmpty()) {
-            Toast.makeText(getContext(), "请先登录PC端", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "请先在监控页面登录PC端", Toast.LENGTH_SHORT).show();
             return;
         }
 
