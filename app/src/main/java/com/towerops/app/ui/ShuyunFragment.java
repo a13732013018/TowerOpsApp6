@@ -344,7 +344,9 @@ public class ShuyunFragment extends Fragment {
         new Thread(() -> {
             // 获取验证码图片
             String imgcodeResult = ShuyunApi.getImgcode();
+            appendLog("验证码接口返回: " + imgcodeResult);
             currentPcIp = ShuyunApi.parseIp(imgcodeResult);
+            appendLog("解析的IP: " + currentPcIp);
 
             if (currentPcIp.isEmpty()) {
                 mainHandler.post(() -> {
@@ -356,6 +358,11 @@ public class ShuyunFragment extends Fragment {
 
             // 解析数学运算题目（如果有）
             ShuyunApi.CaptchaMath math = ShuyunApi.parseMathCode(imgcodeResult);
+
+            // 清除之前的hint（如果解析不到数学题，让用户自己看图输入）
+            final String hintText = math.hasMath ?
+                String.valueOf(math.num1) + math.symbol + String.valueOf(math.num2) + " = ?" :
+                "请看图输入";
 
             // 解析验证码图片（base64编码）
             try {
@@ -371,15 +378,13 @@ public class ShuyunFragment extends Fragment {
                         if (bitmap != null) {
                             ivCaptcha.setImageBitmap(bitmap);
 
-                            // 如果有数学运算题目，显示提示
+                            // 显示hint
+                            etImgcode.setHint(hintText);
+                            appendLog("验证码获取成功: " + hintText);
                             if (math.hasMath) {
-                                String hint = String.valueOf(math.num1) + math.symbol + String.valueOf(math.num2) + " = ?";
-                                etImgcode.setHint(hint);
-                                appendLog("验证码获取成功，请计算: " + hint);
-                                Toast.makeText(getContext(), "请计算: " + hint, Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(), "请计算: " + hintText, Toast.LENGTH_LONG).show();
                             } else {
-                                appendLog("验证码获取成功，请输入计算结果");
-                                Toast.makeText(getContext(), "请输入计算结果", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "请看图输入验证码", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -446,7 +451,9 @@ public class ShuyunFragment extends Fragment {
             appendLog("正在登录PC端(" + pcUser + ")和APP端(" + appUser + ")...");
 
             // 1. PC端登录（使用PC端专用账号）
+            appendLog("PC端登录参数: user=" + pcUser + ", ip=" + currentPcIp + ", imgcode=" + imgcode);
             String pcLoginResult = ShuyunApi.loginByPc(pcUser, pcPass, imgcode, currentPcIp);
+            appendLog("PC端登录返回: " + pcLoginResult);
             String pcTokenResult = ShuyunApi.parsePcToken(pcLoginResult);
 
             // 2. APP端登录（使用APP端账号）
