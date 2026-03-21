@@ -17,6 +17,13 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <!-- 子Tab文字样式 -->
+    <style name="TabTextSub" parent="android:TextAppearance">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#666666</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <!-- 按钮样式 - 主按钮 -->
     <style name="PrimaryButton" parent="Widget.MaterialComponents.Button">
         <item name="android:textColor">#FFFFFF</item>

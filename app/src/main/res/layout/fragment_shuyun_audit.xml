@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <!-- 顶部状态栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvAuditTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="数运审核"
+            android:textSize="16sp"
+            android:textColor="#333333"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCountyStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="未启动"
+            android:textSize="13sp"
+            android:textColor="#6B7280" />
+    </LinearLayout>
+
+    <!-- 审核控制面板 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:color/white"
+        android:layout_marginTop="8dp">
+
+        <!-- 区县选择 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="选择区县:"
+                android:textSize="14sp"
+                android:textColor="#333333" />
+
+            <Spinner
+                android:id="@+id/spinnerCounty"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_spinner"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <!-- 审核按钮组 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnCountyAudit"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:text="开始县级审核"
+                android:textSize="14sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#F59E0B" />
+
+            <Button
+                android:id="@+id/btnStopCountyAudit"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="停止审核"
+                android:textSize="14sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#EF4444"
+                android:enabled="false" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 功能说明 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#EFF6FF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="功能说明"
+                android:textSize="13sp"
+                android:textColor="#1E40AF"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• 自动获取区县待审核工单列表"
+                android:textSize="12sp"
+                android:textColor="#3B82F6"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• 仿生延迟2-6秒，防止频繁操作"
+                android:textSize="12sp"
+                android:textColor="#3B82F6"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• 每3条额外延迟4-8秒"
+                android:textSize="12sp"
+                android:textColor="#3B82F6"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• 自动通过审核"
+                android:textSize="12sp"
+                android:textColor="#3B82F6" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 日志区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="#1F2937"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="审核日志"
+            android:textSize="12sp"
+            android:textColor="#9CA3AF"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="#111827" />
+
+        <ScrollView
+            android:id="@+id/svAuditLog"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvAuditLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="#E5E7EB"
+                android:fontFamily="monospace"
+                android:lineSpacingMultiplier="1.2" />
+        </ScrollView>
+    </LinearLayout>
+
+</LinearLayout>
