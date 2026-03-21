@@ -40,7 +40,7 @@ public class ZhilianFragment extends Fragment {
     private static final String TAG = "ZhilianFragment";
 
     // UI控件
-    private TextView tvZhilianStatus, tvUnclaimedCount, tvClaimedCount, tvLog;
+    private TextView tvZhilianStatus, tvUnclaimedCount, tvClaimedCount, tvLog, tvCurrentTime;
     private CheckBox cbAutoAccept, cbAutoRevert;
     private Button btnStartZhilian, btnStopZhilian;
     private ImageView ivAutoAcceptInfo, ivAutoRevertInfo;
@@ -63,6 +63,10 @@ public class ZhilianFragment extends Fragment {
     // 当前选中的Tab
     private int currentTab = 0;
 
+    // 时间更新Handler
+    private Handler timeUpdateHandler;
+    private Runnable timeUpdateRunnable;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -77,6 +81,32 @@ public class ZhilianFragment extends Fragment {
         setupRecyclerViews();
         setupListeners();
         loadConfig();
+        startTimeUpdate();
+    }
+
+    private void startTimeUpdate() {
+        timeUpdateHandler = new Handler(Looper.getMainLooper());
+        timeUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateCurrentTime();
+                timeUpdateHandler.postDelayed(this, 1000);
+            }
+        };
+        timeUpdateHandler.post(timeUpdateRunnable);
+    }
+
+    private void stopTimeUpdate() {
+        if (timeUpdateHandler != null && timeUpdateRunnable != null) {
+            timeUpdateHandler.removeCallbacks(timeUpdateRunnable);
+        }
+    }
+
+    private void updateCurrentTime() {
+        if (tvCurrentTime != null) {
+            String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+            tvCurrentTime.setText(time);
+        }
     }
 
     private void bindViews(View view) {
@@ -95,6 +125,7 @@ public class ZhilianFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmpty);
         ivAutoAcceptInfo = view.findViewById(R.id.ivAutoAcceptInfo);
         ivAutoRevertInfo = view.findViewById(R.id.ivAutoRevertInfo);
+        tvCurrentTime = view.findViewById(R.id.tvCurrentTime);
     }
 
     private void setupRecyclerViews() {
@@ -340,5 +371,6 @@ public class ZhilianFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         stopMonitor();
+        stopTimeUpdate();
     }
 }

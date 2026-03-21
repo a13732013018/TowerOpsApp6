@@ -13,7 +13,8 @@
         android:orientation="horizontal"
         android:padding="12dp"
         android:background="@android:color/white"
-        android:elevation="2dp">
+        android:elevation="2dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/tvZhilianStatus"
@@ -26,13 +27,23 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/tvCurrentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--:--:--"
+            android:textSize="13sp"
+            android:textColor="#6B7280"
+            android:fontFamily="monospace"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
             android:id="@+id/tvUnclaimedCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="未领取: 0"
             android:textSize="13sp"
             android:textColor="#2563EB"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="12dp" />
 
         <TextView
             android:id="@+id/tvClaimedCount"
@@ -58,13 +69,13 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <CheckBox
-                android:id="@+id/cbAutoAccept"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="自动接单"
-                android:textSize="13sp"
-                android:checked="false" />
+        <CheckBox
+            android:id="@+id/cbAutoAccept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="自动接单"
+            android:textSize="13sp"
+            android:checked="true" />
 
             <ImageView
                 android:id="@+id/ivAutoAcceptInfo"
@@ -82,13 +93,13 @@
             android:gravity="center_vertical"
             android:layout_marginStart="12dp">
 
-            <CheckBox
-                android:id="@+id/cbAutoRevert"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="自动回单"
-                android:textSize="13sp"
-                android:checked="false" />
+        <CheckBox
+            android:id="@+id/cbAutoRevert"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="自动回单"
+            android:textSize="13sp"
+            android:checked="true" />
 
             <ImageView
                 android:id="@+id/ivAutoRevertInfo"
