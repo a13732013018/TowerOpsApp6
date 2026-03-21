@@ -3,26 +3,27 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#1e1e3a"
-    android:padding="10dp"
-    android:layout_marginStart="4dp"
-    android:layout_marginEnd="4dp"
-    android:layout_marginTop="3dp">
+    android:background="@color/list_item_background"
+    android:padding="14dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="6dp"
+    android:elevation="1dp">
 
     <!-- 第一行：序号 + 工单号 + 告警状态 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:id="@+id/tvIndex"
-            android:layout_width="28dp"
+            android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:text="1"
-            android:textColor="#606080"
-            android:textSize="12sp" />
+            android:textColor="@color/text_tertiary"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tvBillSn"
@@ -30,8 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="工单号"
-            android:textColor="#e94560"
-            android:textSize="13sp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
@@ -39,11 +40,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="告警中"
-            android:textColor="#ff6b35"
+            android:textColor="@color/warning"
             android:textSize="12sp"
-            android:background="@drawable/bg_tag"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp" />
+            android:background="@drawable/bg_tag_warning"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp" />
     </LinearLayout>
 
     <!-- 第二行：站点 + 标题 -->
@@ -52,9 +55,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="站点名 - 工单标题"
-        android:textColor="#c0c0e0"
-        android:textSize="13sp"
-        android:layout_marginBottom="4dp"
+        android:textColor="@color/text_primary"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
         android:maxLines="2"
         android:ellipsize="end" />
 
@@ -63,7 +66,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="3dp">
+        android:layout_marginBottom="6dp">
 
         <TextView
             android:id="@+id/tvAcceptOp"
@@ -71,16 +74,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="接单人：-"
-            android:textColor="#7070a0"
-            android:textSize="12sp" />
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/tvCreateTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="创建：-"
-            android:textColor="#7070a0"
-            android:textSize="12sp" />
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <!-- 第四行：最近处理信息 -->
@@ -89,9 +92,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="#50a050"
-        android:textSize="12sp"
-        android:layout_marginBottom="3dp"
+        android:textColor="@color/success"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp"
         android:maxLines="1"
         android:ellipsize="end" />
 
@@ -101,9 +104,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="工单历时：0分钟"
-        android:textColor="#7090c0"
-        android:textSize="12sp"
-        android:layout_marginBottom="3dp" />
+        android:textColor="@color/info"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
 
     <!-- 第六行：上次反馈时间 -->
     <TextView
@@ -111,9 +114,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="上次反馈：尚未反馈"
-        android:textColor="#9090c0"
-        android:textSize="12sp"
-        android:layout_marginBottom="3dp" />
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
 
     <!-- 第七行：告警发生时间 -->
     <TextView
@@ -121,9 +124,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textColor="#a06030"
-        android:textSize="12sp"
-        android:layout_marginBottom="3dp" />
+        android:textColor="@color/warning"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
 
     <!-- 第八行：当前状态 -->
     <TextView
@@ -131,7 +134,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="--排队等待处理中..."
-        android:textColor="#e0c060"
-        android:textSize="12sp" />
+        android:textColor="@color/warning"
+        android:textSize="13sp" />
 
 </LinearLayout>

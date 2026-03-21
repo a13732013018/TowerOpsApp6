@@ -1,6 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#120228</color>
-    <color name="success_neu">#4CAF50</color>
-    <color name="error_neu">#F44336</color>
+    <!-- 启动器背景 -->
+    <color name="ic_launcher_background">#F5F7FA</color>
+
+    <!-- ===== 白色主题配色方案（护眼舒适） ===== -->
+
+    <!-- 主背景色系 -->
+    <color name="background_primary">#F5F7FA</color>
+    <color name="background_secondary">#FFFFFF</color>
+    <color name="background_tertiary">#EEF2F6</color>
+
+    <!-- 顶部栏/标题栏 -->
+    <color name="header_background">#FFFFFF</color>
+    <color name="header_border">#E5E7EB</color>
+
+    <!-- 控制面板背景 -->
+    <color name="control_panel_background">#FFFFFF</color>
+
+    <!-- 状态栏背景 -->
+    <color name="status_bar_background">#F0F2F5</color>
+
+    <!-- Tab栏 -->
+    <color name="tab_background">#FFFFFF</color>
+    <color name="tab_indicator">#2563EB</color>
+    <color name="tab_selected">#2563EB</color>
+    <color name="tab_unselected">#9CA3AF</color>
+
+    <!-- 主色调 - 专业蓝 -->
+    <color name="colorPrimary">#2563EB</color>
+    <color name="colorPrimaryDark">#1D4ED8</color>
+    <color name="colorPrimaryLight">#DBEAFE</color>
+    <color name="colorAccent">#2563EB</color>
+
+    <!-- 功能按钮 -->
+    <color name="button_primary_bg">#2563EB</color>
+    <color name="button_primary_text">#FFFFFF</color>
+    <color name="button_secondary_bg">#6B7280</color>
+    <color name="button_secondary_text">#FFFFFF</color>
+
+    <!-- 文字颜色 -->
+    <color name="text_primary">#1F2937</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_tertiary">#9CA3AF</color>
+    <color name="text_inverse">#FFFFFF</color>
+
+    <!-- 状态颜色 -->
+    <color name="success">#10B981</color>
+    <color name="success_light">#D1FAE5</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_light">#FEF3C7</color>
+    <color name="error">#EF4444</color>
+    <color name="error_light">#FEE2E2</color>
+    <color name="info">#3B82F6</color>
+    <color name="info_light">#DBEAFE</color>
+
+    <!-- 边框/分割线 -->
+    <color name="border">#E5E7EB</color>
+    <color name="divider">#E5E7EB</color>
+
+    <!-- 输入框 -->
+    <color name="input_background">#F9FAFB</color>
+    <color name="input_border">#D1D5DB</color>
+    <color name="input_text">#1F2937</color>
+
+    <!-- 列表项 -->
+    <color name="list_item_background">#FFFFFF</color>
+    <color name="list_item_hover">#F3F4F6</color>
+    <color name="list_item_selected">#EFF6FF</color>
+
+    <!-- CheckBox -->
+    <color name="checkbox_checked">#2563EB</color>
+    <color name="checkbox_unchecked">#9CA3AF</color>
+
+    <!-- 标签/Tag背景 -->
+    <color name="tag_background">#EEF2F6</color>
+    <color name="tag_text">#6B7280</color>
+
+    <!-- 旧版兼容 -->
+    <color name="success_neu">#10B981</color>
+    <color name="error_neu">#EF4444</color>
 </resources>

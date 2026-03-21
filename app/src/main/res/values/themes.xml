@@ -1,15 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 白色主题 - 护眼舒适 -->
     <style name="Theme.TowerOpsApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#e94560</item>
-        <item name="colorPrimaryDark">#16213e</item>
-        <item name="colorAccent">#e94560</item>
-        <item name="android:windowBackground">#1a1a2e</item>
-        <item name="android:statusBarColor">#16213e</item>
+        <item name="colorPrimary">#2563EB</item>
+        <item name="colorPrimaryDark">#1D4ED8</item>
+        <item name="colorAccent">#2563EB</item>
+        <item name="android:windowBackground">#F5F7FA</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <!-- Tab文字样式 -->
     <style name="TabTextStyle" parent="TextAppearance.Design.Tab">
-        <item name="android:textSize">11sp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#6B7280</item>
+    </style>
+
+    <!-- 按钮样式 - 主按钮 -->
+    <style name="PrimaryButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="backgroundTint">#2563EB</item>
+        <item name="cornerRadius">6dp</item>
+    </style>
+
+    <!-- 按钮样式 - 次按钮 -->
+    <style name="SecondaryButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">#6B7280</item>
+        <item name="strokeColor">#E5E7EB</item>
+        <item name="cornerRadius">6dp</item>
+    </style>
+
+    <!-- 文字样式 - 主标题 -->
+    <style name="TextStyle.Title">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">#1F2937</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 文字样式 - 副标题 -->
+    <style name="TextStyle.Subtitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#6B7280</item>
+    </style>
+
+    <!-- 文字样式 - 正文 -->
+    <style name="TextStyle.Body">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#1F2937</item>
+    </style>
+
+    <!-- 文字样式 - 辅助文字 -->
+    <style name="TextStyle.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#9CA3AF</item>
     </style>
 </resources>
