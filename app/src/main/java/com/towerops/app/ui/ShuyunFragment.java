@@ -712,10 +712,11 @@ public class ShuyunFragment extends Fragment {
 
         // 获取区县经理代号
         Session s = Session.get();
-        String userId = s.countyManagerCode;
-        if (userId.isEmpty()) {
-            userId = "36745"; // 默认市区
+        String userIdTemp = s.countyManagerCode;
+        if (userIdTemp == null || userIdTemp.isEmpty()) {
+            userIdTemp = "36745"; // 默认市区
         }
+        final String userId = userIdTemp; // 复制为final供lambda使用
 
         isCountyRunning = true;
         btnCountyAudit.setEnabled(false);
@@ -749,6 +750,7 @@ public class ShuyunFragment extends Fragment {
                     // 遍历并审核
                     for (int i = 0; i < taskList.size() && isCountyRunning; i++) {
                         ShuyunApi.CountyTaskInfo task = taskList.get(i);
+                        final ShuyunApi.CountyTaskInfo currentTask = task; // 创建final副本供lambda使用
 
                         // 仿生延迟：基础2-6秒
                         int delay = (int) (Math.random() * 4000) + 2000;
@@ -760,7 +762,7 @@ public class ShuyunFragment extends Fragment {
                         final int currentIndex = i;
                         mainHandler.post(() -> {
                             tvCountyStatus.setText("审核中 " + (currentIndex + 1) + "/" + taskList.size());
-                            appendLog("等待 " + delay / 1000 + " 秒后审核: " + task.station_name);
+                            appendLog("等待 " + delay / 1000 + " 秒后审核: " + currentTask.station_name);
                         });
 
                         Thread.sleep(delay);
