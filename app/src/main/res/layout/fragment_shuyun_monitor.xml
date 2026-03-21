@@ -235,28 +235,26 @@
         <Button
             android:id="@+id/btnStartShuyun"
             android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:text="启动"
-            android:textSize="11sp"
+            android:layout_height="36dp"
+            android:text="启动监控"
+            android:textSize="12sp"
             android:backgroundTint="#2563EB"
             android:textColor="@android:color/white"
-            android:minWidth="50dp"
-            android:minHeight="0dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp" />
+            android:minWidth="70dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
 
         <Button
             android:id="@+id/btnStopShuyun"
             android:layout_width="wrap_content"
-            android:layout_height="28dp"
+            android:layout_height="36dp"
             android:text="停止"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:backgroundTint="#EF4444"
             android:textColor="@android:color/white"
-            android:layout_marginStart="6dp"
-            android:minWidth="40dp"
-            android:minHeight="0dp"
-            android:paddingStart="8dp"
+            android:layout_marginStart="8dp"
+            android:minWidth="56dp"
+            android:paddingStart="12dp"
             android:paddingEnd="8dp"
             android:enabled="false" />
     </LinearLayout>

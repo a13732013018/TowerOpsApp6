@@ -469,6 +469,8 @@ public class ShuyunMonitorFragment extends Fragment {
     }
 
     private void startMonitor() {
+        if (getContext() == null) return;
+
         if (!isAppLoggedIn || appToken.isEmpty()) {
             Toast.makeText(getContext(), "请先登录APP", Toast.LENGTH_SHORT).show();
             return;
@@ -477,10 +479,14 @@ public class ShuyunMonitorFragment extends Fragment {
         if (isRunning) return;
 
         isRunning = true;
-        btnStartShuyun.setEnabled(false);
-        btnStopShuyun.setEnabled(true);
-        tvShuyunStatus.setText("监控运行中");
-        tvShuyunStatus.setTextColor(0xFF10B981);
+
+        // UI更新加空值检查
+        if (btnStartShuyun != null) btnStartShuyun.setEnabled(false);
+        if (btnStopShuyun != null) btnStopShuyun.setEnabled(true);
+        if (tvShuyunStatus != null) {
+            tvShuyunStatus.setText("监控运行中");
+            tvShuyunStatus.setTextColor(0xFF10B981);
+        }
 
         appendLog("监控已启动");
 
@@ -490,17 +496,20 @@ public class ShuyunMonitorFragment extends Fragment {
 
         // 启动监控线程
         monitorThread = new Thread(() -> {
-            while (isRunning) {
+            while (isRunning && getContext() != null) {
                 try {
-                    mainHandler.post(() -> tvShuyunStatus.setText("监控运行中..."));
+                    final String statusText = "监控运行中...";
+                    mainHandler.post(() -> {
+                        if (tvShuyunStatus != null) tvShuyunStatus.setText(statusText);
+                    });
 
                     // 自动接单
-                    if (cbAutoAccept.isChecked()) {
+                    if (cbAutoAccept != null && cbAutoAccept.isChecked()) {
                         checkAndAutoAccept();
                     }
 
                     // 自动回单
-                    if (cbAutoRevert.isChecked()) {
+                    if (cbAutoRevert != null && cbAutoRevert.isChecked()) {
                         checkAndAutoRevert();
                     }
 
@@ -524,11 +533,14 @@ public class ShuyunMonitorFragment extends Fragment {
             }
 
             mainHandler.post(() -> {
+                if (getContext() == null) return;
                 isRunning = false;
-                btnStartShuyun.setEnabled(true);
-                btnStopShuyun.setEnabled(false);
-                tvShuyunStatus.setText("监控已停止");
-                tvShuyunStatus.setTextColor(0xFF6B7280);
+                if (btnStartShuyun != null) btnStartShuyun.setEnabled(true);
+                if (btnStopShuyun != null) btnStopShuyun.setEnabled(false);
+                if (tvShuyunStatus != null) {
+                    tvShuyunStatus.setText("监控已停止");
+                    tvShuyunStatus.setTextColor(0xFF6B7280);
+                }
 
                 if (callback != null) {
                     callback.onMonitorStatusChanged(false);
@@ -546,12 +558,13 @@ public class ShuyunMonitorFragment extends Fragment {
     }
 
     private void checkAndAutoAccept() {
+        if (getContext() == null) return;
         appendLog("检查待接单...");
         try {
             String jsonStr = ShuyunApi.getTaskList(appToken, appUserId);
             List<ShuyunApi.ShuyunTaskInfo> tasks = ShuyunApi.parseTaskList(jsonStr);
 
-            if (tasks.isEmpty()) {
+            if (tasks == null || tasks.isEmpty()) {
                 appendLog("待接单为空");
                 return;
             }
@@ -597,12 +610,13 @@ public class ShuyunMonitorFragment extends Fragment {
     }
 
     private void checkAndAutoRevert() {
+        if (getContext() == null) return;
         appendLog("检查处理中工单...");
         try {
             String jsonStr = ShuyunApi.getTaskList(appToken, appUserId);
             List<ShuyunApi.ShuyunTaskInfo> tasks = ShuyunApi.parseTaskList(jsonStr);
 
-            if (tasks.isEmpty()) {
+            if (tasks == null || tasks.isEmpty()) {
                 appendLog("处理中为空");
                 return;
             }
@@ -633,6 +647,7 @@ public class ShuyunMonitorFragment extends Fragment {
     }
 
     private void refreshTaskList() {
+        if (getContext() == null) return;
         try {
             String jsonStr = ShuyunApi.getTaskList(appToken, appUserId);
             List<ShuyunApi.ShuyunTaskInfo> tasks = ShuyunApi.parseTaskList(jsonStr);
@@ -649,17 +664,24 @@ public class ShuyunMonitorFragment extends Fragment {
                 }
             }
 
-            pendingAdapter.setData(pending);
-            processingAdapter.setData(processing);
+            if (pendingAdapter != null) pendingAdapter.setData(pending);
+            if (processingAdapter != null) processingAdapter.setData(processing);
 
             mainHandler.post(() -> {
-                tvPendingCount.setText("待处理: " + pending.size());
-                tvProcessingCount.setText("处理中: " + processing.size());
+                if (getContext() == null) return;
+                try {
+                    if (tvPendingCount != null) tvPendingCount.setText("待处理: " + pending.size());
+                    if (tvProcessingCount != null) tvProcessingCount.setText("处理中: " + processing.size());
 
-                if (pending.isEmpty() && processing.isEmpty()) {
-                    tvEmpty.setVisibility(View.VISIBLE);
-                } else {
-                    tvEmpty.setVisibility(View.GONE);
+                    if (tvEmpty != null) {
+                        if (pending.isEmpty() && processing.isEmpty()) {
+                            tvEmpty.setVisibility(View.VISIBLE);
+                        } else {
+                            tvEmpty.setVisibility(View.GONE);
+                        }
+                    }
+                } catch (Exception e) {
+                    // 忽略
                 }
             });
         } catch (Exception e) {
@@ -668,11 +690,17 @@ public class ShuyunMonitorFragment extends Fragment {
     }
 
     private void appendLog(String msg) {
+        if (getContext() == null) return;
         mainHandler.post(() -> {
-            String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-            String log = tvLog.getText().toString();
-            tvLog.setText(log + "\n[" + time + "] " + msg);
-            svLog.post(() -> svLog.fullScroll(View.FOCUS_DOWN));
+            if (getContext() == null || tvLog == null || svLog == null) return;
+            try {
+                String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                String log = tvLog.getText().toString();
+                tvLog.setText(log + "\n[" + time + "] " + msg);
+                svLog.post(() -> svLog.fullScroll(View.FOCUS_DOWN));
+            } catch (Exception e) {
+                // 忽略
+            }
         });
     }
 
