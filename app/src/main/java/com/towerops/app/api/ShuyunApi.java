@@ -817,14 +817,4 @@ public class ShuyunApi {
                 + "Referer: http://zjtowercom.cn:8998/dashboard\n"
                 + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
     }
-
-    public static boolean isSuccess(String result) {
-        if (result == null || result.isEmpty()) return false;
-        return result.contains("\"status\":\"ok\"")
-                || result.contains("\"status\": \"ok\"")
-                || result.contains("\"success\":true")
-                || result.contains("成功")
-                || result.contains("操作成功")
-                || result.contains("处理成功");
-    }
 }
