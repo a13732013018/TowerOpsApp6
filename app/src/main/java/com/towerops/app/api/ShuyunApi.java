@@ -1126,24 +1126,6 @@ public class ShuyunApi {
     }
 
     // =====================================================================
-    // 县级/市级审核API Header
-    // =====================================================================
-    private static String buildCountyApiHeader(String token) {
-        return "Accept: application/json, text/plain, */*\n"
-                + "Accept-Encoding: gzip, deflate\n"
-                + "Accept-Language: zh-CN,zh;q=0.9\n"
-                + "Authorization: " + token + "\n"
-                + "Cache-Control: no-cache\n"
-                + "Connection: keep-alive\n"
-                + "Content-Type: application/x-www-form-urlencoded;charset=UTF-8\n"
-                + "Host: zjtowercom.cn:8998\n"
-                + "Origin: http://zjtowercom.cn:8998\n"
-                + "Pragma: no-cache\n"
-                + "Referer: http://zjtowercom.cn:8998/dashboard\n"
-                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
-    }
-
-    // =====================================================================
     // PC端API Header
     // =====================================================================
     private static String buildPcApiHeader(String token) {
