@@ -42,7 +42,7 @@ public class ShuyunAuditFragment extends Fragment {
 
     // 区县经理代号
     private static final String[] COUNTY_CODES = {"36745", "31950"};
-    private static final String[] COUNTY_NAMES = {"市区", "其他"};
+    private static final String[] COUNTY_NAMES = {"市区(36745)", "其他(31950)"};
 
     // 主线程Handler
     private final Handler mainHandler = new Handler(Looper.getMainLooper());

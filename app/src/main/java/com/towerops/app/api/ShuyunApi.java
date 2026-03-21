@@ -124,6 +124,65 @@ public class ShuyunApi {
         public boolean hasMath = false;
     }
 
+    /**
+     * 验证码结果封装（包含图片和IP）
+     */
+    public static class CaptchaResult {
+        public android.graphics.Bitmap image;
+        public String ip = "";
+        public CaptchaMath math = new CaptchaMath();
+    }
+
+    /**
+     * 获取验证码图片和IP
+     * @return CaptchaResult包含图片和IP
+     */
+    public static CaptchaResult getCaptcha() {
+        CaptchaResult result = new CaptchaResult();
+        try {
+            // 获取验证码JSON
+            String jsonStr = getImgcode();
+            if (jsonStr.isEmpty()) {
+                return result;
+            }
+
+            // 解析IP
+            result.ip = parseIp(jsonStr);
+
+            // 解析数学题
+            result.math = parseMathCode(jsonStr);
+
+            // 获取验证码图片
+            String imgUrl = PC_BASE + "/api/auth/jwt/getImgcodeImage?ip=" + result.ip;
+            result.image = getImageBitmap(imgUrl);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /**
+     * 从URL获取图片Bitmap
+     */
+    private static android.graphics.Bitmap getImageBitmap(String imgUrl) {
+        try {
+            java.net.URL url = new java.net.URL(imgUrl);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            conn.connect();
+            java.io.InputStream is = conn.getInputStream();
+            android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(is);
+            is.close();
+            return bitmap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // =====================================================================
     // 2. PC版登录
     // =====================================================================

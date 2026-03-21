@@ -1,20 +1,25 @@
 package com.towerops.app.ui;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +28,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.towerops.app.R;
 import com.towerops.app.api.ShuyunApi;
 import com.towerops.app.model.Session;
+import com.towerops.app.shuyun.ShuyunAccountConfig;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,14 +43,21 @@ public class ShuyunMonitorFragment extends Fragment {
     private static final String TAG = "ShuyunMonitorFragment";
 
     // UI控件
-    private TextView tvShuyunStatus, tvPendingCount, tvProcessingCount, tvLog, tvCurrentTime, tvLoginStatus;
-    private TextView tvPcLoginStatus, tvAppLoginStatus;
+    private TextView tvShuyunStatus, tvPendingCount, tvProcessingCount, tvLog, tvCurrentTime;
+    private TextView tvPcLoginStatus, tvAppLoginStatus, tvImei;
     private CheckBox cbAutoAccept, cbAutoRevert;
-    private Button btnStartShuyun, btnStopShuyun, btnLogin;
+    private Button btnStartShuyun, btnStopShuyun;
+    private Button btnPcLogin, btnAppLogin, btnRefreshCaptcha;
     private TabLayout tabLayoutShuyun;
     private RecyclerView rvPending, rvProcessing;
     private ScrollView svLog;
     private View tvEmpty;
+
+    // 登录控件
+    private Spinner spinnerPcAccount, spinnerAppAccount;
+    private ImageView imgPcCaptcha;
+    private EditText etPcCaptcha;
+    private View layoutPcCaptcha;
 
     // 适配器
     private ShuyunAdapter pendingAdapter;
@@ -69,9 +82,14 @@ public class ShuyunMonitorFragment extends Fragment {
     private String pcIp = "";
     private String appToken = "";
     private String appUserId = "";
-    private int selectedAccountIndex = 0;
+    private int selectedPcAccountIndex = 0;
+    private int selectedAppAccountIndex = 0;
     private boolean isPcLoggedIn = false;
     private boolean isAppLoggedIn = false;
+
+    // 验证码
+    private String currentPcIp = "";
+    private Bitmap currentCaptchaBitmap = null;
 
     // 接口回调
     private ShuyunMonitorCallback callback;
@@ -117,6 +135,7 @@ public class ShuyunMonitorFragment extends Fragment {
         initViews(view);
         setupListeners();
         setupTimeUpdate();
+        loadCaptcha();
     }
 
     private void initViews(View view) {
@@ -124,16 +143,18 @@ public class ShuyunMonitorFragment extends Fragment {
         tvPendingCount = view.findViewById(R.id.tvPendingCount);
         tvProcessingCount = view.findViewById(R.id.tvProcessingCount);
         tvCurrentTime = view.findViewById(R.id.tvCurrentTime);
-        tvLoginStatus = view.findViewById(R.id.tvLoginStatus);
         tvPcLoginStatus = view.findViewById(R.id.tvPcLoginStatus);
         tvAppLoginStatus = view.findViewById(R.id.tvAppLoginStatus);
+        tvImei = view.findViewById(R.id.tvImei);
 
         cbAutoAccept = view.findViewById(R.id.cbAutoAccept);
         cbAutoRevert = view.findViewById(R.id.cbAutoRevert);
 
         btnStartShuyun = view.findViewById(R.id.btnStartShuyun);
         btnStopShuyun = view.findViewById(R.id.btnStopShuyun);
-        btnLogin = view.findViewById(R.id.btnLogin);
+        btnPcLogin = view.findViewById(R.id.btnPcLogin);
+        btnAppLogin = view.findViewById(R.id.btnAppLogin);
+        btnRefreshCaptcha = view.findViewById(R.id.btnRefreshCaptcha);
 
         tabLayoutShuyun = view.findViewById(R.id.tabLayoutShuyun);
 
@@ -141,6 +162,13 @@ public class ShuyunMonitorFragment extends Fragment {
         rvProcessing = view.findViewById(R.id.rvProcessing);
         tvEmpty = view.findViewById(R.id.tvEmpty);
         svLog = view.findViewById(R.id.svLog);
+
+        // 登录控件
+        spinnerPcAccount = view.findViewById(R.id.spinnerPcAccount);
+        spinnerAppAccount = view.findViewById(R.id.spinnerAppAccount);
+        imgPcCaptcha = view.findViewById(R.id.imgPcCaptcha);
+        etPcCaptcha = view.findViewById(R.id.etPcCaptcha);
+        layoutPcCaptcha = view.findViewById(R.id.layoutPcCaptcha);
 
         // 初始化RecyclerView
         rvPending.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -178,6 +206,28 @@ public class ShuyunMonitorFragment extends Fragment {
                 revertTask(item.id);
             }
         });
+
+        // 初始化账号选择器
+        initAccountSpinners();
+    }
+
+    private void initAccountSpinners() {
+        // PC账号
+        String[] pcAccounts = ShuyunAccountConfig.getPCDisplayNames();
+        ArrayAdapter<String> pcAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, pcAccounts);
+        pcAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPcAccount.setAdapter(pcAdapter);
+
+        // APP账号
+        String[] appAccounts = ShuyunAccountConfig.getAPPDisplayNames();
+        ArrayAdapter<String> appAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, appAccounts);
+        appAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAppAccount.setAdapter(appAdapter);
+
+        // 更新默认IMEI显示
+        updateImeiDisplay(0);
     }
 
     private void setupListeners() {
@@ -196,12 +246,48 @@ public class ShuyunMonitorFragment extends Fragment {
             public void onTabReselected(TabLayout.Tab tab) {}
         });
 
-        // 登录按钮
-        btnLogin.setOnClickListener(v -> doLogin());
+        // PC账号选择
+        spinnerPcAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedPcAccountIndex = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // APP账号选择
+        spinnerAppAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedAppAccountIndex = position;
+                updateImeiDisplay(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // PC登录按钮
+        btnPcLogin.setOnClickListener(v -> doPcLogin());
+
+        // APP登录按钮
+        btnAppLogin.setOnClickListener(v -> doAppLogin());
+
+        // 刷新验证码
+        btnRefreshCaptcha.setOnClickListener(v -> loadCaptcha());
 
         // 启动/停止监控
         btnStartShuyun.setOnClickListener(v -> startMonitor());
         btnStopShuyun.setOnClickListener(v -> stopMonitor());
+    }
+
+    private void updateImeiDisplay(int position) {
+        ShuyunAccountConfig.Account account = ShuyunAccountConfig.getAPPAccount(position);
+        if (account != null) {
+            tvImei.setText("IMEI: " + account.imei.substring(0, Math.min(8, account.imei.length())) + "...");
+        }
     }
 
     private void setupTimeUpdate() {
@@ -227,35 +313,88 @@ public class ShuyunMonitorFragment extends Fragment {
         }
     }
 
-    private void doLogin() {
-        btnLogin.setEnabled(false);
-        btnLogin.setText("登录中...");
+    /**
+     * 加载验证码图片
+     */
+    private void loadCaptcha() {
+        mainHandler.post(() -> {
+            btnRefreshCaptcha.setEnabled(false);
+            btnPcLogin.setEnabled(false);
+        });
 
         new Thread(() -> {
             try {
-                // 使用loginDual进行PC+APP双端登录
-                ShuyunApi.ShuyunDualLoginResult result = ShuyunApi.loginDual(selectedAccountIndex);
+                ShuyunApi.CaptchaResult result = ShuyunApi.getCaptcha();
+                currentPcIp = result.ip;
+                currentCaptchaBitmap = result.image;
 
-                if (result.success) {
-                    pcToken = result.pcToken;
-                    pcIp = result.pcIp;
-                    appToken = result.appToken;
-                    appUserId = result.appUserId;
-                    isPcLoggedIn = result.pcLoginSuccess;
-                    isAppLoggedIn = result.appLoginSuccess;
+                mainHandler.post(() -> {
+                    if (currentCaptchaBitmap != null) {
+                        imgPcCaptcha.setImageBitmap(currentCaptchaBitmap);
+                        layoutPcCaptcha.setVisibility(View.VISIBLE);
+                    } else {
+                        Toast.makeText(getContext(), "验证码加载失败", Toast.LENGTH_SHORT).show();
+                    }
+                    btnRefreshCaptcha.setEnabled(true);
+                    btnPcLogin.setEnabled(true);
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    Toast.makeText(getContext(), "验证码加载异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnRefreshCaptcha.setEnabled(true);
+                    btnPcLogin.setEnabled(true);
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * PC登录
+     */
+    private void doPcLogin() {
+        String imgcode = etPcCaptcha.getText().toString().trim();
+        if (imgcode.isEmpty()) {
+            Toast.makeText(getContext(), "请输入验证码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (currentPcIp.isEmpty()) {
+            Toast.makeText(getContext(), "请先获取验证码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnPcLogin.setEnabled(false);
+        btnPcLogin.setText("登录中...");
+
+        new Thread(() -> {
+            try {
+                ShuyunAccountConfig.Account account = ShuyunAccountConfig.getPCAccount(selectedPcAccountIndex);
+                if (account == null) {
+                    mainHandler.post(() -> {
+                        Toast.makeText(getContext(), "请选择PC账号", Toast.LENGTH_SHORT).show();
+                        btnPcLogin.setEnabled(true);
+                        btnPcLogin.setText("PC登录");
+                    });
+                    return;
+                }
+
+                String result = ShuyunApi.loginByPc(account.username, account.password, imgcode, currentPcIp);
+
+                if (ShuyunApi.isSuccess(result)) {
+                    pcToken = ShuyunApi.parsePcToken(result);
+                    pcIp = currentPcIp;
+                    isPcLoggedIn = true;
 
                     // 保存到Session
                     Session s = Session.get();
                     s.shuyunPcToken = pcToken;
                     s.shuyunPcIp = pcIp;
-                    s.shuyunAppToken = appToken;
-                    s.shuyunAppUserId = appUserId;
 
                     mainHandler.post(() -> {
                         updateLoginStatus();
-                        Toast.makeText(getContext(), "登录成功", Toast.LENGTH_SHORT).show();
-                        btnLogin.setEnabled(true);
-                        btnLogin.setText("同时登录PC+APP");
+                        Toast.makeText(getContext(), "PC登录成功", Toast.LENGTH_SHORT).show();
+                        btnPcLogin.setEnabled(true);
+                        btnPcLogin.setText("PC登录");
 
                         if (callback != null) {
                             callback.onLoginStatusChanged(isPcLoggedIn, isAppLoggedIn);
@@ -263,16 +402,77 @@ public class ShuyunMonitorFragment extends Fragment {
                     });
                 } else {
                     mainHandler.post(() -> {
-                        Toast.makeText(getContext(), "登录失败: " + result.errorMsg, Toast.LENGTH_SHORT).show();
-                        btnLogin.setEnabled(true);
-                        btnLogin.setText("同时登录PC+APP");
+                        Toast.makeText(getContext(), "PC登录失败: " + result, Toast.LENGTH_SHORT).show();
+                        btnPcLogin.setEnabled(true);
+                        btnPcLogin.setText("PC登录");
+                        // 登录失败后刷新验证码
+                        loadCaptcha();
                     });
                 }
             } catch (Exception e) {
                 mainHandler.post(() -> {
-                    Toast.makeText(getContext(), "登录异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    btnLogin.setEnabled(true);
-                    btnLogin.setText("同时登录PC+APP");
+                    Toast.makeText(getContext(), "PC登录异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnPcLogin.setEnabled(true);
+                    btnPcLogin.setText("PC登录");
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * APP登录
+     */
+    private void doAppLogin() {
+        btnAppLogin.setEnabled(false);
+        btnAppLogin.setText("登录中...");
+
+        new Thread(() -> {
+            try {
+                ShuyunAccountConfig.Account account = ShuyunAccountConfig.getAPPAccount(selectedAppAccountIndex);
+                if (account == null) {
+                    mainHandler.post(() -> {
+                        Toast.makeText(getContext(), "请选择APP账号", Toast.LENGTH_SHORT).show();
+                        btnAppLogin.setEnabled(true);
+                        btnAppLogin.setText("APP登录");
+                    });
+                    return;
+                }
+
+                String result = ShuyunApi.loginByApp(account.username, account.password, account.imei);
+                ShuyunApi.ShuyunLoginResult loginResult = ShuyunApi.parseAppLogin(result);
+
+                if (loginResult.success) {
+                    appToken = loginResult.token;
+                    appUserId = loginResult.userId;
+                    isAppLoggedIn = true;
+
+                    // 保存到Session
+                    Session s = Session.get();
+                    s.shuyunAppToken = appToken;
+                    s.shuyunAppUserId = appUserId;
+
+                    mainHandler.post(() -> {
+                        updateLoginStatus();
+                        Toast.makeText(getContext(), "APP登录成功", Toast.LENGTH_SHORT).show();
+                        btnAppLogin.setEnabled(true);
+                        btnAppLogin.setText("APP登录");
+
+                        if (callback != null) {
+                            callback.onLoginStatusChanged(isPcLoggedIn, isAppLoggedIn);
+                        }
+                    });
+                } else {
+                    mainHandler.post(() -> {
+                        Toast.makeText(getContext(), "APP登录失败: " + loginResult.message, Toast.LENGTH_SHORT).show();
+                        btnAppLogin.setEnabled(true);
+                        btnAppLogin.setText("APP登录");
+                    });
+                }
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    Toast.makeText(getContext(), "APP登录异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnAppLogin.setEnabled(true);
+                    btnAppLogin.setText("APP登录");
                 });
             }
         }).start();
@@ -284,14 +484,11 @@ public class ShuyunMonitorFragment extends Fragment {
 
         tvAppLoginStatus.setText(isAppLoggedIn ? "已登录" : "未登录");
         tvAppLoginStatus.setTextColor(isAppLoggedIn ? 0xFF10B981 : 0xFFEF4444);
-
-        tvLoginStatus.setText(isPcLoggedIn && isAppLoggedIn ? "已登录" : "未登录");
-        tvLoginStatus.setTextColor(isPcLoggedIn && isAppLoggedIn ? 0xFF10B981 : 0xFFEF4444);
     }
 
     private void startMonitor() {
         if (!isAppLoggedIn || appToken.isEmpty()) {
-            Toast.makeText(getContext(), "请先登录", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "请先登录APP", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -431,7 +628,6 @@ public class ShuyunMonitorFragment extends Fragment {
             for (ShuyunApi.ShuyunTaskInfo task : tasks) {
                 if ("处理中".equals(task.status) || "1".equals(task.status)) {
                     // 简单处理：直接回单
-                    // 实际应根据创建时间判断是否满足回单条件
                     revertTask(task.id);
                 }
             }
