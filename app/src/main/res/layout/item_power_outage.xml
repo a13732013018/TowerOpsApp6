@@ -72,7 +72,7 @@
     <!-- 告警时间 -->
     <TextView
         android:id="@+id/tvAlarmTime"
-        android:layout_width="60dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:text="时间"
         android:textColor="@color/text_secondary"

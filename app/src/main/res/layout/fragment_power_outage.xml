@@ -147,7 +147,7 @@
             android:layout_marginStart="4dp"/>
 
         <TextView
-            android:layout_width="60dp"
+            android:layout_width="90dp"
             android:layout_height="wrap_content"
             android:text="告警时间"
             android:textColor="@color/text_secondary"
