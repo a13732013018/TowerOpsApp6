@@ -587,6 +587,24 @@ public class ShuyunApi {
                 + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
     }
 
+    /**
+     * 县级审核API请求头（包含Authorization）
+     */
+    private static String buildCountyApiHeader(String pcToken) {
+        return "Accept: application/json, text/plain, */*\n"
+                + "Accept-Encoding: gzip, deflate\n"
+                + "Accept-Language: zh-CN,zh;q=0.9\n"
+                + "Authorization: " + pcToken + "\n"
+                + "Cache-Control: no-cache\n"
+                + "Connection: keep-alive\n"
+                + "Content-Type: application/x-www-form-urlencoded;charset=UTF-8\n"
+                + "Host: zjtowercom.cn:8998\n"
+                + "Origin: http://zjtowercom.cn:8998\n"
+                + "Pragma: no-cache\n"
+                + "Referer: http://zjtowercom.cn:8998/dashboard\n"
+                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
+    }
+
     private static String buildAppLoginHeader() {
         return "Content-Type: application/x-www-form-urlencoded\n"
                 + "User-Agent: Mozilla/5.0 (Linux; Android 14; M2011K2C Build/UKQ1.240624.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36\n"
@@ -727,12 +745,14 @@ public class ShuyunApi {
     /**
      * 获取县级待审核工单列表
      * @param pcToken PC端登录Token
-     * @param userId 区县经理代号（36745市区/31950其他）
+     * @param userId 区县经理代号（36745平阳/31950泰顺）
      * @return 工单列表JSON
      */
     public static String getCountyTaskList(String pcToken, String userId) {
-        String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
-                + "?page=1"
+        String url = PC_BASE + "/api/flowable/flowable/task/listTodo";
+
+        // POST body参数（与易语言一致）
+        String post = "page=1"
                 + "&limit=10"
                 + "&userId=" + userId
                 + "&flowId=1025,1054,1055,1056,1131,1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1137,1143,1063"
@@ -741,9 +761,9 @@ public class ShuyunApi {
                 + "&area="
                 + "&cityArea=";
 
-        String headers = buildPcApiHeader(pcToken);
+        String headers = buildCountyApiHeader(pcToken);
         try {
-            String result = HttpUtil.get(url, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -807,7 +827,7 @@ public class ShuyunApi {
      * @param userId 区县经理代号
      * @return 审核结果
      */
-    public static String submitCountyAudit(String pcToken, String orderNum, String jobInstId, 
+    public static String submitCountyAudit(String pcToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String userId) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -815,7 +835,7 @@ public class ShuyunApi {
         String jobPrefix = jobId.contains("_") ? jobId.substring(0, jobId.indexOf("_")) : jobId;
         String nextJobAndUser = jobPrefix + "_003@12101,12102,12104,12108,12376,22979,30264,37493,12107,37614,37881,12103,12106,12120,12101,12103";
 
-        // JSON格式请求体
+        // JSON格式请求体（与易语言一致）
         String post = "{\"orderNum\":\"" + orderNum + "\","
                 + "\"userId\":\"" + userId + "\","
                 + "\"jobInstId\":\"" + jobInstId + "\","
@@ -828,11 +848,11 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        String headers = buildPcJsonHeader(post.length());
-        // 需要添加Authorization头
-        headers = headers.replace("Content-Type: application/json;charset=UTF-8\n", 
-                "Content-Type: application/json;charset=UTF-8\n"
-                + "Authorization: " + pcToken + "\n");
+        // 使用县级审核专用请求头
+        String headers = buildCountyApiHeader(pcToken);
+        // 改为JSON格式
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+                "Content-Type: application/json;charset=UTF-8");
 
         try {
             String result = HttpUtil.post(url, post, headers, null);
