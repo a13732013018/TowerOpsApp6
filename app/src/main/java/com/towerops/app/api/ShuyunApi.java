@@ -509,6 +509,148 @@ public class ShuyunApi {
                 + "X-Requested-With: com.zjtt.mobile";
     }
 
+    // =====================================================================
+    // 7. 智联工单接口（PC端API）
+    // =====================================================================
+    /**
+     * 获取智联待签收工单列表
+     * @param pcToken PC端登录Token
+     * @param userId 用户ID
+     * @param cityArea 区县代码（如330300）
+     * @return 工单列表JSON
+     */
+    public static String getZhilianTaskList(String pcToken, String userId, String cityArea) {
+        String url = PC_BASE + "/api/flowable/flowable/task/listToSign"
+                + "?page=1"
+                + "&limit=10"
+                + "&flowId=1024,1124,1160,1220"
+                + "&orderType="
+                + "&userId=" + userId
+                + "&area=330300"
+                + "&cityArea=" + cityArea;
+
+        String headers = buildPcApiHeader(pcToken);
+        try {
+            String result = HttpUtil.get(url, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 解析智联工单列表
+     * @param jsonStr API返回的JSON
+     * @return 工单列表
+     */
+    public static List<ZhilianTaskInfo> parseZhilianTaskList(String jsonStr) {
+        List<ZhilianTaskInfo> list = new ArrayList<>();
+        try {
+            JSONObject root = new JSONObject(jsonStr);
+            JSONObject data = root.optJSONObject("data");
+            if (data != null) {
+                JSONArray rows = data.optJSONArray("rows");
+                if (rows != null) {
+                    for (int i = 0; i < rows.length(); i++) {
+                        JSONObject item = rows.getJSONObject(i);
+                        ZhilianTaskInfo info = new ZhilianTaskInfo();
+                        info.flowId = item.optString("flowId", "");
+                        info.jobId = item.optString("jobId", "");
+                        info.orderNum = item.optString("orderNum", "");
+                        info.userId = item.optString("userId", "");
+                        info.workInstId = item.optString("workInstId", "");
+                        info.siteName = item.optString("title", item.optString("siteName", ""));
+                        info.createTime = item.optString("createTime", "");
+                        info.flowName = item.optString("flowName", "");
+                        list.add(info);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * 智联工单接单
+     * @param pcToken PC端登录Token
+     * @param workInstId 工单实例ID
+     * @param orderNum 工单编号
+     * @param flowId 流程ID
+     * @param jobId 任务ID
+     * @param userId 用户ID
+     * @return 接单结果
+     */
+    public static String acceptZhilianTask(String pcToken, String workInstId, String orderNum, 
+            String flowId, String jobId, String userId) {
+        String url = PC_BASE + "/api/flowable/flowableFlow/updateWorkStatus";
+
+        // JSON格式请求体
+        String post = "{\"workInstId\":\"" + workInstId + "\","
+                + "\"orderNum\":\"" + orderNum + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"userId\":\"" + userId + "\"}";
+
+        String headers = buildPcJsonHeader(post.length());
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 智联工单信息封装
+     */
+    public static class ZhilianTaskInfo {
+        public String flowId = "";
+        public String jobId = "";
+        public String orderNum = "";
+        public String userId = "";
+        public String workInstId = "";
+        public String siteName = "";
+        public String createTime = "";
+        public String flowName = "";
+    }
+
+    // =====================================================================
+    // PC端API Header
+    // =====================================================================
+    private static String buildPcApiHeader(String token) {
+        return "Accept: application/json, text/plain, */*\n"
+                + "Accept-Encoding: gzip, deflate\n"
+                + "Accept-Language: zh-CN,zh;q=0.9\n"
+                + "Authorization: " + token + "\n"
+                + "Cache-Control: no-cache\n"
+                + "Connection: keep-alive\n"
+                + "Content-Type: application/json;charset=UTF-8\n"
+                + "Host: zjtowercom.cn:8998\n"
+                + "Origin: http://zjtowercom.cn:8998\n"
+                + "Pragma: no-cache\n"
+                + "Referer: http://zjtowercom.cn:8998/dashboard\n"
+                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
+    }
+
+    private static String buildPcJsonHeader(int contentLength) {
+        return "Accept: application/json, text/plain, */*\n"
+                + "Accept-Encoding: gzip, deflate\n"
+                + "Accept-Language: zh-CN,zh;q=0.9\n"
+                + "Cache-Control: no-cache\n"
+                + "Connection: keep-alive\n"
+                + "Content-Length: " + contentLength + "\n"
+                + "Content-Type: application/json;charset=UTF-8\n"
+                + "Host: zjtowercom.cn:8998\n"
+                + "Origin: http://zjtowercom.cn:8998\n"
+                + "Pragma: no-cache\n"
+                + "Referer: http://zjtowercom.cn:8998/dashboard\n"
+                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
+    }
+
     public static boolean isSuccess(String result) {
         if (result == null || result.isEmpty()) return false;
         return result.contains("\"status\":\"ok\"")

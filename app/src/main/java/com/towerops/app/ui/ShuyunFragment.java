@@ -586,8 +586,58 @@ public class ShuyunFragment extends Fragment {
     }
 
     private void checkAndAutoAccept() {
-        // TODO: 根据实际接口实现自动接单逻辑
-        appendLog("检查待处理工单...");
+        // 检查是否需要智联自动接单（需要PC端登录）
+        if (!isPcLoggedIn || pcToken.isEmpty()) {
+            appendLog("智联接单需要PC端登录");
+            return;
+        }
+
+        appendLog("正在获取智联待签收工单...");
+
+        // 获取区县代码
+        Session s = Session.get();
+        String cityArea = s.shuyunCityArea.isEmpty() ? "330300" : s.shuyunCityArea;
+
+        // 获取智联待签收工单列表
+        String jsonStr = ShuyunApi.getZhilianTaskList(pcToken, appUserId, cityArea);
+        List<ShuyunApi.ZhilianTaskInfo> taskList = ShuyunApi.parseZhilianTaskList(jsonStr);
+
+        if (taskList.isEmpty()) {
+            appendLog("智联待签收工单为空");
+            return;
+        }
+
+        appendLog("发现智联待签收工单: " + taskList.size() + " 个");
+
+        // 遍历并接单
+        for (ShuyunApi.ZhilianTaskInfo task : taskList) {
+            try {
+                // ★ 强制发呆，拒绝机关枪式接单（5-8秒随机延迟）
+                int delay = (int) (Math.random() * 3000) + 5000;
+                appendLog("等待 " + delay / 1000 + " 秒后接单: " + task.siteName);
+                Thread.sleep(delay);
+
+                // 执行接单
+                String result = ShuyunApi.acceptZhilianTask(
+                    pcToken,
+                    task.workInstId,
+                    task.orderNum,
+                    task.flowId,
+                    task.jobId,
+                    task.userId
+                );
+
+                if (ShuyunApi.isSuccess(result)) {
+                    appendLog("✓ 接单成功: " + task.siteName);
+                } else {
+                    appendLog("✗ 接单失败: " + task.siteName + ", 返回: " + result);
+                }
+            } catch (InterruptedException e) {
+                break;
+            } catch (Exception e) {
+                appendLog("接单异常: " + e.getMessage());
+            }
+        }
     }
 
     private void checkAndAutoRevert() {

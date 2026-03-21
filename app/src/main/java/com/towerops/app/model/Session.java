@@ -82,6 +82,11 @@ public class Session {
     public volatile String shuyunPcIp = "";
 
     /**
+     * 数运区县代码（如330300），用于智联工单接口
+     */
+    public volatile String shuyunCityArea = "330300";
+
+    /**
      * 数运账号信息（用于APP登录）
      * 格式：用户名|密码|imei 用 \u0001 分隔
      */
