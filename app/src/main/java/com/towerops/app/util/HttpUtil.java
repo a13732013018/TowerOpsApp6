@@ -26,14 +26,19 @@ public class HttpUtil {
      * POST 请求，返回响应体字符串
      *
      * @param url     目标地址
-     * @param post    POST 参数字符串（application/x-www-form-urlencoded 格式）
+     * @param post    POST 参数字符串（application/x-www-form-urlencoded 或 JSON 格式）
      * @param headers 附加协议头（格式："Key: Value\nKey2: Value2"），可为 null
      * @param cookie  Cookie 字符串，可为 null
      * @return 响应体，失败返回空字符串
      */
     public static String post(String url, String post, String headers, String cookie) {
         try {
-            RequestBody body = RequestBody.create(post, FORM_TYPE);
+            // 根据Content-Type自动选择MediaType
+            MediaType mediaType = FORM_TYPE; // 默认
+            if (headers != null && headers.contains("Content-Type: application/json")) {
+                mediaType = MediaType.parse("application/json;charset=UTF-8");
+            }
+            RequestBody body = RequestBody.create(post, mediaType);
             Request.Builder builder = new Request.Builder()
                     .url(url.trim())
                     .post(body);
