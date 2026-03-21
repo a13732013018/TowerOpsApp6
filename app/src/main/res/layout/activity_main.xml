@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#1a1a2e">
+
+    <!-- ==================== 顶部标题栏 ==================== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:orientation="horizontal"
+        android:background="#16213e"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="铁塔运维助手"
+            android:textColor="#e94560"
+            android:textSize="12sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvUserInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="未登录"
+            android:textColor="#a0a0c0"
+            android:textSize="9sp"
+            android:layout_marginEnd="6dp"/>
+
+        <TextView
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:text="退出"
+            android:textColor="#e94560"
+            android:textSize="9sp"
+            android:background="@drawable/bg_tag"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+
+    <!-- ==================== 配置控制区（二栏布局） ==================== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#16213e"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <!-- 第1行：三个CheckBox + 轮询区间 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <CheckBox
+                android:id="@+id/cbAutoFeedback"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:text="自动反馈"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:buttonTint="#e94560"
+                android:paddingStart="3dp"
+                android:checked="true"
+                android:minHeight="0dp"/>
+
+            <CheckBox
+                android:id="@+id/cbAutoAccept"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:text="自动接单"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:buttonTint="#e94560"
+                android:paddingStart="3dp"
+                android:checked="true"
+                android:minHeight="0dp"/>
+
+            <CheckBox
+                android:id="@+id/cbAutoRevert"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:text="自动回单"
+                android:textColor="#ffffff"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:buttonTint="#e94560"
+                android:paddingStart="3dp"
+                android:checked="true"
+                android:minHeight="0dp"/>
+
+            <!-- 轮询 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="轮询（秒）:"
+                android:textColor="#e0e0f0"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:layout_marginStart="4dp"/>
+            <EditText
+                android:id="@+id/etIntervalMin"
+                android:layout_width="38dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:text="90"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"
+                android:layout_marginStart="2dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="~"
+                android:textColor="#e0e0f0"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+            <EditText
+                android:id="@+id/etIntervalMax"
+                android:layout_width="38dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:text="120"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- 第2行：反馈阈值 + 接单阈值 + 按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|start">
+
+            <!-- 反馈阈值 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="反馈:"
+                android:textColor="#e0e0f0"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:gravity="center_vertical"/>
+            <EditText
+                android:id="@+id/etFeedbackMin"
+                android:layout_width="34dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:text="70"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"
+                android:layout_marginStart="1dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="~"
+                android:textColor="#e0e0f0"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:gravity="center_vertical"/>
+            <EditText
+                android:id="@+id/etFeedbackMax"
+                android:layout_width="34dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:text="90"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"
+                android:layout_marginStart="1dp"/>
+
+            <!-- 接单阈值 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="接单:"
+                android:textColor="#e0e0f0"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:gravity="center_vertical"
+                android:layout_marginStart="3dp"/>
+            <EditText
+                android:id="@+id/etAcceptMin"
+                android:layout_width="34dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:text="60"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"
+                android:layout_marginStart="1dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="~"
+                android:textColor="#e0e0f0"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:gravity="center_vertical"/>
+            <EditText
+                android:id="@+id/etAcceptMax"
+                android:layout_width="34dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_input"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:text="90"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:inputType="number"
+                android:gravity="center"
+                android:layout_marginStart="1dp"/>
+
+
+            <!-- 按钮组：使用固定宽度确保显示 -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/btnStartMonitor"
+                android:layout_width="100dp"
+                android:layout_height="36dp"
+                android:text="开启监控"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff"
+                android:background="@drawable/bg_button_primary_gradient"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:gravity="center"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"/>
+
+            <Button
+                android:id="@+id/btnStopMonitor"
+                android:layout_width="76dp"
+                android:layout_height="36dp"
+                android:text="停止"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#ffffff"
+                android:background="@drawable/bg_button_secondary"
+                android:layout_marginStart="4dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:gravity="center"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ==================== 状态栏 ==================== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:background="#0a0a1a"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="启动"
+            android:textColor="#40c080"
+            android:textSize="10sp"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="10dp"
+            android:background="#404060"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"/>
+
+        <TextView
+            android:id="@+id/tvRoundComplete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#a0a0c0"
+            android:textSize="10sp"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="10dp"
+            android:background="#404060"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"/>
+
+        <TextView
+            android:id="@+id/tvPowerOutageCountStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停电 0"
+            android:textColor="#e94560"
+            android:textSize="10sp"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/tvNextRun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#40c080"
+            android:textSize="10sp"/>
+    </LinearLayout>
+
+    <!-- ==================== Tab切换 + ViewPager2 ==================== -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="#0f3460"
+        app:tabIndicatorColor="#e94560"
+        app:tabSelectedTextColor="#e94560"
+        app:tabTextColor="#a0a0c0"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabIndicatorHeight="2dp"
+        app:tabIndicatorFullWidth="true"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabTextAppearance="@style/TabTextStyle"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+</LinearLayout>

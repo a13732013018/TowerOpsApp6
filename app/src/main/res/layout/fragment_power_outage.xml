@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#12122a">
+
+    <!-- 排序工具栏 -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="#0d0d20"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="排序："
+                android:textColor="#606080"
+                android:textSize="11sp"/>
+
+            <TextView
+                android:id="@+id/btnSortVoltage"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="电压 ↕"
+                android:textSize="10sp"
+                android:textColor="#a0a0c0"
+                android:background="@drawable/bg_tag"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:layout_marginStart="6dp"/>
+
+            <TextView
+                android:id="@+id/btnSortLoadCurrent"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="负载电流 ↕"
+                android:textSize="10sp"
+                android:textColor="#a0a0c0"
+                android:background="@drawable/bg_tag"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:layout_marginStart="6dp"/>
+
+            <TextView
+                android:id="@+id/btnSortAlarmTime"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="告警时间 ↕"
+                android:textSize="10sp"
+                android:textColor="#a0a0c0"
+                android:background="@drawable/bg_tag"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center"
+                android:layout_marginStart="6dp"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- 表头 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="26dp"
+        android:orientation="horizontal"
+        android:background="#0a0a1a"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:text="#"
+            android:textColor="#606080"
+            android:textSize="10sp"
+            android:gravity="center"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="站点名称"
+            android:textColor="#606080"
+            android:textSize="10sp"
+            android:layout_marginStart="4dp"/>
+
+        <TextView
+            android:layout_width="46dp"
+            android:layout_height="wrap_content"
+            android:text="电压"
+            android:textColor="#606080"
+            android:textSize="10sp"
+            android:gravity="end"
+            android:layout_marginStart="4dp"/>
+
+        <TextView
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:text="负载"
+            android:textColor="#606080"
+            android:textSize="10sp"
+            android:gravity="end"
+            android:layout_marginStart="4dp"/>
+
+        <TextView
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:text="类型"
+            android:textColor="#606080"
+            android:textSize="10sp"
+            android:gravity="center"
+            android:layout_marginStart="4dp"/>
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="告警时间"
+            android:textColor="#606080"
+            android:textSize="9sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical|end"
+            android:includeFontPadding="false"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
+
+    <!-- 停电列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPowerOutages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#12122a"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"/>
+
+</LinearLayout>
