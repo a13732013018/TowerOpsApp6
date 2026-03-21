@@ -93,15 +93,6 @@
                 </LinearLayout>
             </HorizontalScrollView>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvSortDesc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="工单历时 大→小"
-            android:textColor="@color/text_tertiary"
-            android:textSize="12sp"
-            android:layout_marginTop="8dp"/>
     </LinearLayout>
 
     <!-- 分割线 -->
