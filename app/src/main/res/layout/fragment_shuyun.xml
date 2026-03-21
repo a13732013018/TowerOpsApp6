@@ -215,7 +215,8 @@
         android:orientation="horizontal"
         android:padding="12dp"
         android:background="@android:color/white"
-        android:layout_marginTop="1dp">
+        android:layout_marginTop="1dp"
+        android:gravity="center_vertical">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -288,6 +289,67 @@
             android:textColor="@android:color/white"
             android:layout_marginStart="8dp"
             android:enabled="false" />
+    </LinearLayout>
+
+    <!-- 县级审核面板 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="#FEF3C7"
+        android:layout_marginTop="1dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="区县:"
+            android:textSize="12sp"
+            android:textColor="#92400E" />
+
+        <Spinner
+            android:id="@+id/spinnerCounty"
+            android:layout_width="100dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_spinner"
+            android:padding="4dp" />
+
+        <Button
+            android:id="@+id/btnCountyAudit"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginStart="12dp"
+            android:text="县级审核"
+            android:textSize="11sp"
+            android:backgroundTint="#F59E0B"
+            android:textColor="@android:color/white"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp" />
+
+        <Button
+            android:id="@+id/btnStopCountyAudit"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:text="停止"
+            android:textSize="11sp"
+            android:backgroundTint="#EF4444"
+            android:textColor="@android:color/white"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:enabled="false" />
+
+        <TextView
+            android:id="@+id/tvCountyStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text=""
+            android:textSize="11sp"
+            android:textColor="#92400E" />
     </LinearLayout>
 
     <!-- Tab 切换 -->

@@ -47,16 +47,17 @@ public class ShuyunFragment extends Fragment {
 
     // UI控件
     private TextView tvShuyunStatus, tvPendingCount, tvProcessingCount, tvLog, tvCurrentTime, tvLoginStatus;
-    private TextView tvPcLoginStatus, tvAppLoginStatus;
+    private TextView tvPcLoginStatus, tvAppLoginStatus, tvCountyStatus;
     private CheckBox cbAutoAccept, cbAutoRevert;
     private Button btnStartShuyun, btnStopShuyun, btnLogin, btnRefreshCaptcha;
+    private Button btnCountyAudit, btnStopCountyAudit;
     private ImageView ivAutoAcceptInfo, ivAutoRevertInfo, ivCaptcha;
     private EditText etImgcode;
     private TabLayout tabLayoutShuyun;
     private RecyclerView rvPending, rvProcessing;
     private ScrollView svLog;
     private View tvEmpty;
-    private Spinner spinnerAccount;
+    private Spinner spinnerAccount, spinnerCounty;
 
     // 验证码相关
     private String currentPcIp = "";
@@ -88,6 +89,11 @@ public class ShuyunFragment extends Fragment {
     private boolean isPcLoggedIn = false;
     private boolean isAppLoggedIn = false;
 
+    // 县级审核状态
+    private volatile boolean isCountyRunning = false;
+    private Thread countyThread;
+    private int selectedCountyIndex = 0; // 选中的区县索引
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -100,6 +106,7 @@ public class ShuyunFragment extends Fragment {
 
         bindViews(view);
         setupAccountSpinner();
+        setupCountySpinner();
         setupRecyclerViews();
         setupListeners();
         loadConfig();
@@ -159,6 +166,11 @@ public class ShuyunFragment extends Fragment {
         ivCaptcha = view.findViewById(R.id.ivCaptcha);
         etImgcode = view.findViewById(R.id.etImgcode);
         btnRefreshCaptcha = view.findViewById(R.id.btnRefreshCaptcha);
+        // 县级审核相关控件
+        spinnerCounty = view.findViewById(R.id.spinnerCounty);
+        btnCountyAudit = view.findViewById(R.id.btnCountyAudit);
+        btnStopCountyAudit = view.findViewById(R.id.btnStopCountyAudit);
+        tvCountyStatus = view.findViewById(R.id.tvCountyStatus);
     }
 
     private void setupAccountSpinner() {
@@ -185,6 +197,41 @@ public class ShuyunFragment extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 selectedAccountIndex = 0;
+            }
+        });
+    }
+
+    private void setupCountySpinner() {
+        // 区县数组
+        String[] counties = new String[]{
+            "市区(36745)",
+            "其他(31950)"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            counties
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCounty.setAdapter(adapter);
+
+        spinnerCounty.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedCountyIndex = position;
+                // 更新Session中的区县经理代号
+                Session s = Session.get();
+                if (position == 0) {
+                    s.countyManagerCode = "36745";
+                } else {
+                    s.countyManagerCode = "31950";
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedCountyIndex = 0;
             }
         });
     }
@@ -267,6 +314,10 @@ public class ShuyunFragment extends Fragment {
         // 提示图标点击事件
         ivAutoAcceptInfo.setOnClickListener(v -> showAutoAcceptInfo());
         ivAutoRevertInfo.setOnClickListener(v -> showAutoRevertInfo());
+
+        // 县级审核按钮
+        btnCountyAudit.setOnClickListener(v -> startCountyAudit());
+        btnStopCountyAudit.setOnClickListener(v -> stopCountyAudit());
     }
 
     private void showAutoAcceptInfo() {
@@ -643,6 +694,140 @@ public class ShuyunFragment extends Fragment {
     private void checkAndAutoRevert() {
         // TODO: 根据实际接口实现自动回单逻辑
         appendLog("检查处理中工单...");
+    }
+
+    // ========== 县级审核功能 ==========
+    private void startCountyAudit() {
+        // 检查PC端登录
+        if (!isPcLoggedIn || pcToken.isEmpty()) {
+            Toast.makeText(getContext(), "请先登录PC端", Toast.LENGTH_SHORT).show();
+            appendLog("县级审核需要PC端登录");
+            return;
+        }
+
+        if (isCountyRunning) {
+            Toast.makeText(getContext(), "县级审核已在运行中", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 获取区县经理代号
+        Session s = Session.get();
+        String userId = s.countyManagerCode;
+        if (userId.isEmpty()) {
+            userId = "36745"; // 默认市区
+        }
+
+        isCountyRunning = true;
+        btnCountyAudit.setEnabled(false);
+        btnCountyAudit.setText("审核中...");
+        btnStopCountyAudit.setEnabled(true);
+        tvCountyStatus.setText("正在获取工单...");
+
+        appendLog("县级审核已启动，区县经理代号: " + userId);
+
+        // 启动县级审核线程
+        countyThread = new Thread(() -> {
+            while (isCountyRunning) {
+                try {
+                    // 获取待审核工单列表
+                    mainHandler.post(() -> tvCountyStatus.setText("正在获取工单..."));
+                    String jsonStr = ShuyunApi.getCountyTaskList(pcToken, userId);
+                    List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
+
+                    if (taskList.isEmpty()) {
+                        appendLog("县级待审核工单为空");
+                        mainHandler.post(() -> tvCountyStatus.setText("待审: 0"));
+                        // 等待下次检查（45-105秒随机）
+                        int sleepTime = (int) (Math.random() * 60000) + 45000;
+                        Thread.sleep(sleepTime);
+                        continue;
+                    }
+
+                    appendLog("发现县级待审核工单: " + taskList.size() + " 个");
+                    mainHandler.post(() -> tvCountyStatus.setText("待审: " + taskList.size()));
+
+                    // 遍历并审核
+                    for (int i = 0; i < taskList.size() && isCountyRunning; i++) {
+                        ShuyunApi.CountyTaskInfo task = taskList.get(i);
+
+                        // 仿生延迟：基础2-6秒
+                        int delay = (int) (Math.random() * 4000) + 2000;
+                        // 每3条额外4-8秒
+                        if (i > 0 && i % 3 == 0) {
+                            delay += (int) (Math.random() * 4000) + 4000;
+                        }
+
+                        final int currentIndex = i;
+                        mainHandler.post(() -> {
+                            tvCountyStatus.setText("审核中 " + (currentIndex + 1) + "/" + taskList.size());
+                            appendLog("等待 " + delay / 1000 + " 秒后审核: " + task.station_name);
+                        });
+
+                        Thread.sleep(delay);
+
+                        if (!isCountyRunning) break;
+
+                        // 提交审核
+                        String result = ShuyunApi.submitCountyAudit(
+                            pcToken,
+                            task.orderNum,
+                            task.jobInstId,
+                            task.flowInstId,
+                            task.jobId,
+                            task.workInstId,
+                            task.flowId,
+                            userId
+                        );
+
+                        if (ShuyunApi.isSuccess(result)) {
+                            appendLog("✓ 审核通过: " + task.station_name + " (" + task.orderNum + ")");
+                        } else {
+                            appendLog("✗ 审核失败: " + task.station_name + ", 返回: " + result);
+                        }
+                    }
+
+                    // 本轮审核完成，等待下一轮
+                    if (isCountyRunning) {
+                        int sleepTime = (int) (Math.random() * 60000) + 45000;
+                        appendLog("本轮审核完成，等待 " + sleepTime / 1000 + " 秒后下一轮...");
+                        Thread.sleep(sleepTime);
+                    }
+
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Exception e) {
+                    appendLog("县级审核异常: " + e.getMessage());
+                    try {
+                        Thread.sleep(30000);
+                    } catch (InterruptedException ex) {
+                        break;
+                    }
+                }
+            }
+
+            // 审核结束
+            mainHandler.post(() -> {
+                btnCountyAudit.setEnabled(true);
+                btnCountyAudit.setText("县级审核");
+                btnStopCountyAudit.setEnabled(false);
+                tvCountyStatus.setText("");
+                appendLog("县级审核已停止");
+            });
+        });
+        countyThread.start();
+    }
+
+    private void stopCountyAudit() {
+        isCountyRunning = false;
+        if (countyThread != null) {
+            countyThread.interrupt();
+            countyThread = null;
+        }
+        btnCountyAudit.setEnabled(true);
+        btnCountyAudit.setText("县级审核");
+        btnStopCountyAudit.setEnabled(false);
+        tvCountyStatus.setText("");
+        appendLog("正在停止县级审核...");
     }
 
     private void refreshTaskList() {

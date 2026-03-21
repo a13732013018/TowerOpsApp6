@@ -619,6 +619,152 @@ public class ShuyunApi {
     }
 
     // =====================================================================
+    // 8. 县级审核接口（PC端API）
+    // =====================================================================
+    /**
+     * 获取县级待审核工单列表
+     * @param pcToken PC端登录Token
+     * @param userId 区县经理代号（36745市区/31950其他）
+     * @return 工单列表JSON
+     */
+    public static String getCountyTaskList(String pcToken, String userId) {
+        String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
+                + "?page=1"
+                + "&limit=10"
+                + "&userId=" + userId
+                + "&flowId=1025,1054,1055,1056,1131,1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1137,1143,1063"
+                + "&orderType="
+                + "&xmlx="
+                + "&area="
+                + "&cityArea=";
+
+        String headers = buildPcApiHeader(pcToken);
+        try {
+            String result = HttpUtil.get(url, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 解析县级待审核工单列表
+     * @param jsonStr API返回的JSON
+     * @return 工单列表
+     */
+    public static List<CountyTaskInfo> parseCountyTaskList(String jsonStr) {
+        List<CountyTaskInfo> list = new ArrayList<>();
+        try {
+            JSONObject root = new JSONObject(jsonStr);
+            JSONObject data = root.optJSONObject("data");
+            if (data != null) {
+                JSONArray rows = data.optJSONArray("rows");
+                if (rows != null) {
+                    for (int i = 0; i < rows.length(); i++) {
+                        JSONObject item = rows.getJSONObject(i);
+                        CountyTaskInfo info = new CountyTaskInfo();
+                        info.orderNum = item.optString("orderNum", "");
+                        info.req_deal_limit = item.optString("req_deal_limit", "");
+                        info.station_code = item.optString("station_code", "");
+                        info.req_comp_time = item.optString("req_comp_time", "");
+                        info.flowInstId = item.optString("flowInstId", "");
+                        info.city_name = item.optString("city_name", "");
+                        info.workInstId = item.optString("workInstId", "");
+                        info.data_name = item.optString("data_name", "");
+                        info.rwkssj_time = item.optString("rwkssj_time", "");
+                        info.flowId = item.optString("flowId", "");
+                        info.order_type = item.optString("order_type", "");
+                        info.jobName = item.optString("jobName", "");
+                        info.station_name = item.optString("station_name", "");
+                        info.relaType = item.optString("relaType", "");
+                        info.flowInstName = item.optString("flowInstName", "");
+                        info.flowName = item.optString("flowName", "");
+                        info.jobInstId = item.optString("jobInstId", "");
+                        info.jobId = item.optString("jobId", "");
+                        list.add(info);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * 县级审核通过
+     * @param pcToken PC端登录Token
+     * @param orderNum 工单编号
+     * @param jobInstId 任务实例ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @param userId 区县经理代号
+     * @return 审核结果
+     */
+    public static String submitCountyAudit(String pcToken, String orderNum, String jobInstId, 
+            String flowInstId, String jobId, String workInstId, String flowId, String userId) {
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+
+        // 计算nextJobAndUser：根据jobId前缀
+        String jobPrefix = jobId.contains("_") ? jobId.substring(0, jobId.indexOf("_")) : jobId;
+        String nextJobAndUser = jobPrefix + "_003@12101,12102,12104,12108,12376,22979,30264,37493,12107,37614,37881,12103,12106,12120,12101,12103";
+
+        // JSON格式请求体
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"userId\":\"" + userId + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"dealContent\":\"" + "通过" + "\","
+                + "\"operType\":\"" + "01" + "\","
+                + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
+                + "\"copyUsers\":\"" + "" + "\"}";
+
+        String headers = buildPcJsonHeader(post.length());
+        // 需要添加Authorization头
+        headers = headers.replace("Content-Type: application/json;charset=UTF-8\n", 
+                "Content-Type: application/json;charset=UTF-8\n"
+                + "Authorization: " + pcToken + "\n");
+
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 县级审核工单信息封装
+     */
+    public static class CountyTaskInfo {
+        public String orderNum = "";
+        public String req_deal_limit = "";
+        public String station_code = "";
+        public String req_comp_time = "";
+        public String flowInstId = "";
+        public String city_name = "";
+        public String workInstId = "";
+        public String data_name = "";
+        public String rwkssj_time = "";
+        public String flowId = "";
+        public String order_type = "";
+        public String jobName = "";
+        public String station_name = "";
+        public String relaType = "";
+        public String flowInstName = "";
+        public String flowName = "";
+        public String jobInstId = "";
+        public String jobId = "";
+    }
+
+    // =====================================================================
     // PC端API Header
     // =====================================================================
     private static String buildPcApiHeader(String token) {
