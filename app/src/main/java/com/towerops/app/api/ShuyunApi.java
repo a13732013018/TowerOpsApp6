@@ -457,6 +457,27 @@ public class ShuyunApi {
     // 工具方法
     // =====================================================================
 
+    /**
+     * 判断API调用是否成功
+     */
+    public static boolean isSuccess(String jsonStr) {
+        if (jsonStr == null || jsonStr.isEmpty()) return false;
+        try {
+            JSONObject root = new JSONObject(jsonStr);
+            // 根据不同接口判断success字段
+            if (root.has("success")) {
+                return root.getBoolean("success");
+            }
+            if (root.has("code")) {
+                return "200".equals(root.getString("code")) || "0".equals(root.getString("code"));
+            }
+            // data字段存在即认为成功
+            return root.has("data");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private static String buildPcHeader() {
         return "Accept: application/json, text/plain, */*\n"
                 + "Accept-Language: zh-CN,zh;q=0.9\n"

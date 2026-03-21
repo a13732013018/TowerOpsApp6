@@ -58,154 +58,77 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="12dp"
         android:background="@android:color/white"
-        android:layout_marginTop="1dp">
+        android:layout_marginTop="1dp"
+        android:gravity="center_vertical">
 
-        <!-- 第一行：账号选择和登录按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="登录:"
+            android:textSize="13sp"
+            android:textColor="#333333" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="账号:"
-                android:textSize="13sp"
-                android:textColor="#333333" />
-
-            <Spinner
-                android:id="@+id/spinnerAccount"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_spinner"
-                android:padding="8dp" />
-
-            <Button
-                android:id="@+id/btnLogin"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="同时登录PC+APP"
-                android:textSize="12sp"
-                android:backgroundTint="#10B981"
-                android:textColor="@android:color/white"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
-
-        <!-- 第二行：验证码输入（PC端需要） -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvPcLoginStatus"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical">
+            android:text="PC端: 未登录"
+            android:textSize="12sp"
+            android:textColor="#EF4444"
+            android:layout_marginStart="8dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="验证码:"
-                android:textSize="12sp"
-                android:textColor="#666666" />
-
-            <EditText
-                android:id="@+id/etImgcode"
-                android:layout_width="80dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="计算结果"
-                android:textSize="13sp"
-                android:textColor="#333333"
-                android:gravity="center"
-                android:inputType="numberSigned"
-                android:maxLength="6"
-                android:padding="6dp" />
-
-            <ImageView
-                android:id="@+id/ivCaptcha"
-                android:layout_width="80dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="8dp"
-                android:background="#F3F4F6"
-                android:scaleType="fitCenter"
-                android:padding="2dp"
-                android:src="@android:drawable/ic_menu_gallery" />
-
-            <Button
-                android:id="@+id/btnRefreshCaptcha"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_marginStart="8dp"
-                android:text="刷新"
-                android:textSize="11sp"
-                android:backgroundTint="#6B7280"
-                android:textColor="@android:color/white"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp" />
-        </LinearLayout>
-
-        <!-- 第三行：PC端和APP端登录状态 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvAppLoginStatus"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical">
+            android:text="APP端: 未登录"
+            android:textSize="12sp"
+            android:textColor="#EF4444"
+            android:layout_marginStart="12dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PC端:"
-                android:textSize="12sp"
-                android:textColor="#666666" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-            <TextView
-                android:id="@+id/tvPcLoginStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="未登录"
-                android:textSize="12sp"
-                android:textColor="#EF4444"
-                android:layout_marginStart="4dp" />
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="同时登录PC+APP"
+            android:textSize="12sp"
+            android:backgroundTint="#10B981"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
-            <View
-                android:layout_width="20dp"
-                android:layout_height="0dp" />
+    <!-- 登录状态 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@android:color/white"
+        android:layout_marginTop="1dp"
+        android:gravity="center_vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="APP端:"
-                android:textSize="12sp"
-                android:textColor="#666666" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="状态:"
+            android:textSize="12sp"
+            android:textColor="#666666" />
 
-            <TextView
-                android:id="@+id/tvAppLoginStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="未登录"
-                android:textSize="12sp"
-                android:textColor="#EF4444"
-                android:layout_marginStart="4dp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/tvLoginStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="未登录"
-                android:textSize="12sp"
-                android:textColor="#EF4444" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvLoginStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="未登录"
+            android:textSize="12sp"
+            android:textColor="#EF4444"
+            android:layout_marginStart="8dp" />
     </LinearLayout>
 
     <!-- 控制面板 -->
@@ -215,7 +138,7 @@
         android:orientation="horizontal"
         android:padding="12dp"
         android:background="@android:color/white"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="8dp"
         android:gravity="center_vertical">
 
         <LinearLayout
@@ -231,14 +154,6 @@
                 android:text="自动接单"
                 android:textSize="13sp"
                 android:checked="true" />
-
-            <ImageView
-                android:id="@+id/ivAutoAcceptInfo"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="4dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:tint="#9CA3AF" />
         </LinearLayout>
 
         <LinearLayout
@@ -255,14 +170,6 @@
                 android:text="自动回单"
                 android:textSize="13sp"
                 android:checked="true" />
-
-            <ImageView
-                android:id="@+id/ivAutoRevertInfo"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="4dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:tint="#9CA3AF" />
         </LinearLayout>
 
         <View
