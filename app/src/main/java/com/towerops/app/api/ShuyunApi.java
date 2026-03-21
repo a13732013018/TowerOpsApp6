@@ -112,7 +112,85 @@ public class ShuyunApi {
     }
 
     // =====================================================================
-    // 3. APP版登录
+    // 3. 同时登录PC端和APP端
+    // =====================================================================
+    /**
+     * 同时登录PC端和APP端（使用指定账号）
+     * @param userIndex 账号索引（0或1）
+     * @return 包含PC和APP登录结果的封装对象
+     */
+    public static ShuyunDualLoginResult loginDual(int userIndex) {
+        ShuyunDualLoginResult result = new ShuyunDualLoginResult();
+
+        // 获取账号信息
+        String user, pass, imei;
+        if (userIndex == 1) {
+            user = BACKUP_USER;
+            pass = BACKUP_PASS;
+            imei = BACKUP_IMEI;
+        } else {
+            user = DEFAULT_USER;
+            pass = DEFAULT_PASS;
+            imei = DEFAULT_IMEI;
+        }
+
+        // 1. 先获取验证码图片和IP（PC端）
+        String imgcodeResult = getImgcode();
+        String pcIp = parseIp(imgcodeResult);
+
+        if (pcIp.isEmpty()) {
+            result.errorMsg = "获取PC端IP失败";
+            return result;
+        }
+        result.pcIp = pcIp;
+
+        // 2. PC端登录（使用固定验证码 "1234"，实际使用时需要用户输入）
+        // 注意：PC端需要图形验证码，这里用默认值，实际应该让用户输入
+        String pcLoginResult = loginByPc(user, pass, "1234", pcIp);
+        String pcToken = parsePcToken(pcLoginResult);
+
+        if (pcToken.isEmpty()) {
+            // PC端登录可能需要验证码，暂时跳过或用备用方式
+            result.pcToken = "";
+            result.pcLoginSuccess = false;
+        } else {
+            result.pcToken = pcToken;
+            result.pcLoginSuccess = true;
+        }
+
+        // 3. APP端登录
+        String appLoginResult = loginByApp(user, pass, imei);
+        ShuyunLoginResult appLogin = parseAppLogin(appLoginResult);
+
+        if (appLogin.success) {
+            result.appToken = appLogin.token;
+            result.appUserId = appLogin.userId;
+            result.appLoginSuccess = true;
+        } else {
+            result.appLoginSuccess = false;
+            result.errorMsg = "APP登录失败";
+        }
+
+        result.success = result.appLoginSuccess; // APP登录成功即认为整体成功
+        return result;
+    }
+
+    /**
+     * 同时登录结果封装
+     */
+    public static class ShuyunDualLoginResult {
+        public boolean success = false;
+        public boolean pcLoginSuccess = false;
+        public boolean appLoginSuccess = false;
+        public String pcToken = "";
+        public String pcIp = "";
+        public String appToken = "";
+        public String appUserId = "";
+        public String errorMsg = "";
+    }
+
+    // =====================================================================
+    // APP版登录（原有方法保留）
     // =====================================================================
     /**
      * APP版登录（用户名+密码+IMEI）

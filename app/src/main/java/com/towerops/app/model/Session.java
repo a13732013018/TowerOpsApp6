@@ -62,14 +62,24 @@ public class Session {
 
     // ---------- 数运工单相关 ----------
     /**
-     * 数运APP登录token
+     * 数运APP端登录token
      */
-    public volatile String shuyunToken = "";
+    public volatile String shuyunAppToken = "";
 
     /**
      * 数运APP用户ID
      */
-    public volatile String shuyunUserId = "";
+    public volatile String shuyunAppUserId = "";
+
+    /**
+     * 数运PC端登录token
+     */
+    public volatile String shuyunPcToken = "";
+
+    /**
+     * 数运PC端登录IP（用于验证）
+     */
+    public volatile String shuyunPcIp = "";
 
     /**
      * 数运账号信息（用于APP登录）
