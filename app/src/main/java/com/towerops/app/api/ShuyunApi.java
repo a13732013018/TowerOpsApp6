@@ -895,6 +895,237 @@ public class ShuyunApi {
     }
 
     // =====================================================================
+    // 9. 市级审核接口（PC端API）
+    // =====================================================================
+    // 市级审核用户ID
+    private static final String CITY_AUDIT_USER_ID = "12376";
+
+    /**
+     * 获取市级待审核工单列表
+     * @param pcToken PC端登录Token
+     * @param cityArea 区县代码（如330326）
+     * @return 工单列表JSON
+     */
+    public static String getCityTaskList(String pcToken, String cityArea) {
+        String url = PC_BASE + "/api/flowable/flowable/task/listTodo";
+
+        // POST body参数
+        String post = "page=1"
+                + "&limit=10"
+                + "&userId=" + CITY_AUDIT_USER_ID
+                + "&flowId="
+                + "&orderType="
+                + "&xmlx="
+                + "&area=330300"
+                + "&cityArea=" + cityArea;
+
+        String headers = buildCountyApiHeader(pcToken);
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 获取市级已办工单列表
+     * @param pcToken PC端登录Token
+     * @param cityArea 区县代码（如330326）
+     * @return 已办工单列表JSON
+     */
+    public static String getCityFinishedList(String pcToken, String cityArea) {
+        String url = PC_BASE + "/api/flowable/flowable/task/listToFinish";
+
+        String post = "page=1"
+                + "&limit=30"
+                + "&userId=" + CITY_AUDIT_USER_ID
+                + "&flowId="
+                + "&orderType="
+                + "&area=330300"
+                + "&cityArea=" + cityArea;
+
+        String headers = buildCountyApiHeader(pcToken);
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 延期判断接口
+     * @param pcToken PC端登录Token
+     * @param orderNum 工单编号
+     * @param jobInstId 任务实例ID
+     * @param relaType 关联类型
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @return 延期判断结果JSON
+     */
+    public static String checkDelay(String pcToken, String orderNum, String jobInstId,
+            String relaType, String flowInstId, String jobId, String workInstId, String flowId) {
+        String url = PC_BASE + "/api/flowable/orderInfo/showWorkInfo";
+
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"spec\":\"" + relaType + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"workType\":\"D\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"userId\":\"" + CITY_AUDIT_USER_ID + "\","
+                + "\"requireId\":\"" + orderNum + "\","
+                + "\"gotoType\":\"taskTodo\"}";
+
+        String headers = buildCountyApiHeader(pcToken);
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+                "Content-Type: application/json;charset=UTF-8");
+
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 解析延期判断结果
+     * @param jsonStr API返回的JSON
+     * @return 延期判断结果：自动审核/省监控审核/铁塔省监控
+     */
+    public static String parseDelayResult(String jsonStr) {
+        try {
+            // 从返回的JSON中提取延期判断结果
+            // 根据易语言代码，返回值包含 jobId_ID 和延期判断结果
+            if (jsonStr == null || jsonStr.isEmpty()) {
+                return "自动审核"; // 默认走普通审核
+            }
+            JSONObject root = new JSONObject(jsonStr);
+            // 检查是否包含延期相关字段
+            if (root.has("data")) {
+                JSONObject data = root.optJSONObject("data");
+                if (data != null) {
+                    String jobId = data.optString("jobId", "");
+                    // 根据jobId判断审核类型
+                    if (jobId.contains("延期") || jobId.contains("省监控")) {
+                        return "省监控审核";
+                    }
+                }
+            }
+            // 检查是否包含特定关键字
+            if (jsonStr.contains("省监控") || jsonStr.contains("延期")) {
+                return "省监控审核";
+            }
+            return "自动审核";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "自动审核";
+        }
+    }
+
+    /**
+     * 市级普通审核通过
+     * @param pcToken PC端登录Token
+     * @param orderNum 工单编号
+     * @param jobInstId 任务实例ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @param jobId_ID 延期判断返回的jobId
+     * @return 审核结果
+     */
+    public static String submitCityAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+
+        // JSON格式请求体
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"userId\":\"" + CITY_AUDIT_USER_ID + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"dealContent\":\"" + "通过" + "\","
+                + "\"operType\":\"" + "01" + "\","
+                + "\"nextJobAndUser\":\"" + jobId_ID + "@10023\","
+                + "\"copyUsers\":\"" + "" + "\"}";
+
+        String headers = buildCountyApiHeader(pcToken);
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+                "Content-Type: application/json;charset=UTF-8");
+
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 市级延期审核通过
+     * @param pcToken PC端登录Token
+     * @param orderNum 工单编号
+     * @param jobInstId 任务实例ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @param jobId_ID 延期判断返回的jobId
+     * @return 审核结果
+     */
+    public static String submitCityDelayAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+
+        // 延期审核的 nextJobAndUser 更长，包含更多审核人
+        String nextJobAndUser = jobId_ID + "@11875,11881,12173,12178,12182,12187,12190,12191,12192,12195,12200,12201,12204,12205,22990,24091,29719,29721,29723,30170,30172,31190,31254,31255,31741,31943,32166,32269,32270,32743,33012,33323,33520,34567,34812,34999,35822,35823,35887,35910,36073,36074,36075,36119,37169,37170,37171,37208,37209,37210,37211,37229,37256,37257,37258,37272,37273,37319,37364,37383,37718,37958,37959,38097,38381,38572,38620,39304,39482,39717,40414,40458,40565,40566,40752,40883,40884,40885,40954,40966,40967,40984,41031,41188,41246,41247,41317,41350,41390,41541";
+
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"userId\":\"" + CITY_AUDIT_USER_ID + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"dealContent\":\"" + "通过" + "\","
+                + "\"operType\":\"" + "01" + "\","
+                + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
+                + "\"copyUsers\":\"" + "" + "\"}";
+
+        String headers = buildCountyApiHeader(pcToken);
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+                "Content-Type: application/json;charset=UTF-8");
+
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 市级审核工单信息封装（复用CountyTaskInfo结构）
+     */
+    public static class CityTaskInfo extends CountyTaskInfo {
+        public String shsj_time = ""; // 审核时间
+    }
+
+    // =====================================================================
     // PC端API Header
     // =====================================================================
     private static String buildPcApiHeader(String token) {
