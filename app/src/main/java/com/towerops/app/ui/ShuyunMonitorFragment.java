@@ -484,11 +484,17 @@ public class ShuyunMonitorFragment extends Fragment {
         if (btnStartShuyun != null) btnStartShuyun.setEnabled(false);
         if (btnStopShuyun != null) btnStopShuyun.setEnabled(true);
         if (tvShuyunStatus != null) {
-            tvShuyunStatus.setText("监控中");
+            tvShuyunStatus.setText("监控运行中");
             tvShuyunStatus.setTextColor(0xFF10B981);
         }
 
-        appendLog("监控已启动");
+        // 按钮禁用并修改标题
+        if (btnStartShuyun != null) {
+            btnStartShuyun.setEnabled(false);
+            btnStartShuyun.setText("监控中");
+        }
+
+        appendLog("监控已启动，已登录APP账号");
 
         if (callback != null) {
             callback.onMonitorStatusChanged(true);
@@ -498,7 +504,7 @@ public class ShuyunMonitorFragment extends Fragment {
         monitorThread = new Thread(() -> {
             while (isRunning && getContext() != null) {
                 try {
-                    final String statusText = "监控中...";
+                    final String statusText = "监控运行中...";
                     mainHandler.post(() -> {
                         if (tvShuyunStatus != null) tvShuyunStatus.setText(statusText);
                     });
@@ -535,12 +541,16 @@ public class ShuyunMonitorFragment extends Fragment {
             mainHandler.post(() -> {
                 if (getContext() == null) return;
                 isRunning = false;
-                if (btnStartShuyun != null) btnStartShuyun.setEnabled(true);
+                if (btnStartShuyun != null) {
+                    btnStartShuyun.setEnabled(true);
+                    btnStartShuyun.setText("启动监控");
+                }
                 if (btnStopShuyun != null) btnStopShuyun.setEnabled(false);
                 if (tvShuyunStatus != null) {
                     tvShuyunStatus.setText("监控已停止");
                     tvShuyunStatus.setTextColor(0xFF6B7280);
                 }
+                appendLog("监控已停止");
 
                 if (callback != null) {
                     callback.onMonitorStatusChanged(false);

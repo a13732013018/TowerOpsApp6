@@ -166,6 +166,7 @@ public class ShuyunAuditFragment extends Fragment {
 
         isCountyRunning = true;
         btnCountyAudit.setEnabled(false);
+        btnCountyAudit.setText("区县审核中");
         btnStopCountyAudit.setEnabled(true);
         updateStatus("审核中...");
 
@@ -175,6 +176,10 @@ public class ShuyunAuditFragment extends Fragment {
                     // 获取待审核工单列表
                     mainHandler.post(() -> updateStatus("获取工单中..."));
                     String jsonStr = ShuyunApi.getCountyTaskList(pcToken, userId);
+
+                    // 调试：输出原始JSON
+                    appendLog("原始响应: " + (jsonStr.length() > 200 ? jsonStr.substring(0, 200) + "..." : jsonStr));
+
                     List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
 
                     if (taskList.isEmpty()) {
@@ -254,6 +259,7 @@ public class ShuyunAuditFragment extends Fragment {
             mainHandler.post(() -> {
                 isCountyRunning = false;
                 btnCountyAudit.setEnabled(true);
+                btnCountyAudit.setText("开始区县审核");
                 btnStopCountyAudit.setEnabled(false);
                 updateStatus("已停止");
                 appendLog("县级审核已停止");
