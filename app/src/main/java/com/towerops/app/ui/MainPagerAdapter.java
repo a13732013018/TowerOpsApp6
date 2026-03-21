@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class MainPagerAdapter extends FragmentStateAdapter {
 
-    private static final int TAB_COUNT = 3;  // 增加智联工单Tab
+    private static final int TAB_COUNT = 4;  // 增加数运工单Tab
     private final List<Fragment> fragments = new ArrayList<>();
 
     public MainPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
@@ -33,6 +33,9 @@ public class MainPagerAdapter extends FragmentStateAdapter {
                 break;
             case 2:
                 fragment = new ZhilianFragment();  // 智联工单
+                break;
+            case 3:
+                fragment = new ShuyunFragment();   // 数运工单
                 break;
             default:
                 fragment = WorkOrderFragment.newInstance();

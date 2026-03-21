@@ -60,6 +60,29 @@ public class Session {
      */
     public volatile String zhilianConfig = "";
 
+    // ---------- 数运工单相关 ----------
+    /**
+     * 数运APP登录token
+     */
+    public volatile String shuyunToken = "";
+
+    /**
+     * 数运APP用户ID
+     */
+    public volatile String shuyunUserId = "";
+
+    /**
+     * 数运账号信息（用于APP登录）
+     * 格式：用户名|密码|imei 用 \u0001 分隔
+     */
+    public volatile String[] shuyunAccountConfig = new String[0];
+
+    /**
+     * 数运工单配置：enableAccept|enableRevert|minRevertDelay|maxRevertDelay
+     * 用 \u0001 分隔
+     */
+    public volatile String shuyunConfig = "";
+
     private static final String PREF_SESSION    = "session_prefs";
     private static final String KEY_APP_CONFIG  = "app_config";
     private static final String KEY_USERID      = "userid";
