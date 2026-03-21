@@ -41,8 +41,8 @@ public class ShuyunAuditFragment extends Fragment {
     private ScrollView svAuditLog;
 
     // 区县经理代号
-    private static final String[] COUNTY_CODES = {"36745", "31950"};
-    private static final String[] COUNTY_NAMES = {"平阳(36745)", "泰顺(31950)"};
+    private static final String[] COUNTY_CODES = {"330326", "330329", "330302", "330327", "330328", "330381", "330382", "330303", "330305", "330324", "330383"};
+    private static final String[] COUNTY_NAMES = {"平阳县(330326)", "泰顺县(330329)", "鹿城区(330302)", "苍南县(330327)", "文成县(330328)", "瑞安市(330381)", "乐清市(330382)", "龙湾区(330303)", "洞头区(330305)", "永嘉县(330324)", "龙港市(330383)"};
 
     // 主线程Handler
     private final Handler mainHandler = new Handler(Looper.getMainLooper());

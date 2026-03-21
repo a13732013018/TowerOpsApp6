@@ -637,12 +637,14 @@ public class ShuyunApi {
      * 获取智联待签收工单列表
      * @param pcToken PC端登录Token
      * @param userId 用户ID
-     * @param cityArea 区县代码（如330300）
+     * @param cityArea 区县代码（如330326）
      * @return 工单列表JSON
      */
     public static String getZhilianTaskList(String pcToken, String userId, String cityArea) {
-        String url = PC_BASE + "/api/flowable/flowable/task/listToSign"
-                + "?page=1"
+        String url = PC_BASE + "/api/flowable/flowable/task/listToSign";
+
+        // POST body参数（与易语言一致）
+        String post = "page=1"
                 + "&limit=10"
                 + "&flowId=1024,1124,1160,1220"
                 + "&orderType="
@@ -650,9 +652,9 @@ public class ShuyunApi {
                 + "&area=330300"
                 + "&cityArea=" + cityArea;
 
-        String headers = buildPcApiHeader(pcToken);
+        String headers = buildCountyApiHeader(pcToken);
         try {
-            String result = HttpUtil.get(url, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -704,18 +706,23 @@ public class ShuyunApi {
      * @param userId 用户ID
      * @return 接单结果
      */
-    public static String acceptZhilianTask(String pcToken, String workInstId, String orderNum, 
+    public static String acceptZhilianTask(String pcToken, String workInstId, String orderNum,
             String flowId, String jobId, String userId) {
         String url = PC_BASE + "/api/flowable/flowableFlow/updateWorkStatus";
 
-        // JSON格式请求体
+        // JSON格式请求体（与易语言一致）
         String post = "{\"workInstId\":\"" + workInstId + "\","
                 + "\"orderNum\":\"" + orderNum + "\","
                 + "\"flowId\":\"" + flowId + "\","
                 + "\"jobId\":\"" + jobId + "\","
                 + "\"userId\":\"" + userId + "\"}";
 
-        String headers = buildPcJsonHeader(post.length());
+        // 使用县级审核专用请求头（包含Authorization）
+        String headers = buildCountyApiHeader(pcToken);
+        // 改为JSON格式
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+                "Content-Type: application/json;charset=UTF-8");
+
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -831,9 +838,9 @@ public class ShuyunApi {
             String flowInstId, String jobId, String workInstId, String flowId, String userId) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
-        // 计算nextJobAndUser：根据jobId前缀（注意：易语言源码中12120后面是中文逗号）
+        // 计算nextJobAndUser：根据jobId前缀（注意：需要用英文逗号）
         String jobPrefix = jobId.contains("_") ? jobId.substring(0, jobId.indexOf("_")) : jobId;
-        String nextJobAndUser = jobPrefix + "_003@12101,12102,12104,12108,12376,22979,30264,37493,12107,37614,37881,12103,12106,12120，12101,12103";
+        String nextJobAndUser = jobPrefix + "_003@12101,12102,12104,12108,12376,22979,30264,37493,12107,37614,37881,12103,12106,12120,12101,12103";
 
         // JSON格式请求体（与易语言一致）
         String post = "{\"orderNum\":\"" + orderNum + "\","
