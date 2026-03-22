@@ -793,8 +793,8 @@ public class ShuyunAuditFragment extends Fragment {
      * 省监控审核回单（对已选择的市级工单进行归档）
      */
     private void doProvinceMonitorAudit() {
-        // 优先使用待办列表选中的工单
-        ShuyunApi.CountyTaskInfo selectedTask = selectedCityTodoTask != null ? selectedCityTodoTask : selectedCityFinishedTask;
+        // 优先使用省监控回单列表（lvCityFinishedList）选中的工单
+        ShuyunApi.CountyTaskInfo selectedTask = selectedCityFinishedTask != null ? selectedCityFinishedTask : selectedCityTodoTask;
 
         // 检查是否选择了工单
         if (selectedTask == null) {
@@ -977,8 +977,9 @@ public class ShuyunAuditFragment extends Fragment {
                 return;
             }
 
-            // 显示省监控工单：站名 + 工单号 + 当前环节
-            for (int i = 0; i < provinceMonitorTasks.size(); i++) {
+            // 显示省监控工单前3条：站名 + 工单号 + 当前环节
+            int count = Math.min(provinceMonitorTasks.size(), 3);
+            for (int i = 0; i < count; i++) {
                 ShuyunApi.CountyTaskInfo task = provinceMonitorTasks.get(i);
                 StringBuilder sb = new StringBuilder();
                 sb.append(i + 1).append(". ").append(task.station_name);
@@ -995,9 +996,9 @@ public class ShuyunAuditFragment extends Fragment {
                     android.R.layout.simple_list_item_1, displayList);
             lvCityTodoList.setAdapter(adapter);
 
-            // 同时更新TextView：站名 + 工单号 + 当前环节
+            // 同时更新TextView：站名 + 工单号 + 当前环节（前3条）
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < provinceMonitorTasks.size(); i++) {
+            for (int i = 0; i < count; i++) {
                 ShuyunApi.CountyTaskInfo task = provinceMonitorTasks.get(i);
                 sb.append(i + 1).append(". ").append(task.station_name);
                 if (task.orderNum != null && !task.orderNum.isEmpty()) {
@@ -1006,7 +1007,7 @@ public class ShuyunAuditFragment extends Fragment {
                 if (task.jobName != null && !task.jobName.isEmpty()) {
                     sb.append(" [").append(task.jobName).append("]");
                 }
-                if (i < provinceMonitorTasks.size() - 1) {
+                if (i < count - 1) {
                     sb.append("\n");
                 }
             }
