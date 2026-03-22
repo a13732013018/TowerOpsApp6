@@ -433,14 +433,9 @@ public class ShuyunAuditFragment extends Fragment {
                         mainHandler.post(() -> updateStatus("待审: 0"));
 
                         // 刷新已办列表显示（原来显示待办的区域现在显示已办数据）
-                        try {
-                            String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
-                            List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
-                            updateCityTodoList(finishedList);
-                            updateCityFinishedList(finishedList);
-                        } catch (Exception e) {
-                            // 忽略
-                        }
+                        // 复用已获取的 finishedList
+                        updateCityTodoList(finishedList);
+                        updateCityFinishedList(finishedList);
 
                         // 等待下次检查（50-100秒随机）
                         int sleepTime = (int) (Math.random() * 50000) + 50000;
@@ -525,13 +520,14 @@ public class ShuyunAuditFragment extends Fragment {
 
                     // 本轮审核完成，获取已办列表后等待下一轮
                     if (isCityRunning) {
-                        // 获取已办列表
-                        String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
-                        List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
-                        appendLog("已办: " + finishedList.size() + " 条");
+                        // 重新获取已办列表
+                        String finishedJson2 = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
+                        List<ShuyunApi.CountyTaskInfo> finishedList2 = ShuyunApi.parseCountyTaskList(finishedJson2);
+                        appendLog("已办: " + finishedList2.size() + " 条");
 
                         // 显示前3条到已办列表区域
-                        updateCityFinishedList(finishedList);
+                        updateCityTodoList(finishedList2);
+                        updateCityFinishedList(finishedList2);
 
                         int sleepTime = (int) (Math.random() * 50000) + 50000;
                         showCountdown("下次: ", sleepTime);
