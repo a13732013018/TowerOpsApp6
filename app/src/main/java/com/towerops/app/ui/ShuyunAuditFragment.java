@@ -41,7 +41,7 @@ public class ShuyunAuditFragment extends Fragment {
     private static final String TAG = "ShuyunAuditFragment";
 
     // UI控件
-    private TextView tvAuditLog, tvCityFinishedList, tvCityTodoList, tvAuditTitle;
+    private TextView tvAuditLog, tvCityFinishedList, tvCityTodoList;
     private Button btnCountyAudit, btnStopCountyAudit;
     private Button btnCityAudit, btnStopCityAudit;
     private Button btnProvinceAudit, btnStopProvinceAudit;
@@ -137,7 +137,6 @@ public class ShuyunAuditFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        tvAuditTitle = view.findViewById(R.id.tvAuditTitle);
         tvAuditLog = view.findViewById(R.id.tvAuditLog);
 
         btnCountyAudit = view.findViewById(R.id.btnCountyAudit);
@@ -263,7 +262,6 @@ public class ShuyunAuditFragment extends Fragment {
         btnCountyAudit.setText("区县审核中");
         btnStopCountyAudit.setEnabled(true);
         updateStatus("审核中...");
-        tvAuditTitle.setText("区县审核中");
 
         countyThread = new Thread(() -> {
             while (isCountyRunning) {
@@ -356,7 +354,6 @@ public class ShuyunAuditFragment extends Fragment {
                 btnCountyAudit.setText("区县审核");
                 btnStopCountyAudit.setEnabled(false);
                 updateStatus("已停止");
-                tvAuditTitle.setText("数运审核");
                 appendLog("县级审核已停止");
             });
         });
@@ -415,7 +412,6 @@ public class ShuyunAuditFragment extends Fragment {
         btnCityAudit.setText("市级审核中");
         btnStopCityAudit.setEnabled(true);
         updateStatus("市级审核中...");
-        tvAuditTitle.setText("市级审核中");
 
         cityThread = new Thread(() -> {
             while (isCityRunning) {
@@ -558,7 +554,6 @@ public class ShuyunAuditFragment extends Fragment {
                 btnCityAudit.setText("市级审核");
                 btnStopCityAudit.setEnabled(false);
                 updateStatus("已停止");
-                tvAuditTitle.setText("数运审核");
                 appendLog("市级审核已停止");
             });
         });
@@ -686,7 +681,6 @@ public class ShuyunAuditFragment extends Fragment {
         btnProvinceAudit.setText("省级审核中");
         btnStopProvinceAudit.setEnabled(true);
         updateStatus("省级审核中...");
-        tvAuditTitle.setText("省级审核中");
 
         provinceThread = new Thread(() -> {
             try {
@@ -781,7 +775,6 @@ public class ShuyunAuditFragment extends Fragment {
                 btnProvinceAudit.setText("省级审核");
                 btnStopProvinceAudit.setEnabled(false);
                 updateStatus("已完成");
-                tvAuditTitle.setText("数运审核");
                 appendLog("省级审核已完成");
             });
         });
