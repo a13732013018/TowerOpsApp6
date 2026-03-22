@@ -135,6 +135,62 @@ public class HttpUtil {
     }
 
     /**
+     * PUT 请求，返回响应体字符串
+     * 对应易语言 网页_访问_对象(url, 3, post, ...)
+     *
+     * @param url     目标地址
+     * @param put     PUT 请求体字符串
+     * @param headers 附加协议头
+     * @param cookie  Cookie 字符串
+     * @return 响应体，失败返回空字符串
+     */
+    public static String put(String url, String put, String headers, String cookie) {
+        try {
+            // 根据Content-Type自动选择MediaType
+            MediaType mediaType = FORM_TYPE; // 默认
+            if (headers != null && headers.contains("Content-Type: application/json")) {
+                mediaType = MediaType.parse("application/json;charset=UTF-8");
+            }
+            RequestBody body = RequestBody.create(put, mediaType);
+            Request.Builder builder = new Request.Builder()
+                    .url(url.trim())
+                    .put(body);
+
+            // 默认协议头
+            builder.header("User-Agent", "okhttp/4.10.0");
+            builder.header("Connection", "Keep-Alive");
+
+            // 附加 cookie
+            if (cookie != null && !cookie.isEmpty()) {
+                builder.header("Cookie", cookie);
+            }
+
+            // 解析自定义协议头
+            if (headers != null && !headers.isEmpty()) {
+                String[] lines = headers.split("\n");
+                for (String line : lines) {
+                    int idx = line.indexOf(": ");
+                    if (idx > 0) {
+                        String key = line.substring(0, idx).trim();
+                        String val = line.substring(idx + 2).trim();
+                        builder.header(key, val);
+                    }
+                }
+            }
+
+            Request request = builder.build();
+            try (Response response = CLIENT.newCall(request).execute()) {
+                if (response.body() != null) {
+                    return response.body().string();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
      * GET 请求，返回字节数组（用于图片等二进制内容）
      * 同时会自动将响应的 Set-Cookie 存入 CookieStore
      */
