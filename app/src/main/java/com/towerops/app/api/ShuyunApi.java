@@ -1122,29 +1122,36 @@ public class ShuyunApi {
 
     /**
      * 获取省级待审核工单列表
-     * 【核心】使用 PROVINCE_AUDIT_USER_ID = 32269，与市级审核完全相同的请求方式
+     * 【核心】使用 PROVINCE_AUDIT_USER_ID = 32269
+     * 【关键】使用POST请求，但body为空（Content-Length: 0），与浏览器开发者工具中看到的一致
      * @param pcToken PC端登录Token（Authorization）
      * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param cityArea 区县代码（如330326）
      * @return 工单列表JSON
      */
     public static String getProvinceTaskList(String pcToken, String cookieToken, String cityArea) {
-        // 【核心】与市级审核完全一致：URL和body都带参数，使用POST请求（form-urlencoded）
+        // 【核心】使用 PROVINCE_AUDIT_USER_ID (32269) 获取省级待办
+        String userId = PROVINCE_AUDIT_USER_ID;
+        
+        // 与易语言一致：limit=10
         String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
                 + "?page=1"
                 + "&limit=10"
-                + "&userId=" + PROVINCE_AUDIT_USER_ID
+                + "&userId=" + userId
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String post = "page=1&limit=10&userId=" + PROVINCE_AUDIT_USER_ID
-                + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
-
-        // 【核心】使用与市级审核相同的请求头
-        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        // 【核心】使用POST请求，但body为空（Content-Length: 0）
+        String headers = buildTaskListHeader(pcToken);
+        
+        System.out.println("[ShuyunApi] 省级待办请求 - userId: " + userId + ", cityArea: " + cityArea);
+        
         try {
-            String result = HttpUtil.post(url, post, headers, null);
+            // 【关键】使用 __EMPTY_BODY__ 标记发送空body POST请求
+            String result = HttpUtil.post(url, "__EMPTY_BODY__", headers, null);
+            System.out.println("[ShuyunApi] 省级待办返回长度: " + (result != null ? result.length() : 0));
             return result != null ? result : "";
         } catch (Exception e) {
+            System.err.println("[ShuyunApi] 省级待办请求异常: " + e.getMessage());
             e.printStackTrace();
             return "";
         }
