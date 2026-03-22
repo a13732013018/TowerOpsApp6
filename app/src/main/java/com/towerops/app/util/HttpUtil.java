@@ -33,9 +33,9 @@ public class HttpUtil {
      */
     public static String post(String url, String post, String headers, String cookie) {
         try {
-            // 根据Content-Type自动选择MediaType
+            // 根据Content-Type自动选择MediaType（兼容带charset的情况）
             MediaType mediaType = FORM_TYPE; // 默认
-            if (headers != null && headers.contains("Content-Type: application/json")) {
+            if (headers != null && headers.toLowerCase().contains("content-type: application/json")) {
                 mediaType = MediaType.parse("application/json;charset=UTF-8");
             }
             RequestBody body = RequestBody.create(post, mediaType);
@@ -146,9 +146,9 @@ public class HttpUtil {
      */
     public static String put(String url, String put, String headers, String cookie) {
         try {
-            // 根据Content-Type自动选择MediaType
+            // 根据Content-Type自动选择MediaType（兼容带charset的情况）
             MediaType mediaType = FORM_TYPE; // 默认
-            if (headers != null && headers.contains("Content-Type: application/json")) {
+            if (headers != null && headers.toLowerCase().contains("content-type: application/json")) {
                 mediaType = MediaType.parse("application/json;charset=UTF-8");
             }
             RequestBody body = RequestBody.create(put, mediaType);

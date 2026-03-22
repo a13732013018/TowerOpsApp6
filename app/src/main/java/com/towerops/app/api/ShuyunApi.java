@@ -870,11 +870,11 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        // 使用JSON PUT请求头（易语言 网页_访问_对象 第2参数=3 即PUT）
+        // 使用JSON POST请求头
         String headers = buildCountyJsonHeader(pcToken);
 
         try {
-            String result = HttpUtil.put(url, post, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -997,7 +997,7 @@ public class ShuyunApi {
         String headers = buildCountyJsonHeader(pcToken);
 
         try {
-            String result = HttpUtil.put(url, post, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -1072,7 +1072,7 @@ public class ShuyunApi {
         String headers = buildCountyJsonHeader(pcToken);
 
         try {
-            String result = HttpUtil.put(url, post, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -1114,7 +1114,7 @@ public class ShuyunApi {
         String headers = buildCountyJsonHeader(pcToken);
 
         try {
-            String result = HttpUtil.put(url, post, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
