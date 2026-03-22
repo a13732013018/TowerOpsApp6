@@ -951,11 +951,11 @@ public class ShuyunApi {
         // 与易语言一致：URL和body都带参数，使用POST请求（form-urlencoded）
         String url = PC_BASE + "/api/flowable/flowable/task/listToFinish"
                 + "?page=1"
-                + "&limit=30"
+                + "&limit=3"
                 + "&userId=" + CITY_AUDIT_USER_ID
                 + "&flowId=&orderType=&area=330300&cityArea=" + cityArea;
 
-        String post = "page=1&limit=30&userId=" + CITY_AUDIT_USER_ID
+        String post = "page=1&limit=3&userId=" + CITY_AUDIT_USER_ID
                 + "&flowId=&orderType=&area=330300&cityArea=" + cityArea;
 
         String headers = buildCountyApiHeader(pcToken);

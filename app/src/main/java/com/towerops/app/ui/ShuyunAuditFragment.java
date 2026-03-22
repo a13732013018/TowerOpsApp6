@@ -234,7 +234,6 @@ public class ShuyunAuditFragment extends Fragment {
                         final int currentIndex = i;
                         mainHandler.post(() -> {
                             updateStatus("审核中 " + (currentIndex + 1) + "/" + taskList.size());
-                            appendLog("等待 " + delay / 1000 + " 秒后审核: " + currentTask.station_name);
                         });
 
                         Thread.sleep(delay);
@@ -253,20 +252,22 @@ public class ShuyunAuditFragment extends Fragment {
                             userId
                         );
 
-                        // 输出完整审核结果用于调试
-                        appendLog("审核返回: " + (result != null ? result : "null"));
-
+                        // 精简日志
                         if (ShuyunApi.isSuccess(result)) {
-                            appendLog("✓ 审核通过: " + task.station_name + " (" + task.orderNum + ")");
+                            appendLog("✓ [" + (currentIndex + 1) + "/" + taskList.size() + "] 通过: " + task.station_name);
                         } else {
-                            appendLog("✗ 审核失败: " + task.station_name);
+                            appendLog("✗ [" + (currentIndex + 1) + "/" + taskList.size() + "] 失败: " + task.station_name);
                         }
                     }
 
                     // 本轮审核完成，等待下一轮
                     if (isCountyRunning) {
                         int sleepTime = (int) (Math.random() * 60000) + 45000;
-                        appendLog("本轮审核完成，等待 " + sleepTime / 1000 + " 秒后下一轮...");
+                        // 计算下次执行时间
+                        long nextRunTime = System.currentTimeMillis() + sleepTime;
+                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                        String nextTimeStr = sdf.format(new Date(nextRunTime));
+                        appendLog("下次: " + nextTimeStr + " (" + sleepTime / 1000 + "秒)");
                         Thread.sleep(sleepTime);
                     }
 
@@ -366,24 +367,19 @@ public class ShuyunAuditFragment extends Fragment {
                         final int currentIndex = i;
                         mainHandler.post(() -> {
                             updateStatus("审核中 " + (currentIndex + 1) + "/" + taskList.size());
-                            appendLog("等待 " + delay / 1000 + " 秒后审核: " + task.station_name);
                         });
 
                         Thread.sleep(delay);
 
                         if (!isCityRunning) break;
 
-                        // 延期判断
+                        // 延期判断（静默执行，不输出详细信息）
                         String delayResult = ShuyunApi.checkDelay(pcToken,
                             task.orderNum, task.jobInstId, task.relaType,
                             task.flowInstId, task.jobId, task.workInstId, task.flowId);
 
-                        appendLog("延期判断返回: " + (delayResult != null ? delayResult : "null"));
-
                         String delayType = ShuyunApi.parseDelayResult(delayResult);
                         String jobIdFromDelay = ShuyunApi.extractJobIdFromDelayResult(delayResult);
-
-                        appendLog("延期判断结果: " + delayType + ", jobId: " + jobIdFromDelay);
 
                         // 提交审核：两种都尝试，一种成功就OK
                         String result = "";
@@ -391,49 +387,41 @@ public class ShuyunAuditFragment extends Fragment {
 
                         if ("省监控审核".equals(delayType)) {
                             // 延期审核优先
-                            appendLog("执行延期审核，jobId: " + jobIdFromDelay);
                             result = ShuyunApi.submitCityDelayAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
-                            appendLog("延期审核返回: " + (result != null ? result : "null"));
 
                             if (ShuyunApi.isSuccess(result)) {
                                 auditSuccess = true;
                             } else {
                                 // 延期审核失败，尝试普通审核
-                                appendLog("延期审核失败，尝试普通审核");
                                 result = ShuyunApi.submitCityAudit(pcToken,
                                     task.orderNum, task.jobInstId, task.flowInstId,
                                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
-                                appendLog("普通审核返回: " + (result != null ? result : "null"));
                                 auditSuccess = ShuyunApi.isSuccess(result);
                             }
                         } else {
                             // 普通审核优先
-                            appendLog("执行普通审核，jobId: " + jobIdFromDelay);
                             result = ShuyunApi.submitCityAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
-                            appendLog("普通审核返回: " + (result != null ? result : "null"));
 
                             if (ShuyunApi.isSuccess(result)) {
                                 auditSuccess = true;
                             } else {
                                 // 普通审核失败，尝试延期审核
-                                appendLog("普通审核失败，尝试延期审核");
                                 result = ShuyunApi.submitCityDelayAudit(pcToken,
                                     task.orderNum, task.jobInstId, task.flowInstId,
                                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
-                                appendLog("延期审核返回: " + (result != null ? result : "null"));
                                 auditSuccess = ShuyunApi.isSuccess(result);
                             }
                         }
 
-                        // 最终结果
+                        // 最终结果（精简日志）
                         if (auditSuccess) {
-                            appendLog("✓ 审核通过: " + task.station_name);
+                            appendLog("✓ [" + (currentIndex + 1) + "/" + taskList.size() + "] 通过: " + task.station_name);
                         } else {
-                            appendLog("✗ 审核失败: " + task.station_name);
+                            appendLog("✗ [" + (currentIndex + 1) + "/" + taskList.size() + "] 失败: " + task.station_name);
                         }
                     }
 
@@ -442,13 +430,17 @@ public class ShuyunAuditFragment extends Fragment {
                         // 获取已办列表
                         String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
                         List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
-                        appendLog("市级已办: " + finishedList.size() + " 条");
+                        appendLog("已办: " + finishedList.size() + " 条");
 
-                        // 显示前5条到已办列表区域
+                        // 显示前3条到已办列表区域
                         updateCityFinishedList(finishedList);
 
                         int sleepTime = (int) (Math.random() * 50000) + 50000;
-                        appendLog("等待 " + sleepTime / 1000 + " 秒后下一轮...");
+                        // 计算下次执行时间
+                        long nextRunTime = System.currentTimeMillis() + sleepTime;
+                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+                        String nextTimeStr = sdf.format(new Date(nextRunTime));
+                        appendLog("下次: " + nextTimeStr + " (" + sleepTime / 1000 + "秒)");
                         Thread.sleep(sleepTime);
                     }
 
@@ -495,7 +487,7 @@ public class ShuyunAuditFragment extends Fragment {
             }
 
             StringBuilder sb = new StringBuilder();
-            int count = Math.min(finishedList.size(), 5);
+            int count = Math.min(finishedList.size(), 3);
             for (int i = 0; i < count; i++) {
                 ShuyunApi.CountyTaskInfo task = finishedList.get(i);
                 sb.append(i + 1).append(". ").append(task.station_name);
