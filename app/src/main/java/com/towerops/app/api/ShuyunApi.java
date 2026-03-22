@@ -1298,6 +1298,144 @@ public class ShuyunApi {
     }
 
     // =====================================================================
+    // 10. 省级审核接口（PC端API）
+    // =====================================================================
+    // 省级审核用户ID（固定）
+    private static final String PROVINCE_AUDIT_USER_ID = "32269";
+
+    // 省级普通审核 - 19个审核人ID
+    private static final String[] PROVINCE_NORMAL_AUDITORS = {
+        "39717", "37257", "35887", "41247", "41541", "11875", "11881", "12178", "12182", 
+        "12187", "12190", "12191", "12195", "12200", "22990", "24091", "29719", "31254", "40414"
+    };
+
+    // 省级延期审核 - 14个审核人ID
+    private static final String[] PROVINCE_DELAY_AUDITORS = {
+        "11875", "11881", "12178", "12182", "12187", "12190", "12191", "12195", 
+        "12200", "22990", "24091", "29719", "31254", "40414"
+    };
+
+    /**
+     * 获取省级待审核工单列表
+     * 对应易语言：子程序_省内省级自动审核 中的 listTodo 调用
+     * @param pcToken PC端登录token
+     * @param cityArea 区县代码（如330326）
+     * @return 工单列表JSON字符串
+     */
+    public static String getProvinceTaskList(String pcToken, String cityArea) {
+        String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
+                + "?page=1"
+                + "&limit=10"
+                + "&userId=" + PROVINCE_AUDIT_USER_ID
+                + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
+
+        String post = "page=1&limit=10&userId=" + PROVINCE_AUDIT_USER_ID
+                + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
+
+        String headers = buildCountyApiHeader(pcToken);
+
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 省级普通审核
+     * 对应易语言：子程序_省内省审核_普通审核
+     * @param pcToken PC端登录token
+     * @param orderNum 工单号
+     * @param jobInstId 任务实例ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @param jobId_ID 延期判断返回的jobId（从延期判断结果中提取）
+     * @return 审核结果
+     */
+    public static String submitProvinceAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+
+        // 随机选择审核人ID（19个）
+        String auditUserId = PROVINCE_NORMAL_AUDITORS[(int) (Math.random() * PROVINCE_NORMAL_AUDITORS.length)];
+
+        // nextJobAndUser 列表（包含所有可能的审核人）
+        String nextJobAndUser = jobId_ID + "@11875,11881,12173,12178,12182,12187,12190,12191,12192,12195,12200,12201,12204,12205,22990,24091,29719,29721,29723,30170,30172,31190,31254,31255,31741,31943,32166,32269,32270,32743,33012,33323,33520,34567,34812,34999,35822,35823,35887,35910,36073,36074,36075,36119,37169,37170,37171,37208,37209,37210,37211,37229,37256,37257,37258,37272,37273,37319,37364,37383,37718,37958,37959,38097,38381,38572,38620,39304,39482,39717,40414,40458,40565,40566,40752,40883,40884,40885,40954,40966,40967,40984,41031,41188,41246,41247,41317,41350,41390,41541";
+
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"userId\":\"" + auditUserId + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"dealContent\":\"" + "通过" + "\","
+                + "\"operType\":\"" + "01" + "\","
+                + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
+                + "\"copyUsers\":\"" + "" + "\"}";
+
+        String headers = buildCountyJsonHeader(pcToken);
+
+        try {
+            String result = HttpUtil.put(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 省级延期审核
+     * 对应易语言：子程序_省内省审核_延期审核
+     * @param pcToken PC端登录token
+     * @param orderNum 工单号
+     * @param jobInstId 任务实例ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param flowId 流程ID
+     * @param jobId_ID 延期判断返回的jobId（从延期判断结果中提取）
+     * @return 审核结果
+     */
+    public static String submitProvinceDelayAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+
+        // 随机选择审核人ID（14个）
+        String auditUserId = PROVINCE_DELAY_AUDITORS[(int) (Math.random() * PROVINCE_DELAY_AUDITORS.length)];
+
+        // nextJobAndUser 列表（与市级延期审核相同）
+        String nextJobAndUser = jobId_ID + "@11875,11881,12173,12178,12182,12187,12190,12191,12192,12195,12200,12201,12204,12205,22990,24091,29719,29721,29723,30170,30172,31190,31254,31255,31741,31943,32166,32269,32270,32743,33012,33323,33520,34567,34812,34999,35822,35823,35887,35910,36073,36074,36075,36119,37169,37170,37171,37208,37209,37210,37211,37229,37256,37257,37258,37272,37273,37319,37364,37383,37718,37958,37959,38097,38381,38572,38620,39304,39482,39717,40414,40458,40565,40566,40752,40883,40884,40885,40954,40966,40967,40984,41031,41188,41246,41247,41317,41350,41390,41541";
+
+        String post = "{\"orderNum\":\"" + orderNum + "\","
+                + "\"userId\":\"" + auditUserId + "\","
+                + "\"jobInstId\":\"" + jobInstId + "\","
+                + "\"flowInstId\":\"" + flowInstId + "\","
+                + "\"jobId\":\"" + jobId + "\","
+                + "\"workInstId\":\"" + workInstId + "\","
+                + "\"flowId\":\"" + flowId + "\","
+                + "\"dealContent\":\"" + "通过" + "\","
+                + "\"operType\":\"" + "01" + "\","
+                + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
+                + "\"copyUsers\":\"" + "" + "\"}";
+
+        String headers = buildCountyJsonHeader(pcToken);
+
+        try {
+            String result = HttpUtil.put(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    // =====================================================================
     // PC端API Header
     // =====================================================================
     private static String buildPcApiHeader(String token) {

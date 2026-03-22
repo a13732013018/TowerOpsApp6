@@ -592,6 +592,7 @@ public class ShuyunAuditFragment extends Fragment {
 
     /**
      * 启动省级审核（根据易语言逻辑：直接用32269获取待办）
+     * 注意：省级审核只能手动触发，不参与全自动审核
      */
     private void startProvinceAudit() {
         // 优先从 Session 获取登录信息
@@ -640,39 +641,92 @@ public class ShuyunAuditFragment extends Fragment {
             return;
         }
 
-        // 构建工单信息用于确认对话框
-        StringBuilder taskInfo = new StringBuilder();
-        int count = Math.min(taskList.size(), 10);
-        for (int i = 0; i < count; i++) {
-            ShuyunApi.CountyTaskInfo task = taskList.get(i);
-            taskInfo.append(i + 1).append(". ").append(task.station_name);
-            if (task.orderNum != null && !task.orderNum.isEmpty()) {
-                taskInfo.append(" (").append(task.orderNum).append(")");
-            }
-            taskInfo.append("\n");
-        }
-        if (taskList.size() > 10) {
-            taskInfo.append("... 共").append(taskList.size()).append("条");
-        }
-
-        // 弹出确认对话框
-        new AlertDialog.Builder(requireContext())
-                .setTitle("省级审核确认")
-                .setMessage("发现 " + taskList.size() + " 条待审核工单：\n\n" + taskInfo.toString() + "\n是否确认审核？")
-                .setPositiveButton("确认审核", (dialog, which) -> {
-                    // 用户确认后开始审核
-                    performProvinceAudit(taskList, cityAreaCode);
-                })
-                .setNegativeButton("取消", (dialog, which) -> {
-                    appendLog("省级审核已取消");
-                })
-                .show();
+        // 弹出工单选择对话框（支持多选）
+        showProvinceTaskSelectionDialog(taskList, cityAreaCode);
     }
 
     /**
-     * 执行省级审核
+     * 显示省级工单选择对话框（支持多选）
      */
-    private void performProvinceAudit(List<ShuyunApi.CountyTaskInfo> taskList, String cityAreaCode) {
+    private void showProvinceTaskSelectionDialog(List<ShuyunApi.CountyTaskInfo> taskList, String cityAreaCode) {
+        // 构建显示项数组
+        String[] items = new String[taskList.size()];
+        boolean[] checkedItems = new boolean[taskList.size()];
+
+        for (int i = 0; i < taskList.size(); i++) {
+            ShuyunApi.CountyTaskInfo task = taskList.get(i);
+            StringBuilder sb = new StringBuilder();
+            sb.append(i + 1).append(". ").append(task.station_name);
+            if (task.orderNum != null && !task.orderNum.isEmpty()) {
+                sb.append(" (").append(task.orderNum).append(")");
+            }
+            if (task.flowName != null && !task.flowName.isEmpty()) {
+                sb.append(" [").append(task.flowName).append("]");
+            }
+            items[i] = sb.toString();
+            checkedItems[i] = true; // 默认全选
+        }
+
+        // 存储选中的工单
+        final List<ShuyunApi.CountyTaskInfo> selectedTasks = new ArrayList<>();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("省级审核 - 选择工单 (共" + taskList.size() + "条)");
+        builder.setMultiChoiceItems(items, checkedItems, (dialog, which, isChecked) -> {
+            checkedItems[which] = isChecked;
+        });
+
+        builder.setPositiveButton("审核选中", (dialog, which) -> {
+            // 收集选中的工单
+            selectedTasks.clear();
+            for (int i = 0; i < checkedItems.length; i++) {
+                if (checkedItems[i]) {
+                    selectedTasks.add(taskList.get(i));
+                }
+            }
+
+            if (selectedTasks.isEmpty()) {
+                Toast.makeText(getContext(), "请至少选择一条工单", Toast.LENGTH_SHORT).show();
+                appendLog("省级审核：未选择工单");
+                return;
+            }
+
+            appendLog("省级审核：已选择 " + selectedTasks.size() + " 条工单");
+            // 执行审核（手动模式，只执行一轮）
+            performProvinceAuditManual(selectedTasks, cityAreaCode);
+        });
+
+        builder.setNegativeButton("取消", (dialog, which) -> {
+            appendLog("省级审核已取消");
+        });
+
+        builder.setNeutralButton("全选/取消", null); // 在show后设置
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // 设置全选/取消按钮点击事件
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+            boolean allChecked = true;
+            for (boolean checked : checkedItems) {
+                if (!checked) {
+                    allChecked = false;
+                    break;
+                }
+            }
+            // 切换全选状态
+            boolean newState = !allChecked;
+            for (int i = 0; i < checkedItems.length; i++) {
+                checkedItems[i] = newState;
+                dialog.getListView().setItemChecked(i, newState);
+            }
+        });
+    }
+
+    /**
+     * 执行省级审核（手动模式 - 只执行一次，不循环）
+     */
+    private void performProvinceAuditManual(List<ShuyunApi.CountyTaskInfo> taskList, String cityAreaCode) {
         appendLog("省级审核已启动，区县: " + CITY_AREA_NAMES[selectedCityAreaIndex] + "(" + cityAreaCode + ")");
         appendLog("待审核工单: " + taskList.size() + " 个");
 
