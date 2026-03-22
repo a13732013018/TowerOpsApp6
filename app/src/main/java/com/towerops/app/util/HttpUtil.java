@@ -51,7 +51,7 @@ public class HttpUtil {
      * 【核心】用于 PC 登录时获取 Set-Cookie 中的 towerNumber-Token
      *
      * @param url     目标地址
-     * @param post    POST 参数字符串
+     * @param post    POST 参数字符串（如果为 "__EMPTY_BODY__" 则发送空 body）
      * @param headers 附加协议头
      * @param cookie  Cookie 字符串
      * @return HttpResponse 包含 body 和 setCookie
@@ -59,12 +59,19 @@ public class HttpUtil {
     public static HttpResponse postWithHeaders(String url, String post, String headers, String cookie) {
         HttpResponse result = new HttpResponse();
         try {
-            // 根据Content-Type自动选择MediaType（兼容带charset的情况）
-            MediaType mediaType = FORM_TYPE; // 默认
-            if (headers != null && headers.toLowerCase().contains("content-type: application/json")) {
-                mediaType = MediaType.parse("application/json;charset=UTF-8");
+            // 【核心】支持空 body POST 请求（Content-Length: 0）
+            RequestBody body;
+            if ("__EMPTY_BODY__".equals(post)) {
+                // 发送真正的空 body，Content-Length 会为 0
+                body = RequestBody.create(null, new byte[0]);
+            } else {
+                // 根据Content-Type自动选择MediaType（兼容带charset的情况）
+                MediaType mediaType = FORM_TYPE; // 默认
+                if (headers != null && headers.toLowerCase().contains("content-type: application/json")) {
+                    mediaType = MediaType.parse("application/json;charset=UTF-8");
+                }
+                body = RequestBody.create(post, mediaType);
             }
-            RequestBody body = RequestBody.create(post, mediaType);
             Request.Builder builder = new Request.Builder()
                     .url(url.trim())
                     .post(body);

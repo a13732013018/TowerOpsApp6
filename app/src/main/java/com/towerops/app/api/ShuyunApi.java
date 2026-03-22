@@ -259,18 +259,9 @@ public class ShuyunApi {
                 result.token = root.optString("data", "");
             }
             
-            // 【核心】从 Set-Cookie 中提取 towerNumber-Token
-            if (response.setCookie != null && !response.setCookie.isEmpty()) {
-                result.cookieToken = extractTowerNumberToken(response.setCookie);
-                System.out.println("[ShuyunApi] Extracted cookieToken from Set-Cookie: " + 
-                    (result.cookieToken.length() > 20 ? result.cookieToken.substring(0, 20) + "..." : result.cookieToken));
-            }
-            
-            // 如果 cookieToken 为空，使用 token 作为备选
-            if (result.cookieToken.isEmpty()) {
-                result.cookieToken = result.token;
-                System.out.println("[ShuyunApi] cookieToken empty, using token as fallback");
-            }
+            // 【核心】Authorization 和 towerNumber-Token 使用相同的值（PC登录获取的token）
+            result.cookieToken = result.token;
+            System.out.println("[ShuyunApi] PC登录成功，token: " + (result.token.length() > 20 ? result.token.substring(0, 20) + "..." : result.token));
             
             result.success = !result.token.isEmpty();
         } catch (Exception e) {
@@ -711,58 +702,48 @@ public class ShuyunApi {
     }
 
     /**
-     * 县级/市级审核 form-urlencoded POST请求头（用于获取列表，对应易语言的数运协议头）
-     * 【核心】Authorization 和 Cookie 中的 towerNumber-Token 可能不同
-     * @param authToken 用于 Authorization 的 token（当前登录获取的）
-     * @param cookieToken 用于 Cookie 中 towerNumber-Token 的值（可能来自之前登录的 Set-Cookie）
+     * 获取工单列表 GET 请求头（与浏览器一致）
+     * 【核心】Authorization 和 towerNumber-Token 使用相同的值（PC登录token）
+     * @param token PC登录获取的token
      */
-    private static String buildCountyApiHeader(String authToken, String cookieToken) {
+    private static String buildTaskListHeader(String token) {
         // 【调试】打印token前20字符用于确认
-        System.out.println("[ShuyunApi] buildCountyApiHeader authToken: " + (authToken != null && authToken.length() > 20 ? authToken.substring(0, 20) + "..." : authToken));
-        System.out.println("[ShuyunApi] buildCountyApiHeader cookieToken: " + (cookieToken != null && cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
+        System.out.println("[ShuyunApi] buildTaskListHeader token: " + (token != null && token.length() > 20 ? token.substring(0, 20) + "..." : token));
         
-        // 【核心】Cookie 与浏览器一致，towerNumber-Token 使用 cookieToken（可能与 authToken 不同）
-        String cookie = "SECKEY_ABVK=qeTsXE4y14X4ldH40SSQ0knt0W26i4ypYTlvXF67HHk%3D; "
-                + "BMAP_SECKEY=EoXHAf-lWPqVbjSv7_4j3cQvzlEFHd7SlUSefjm50pgPvz1UqmUf_LytsQlxN5IIAmV9_J9BF1WQIi-cBbxfyrULQHvuzq1J1hHzvHTweKWcFqtisDX98VY2MG-9NaVx2TOhX_IhsFrMPk9ZeqD9BFoUHztloIcOHcK3YkM97zwnbWwajm05accu9pXnwKKW; "
+        // 【核心】Cookie 与浏览器完全一致，towerNumber-Token 与 Authorization 相同
+        String cookie = "SameSite=Lax; "
+                + "SECKEY_ABVK=u5GS2rFYPLAlrSXaMDFt4Z8dbEDU4hhYCf9cwmwJShs%3D; "
+                + "BMAP_SECKEY=wS7B6RdyYHnJIPYNqh1Jpv19OiEwolplZRXk2BJX8qk2s2jo0eKyVZWKlcmmwF6r9mKEIPORJYeN8PuqmrnIYQdOLpyAISbubo1HkuyPguPIhc4jcI4V64ODQidyTd_5Zgvosv8pN-yzuI-y1Ndkfn2nZWJKUW-GxVI5vvx8M1Yne5qbPLi5FEOxUvqMwT9A; "
                 + "sysName=%E4%BC%8A%E4%B8%96%E8%B1%AA; "
-                + "SameSite=Lax; "
                 + "Secure; "
-                + "towerNumber-Token=" + (cookieToken != null && !cookieToken.isEmpty() ? cookieToken : authToken);
+                + "towerNumber-Token=" + token;
         
         return "Accept: application/json, text/plain, */*\n"
                 + "Accept-Encoding: gzip, deflate\n"
                 + "Accept-Language: zh-CN,zh;q=0.9\n"
-                + "Authorization: " + authToken + "\n"
+                + "Authorization: " + token + "\n"
                 + "Cache-Control: no-cache\n"
-                + "Connection: keep-alive\n"
-                + "Content-Type: application/x-www-form-urlencoded\n"
                 + "Cookie: " + cookie + "\n"
                 + "Host: zjtowercom.cn:8998\n"
                 + "Origin: http://zjtowercom.cn:8998\n"
                 + "Pragma: no-cache\n"
-                + "Referer: http://zjtowercom.cn:8998/dashboard\n"
-                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
-    }
-
-    /**
-     * 县级/市级审核 form-urlencoded POST请求头（兼容旧版本，使用同一个token）
-     */
-    private static String buildCountyApiHeader(String pcToken) {
-        return buildCountyApiHeader(pcToken, pcToken);
+                + "Proxy-Connection: keep-alive\n"
+                + "Referer: http://zjtowercom.cn:8998/myWork/taskTodo\n"
+                + "User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36";
     }
 
     /**
      * 县级/市级审核 JSON POST请求头（用于提交审核）
      * 【核心】Authorization 和 Cookie 中的 towerNumber-Token 可能不同
      * @param authToken 用于 Authorization 的 token（当前登录获取的）
-     * @param cookieToken 用于 Cookie 中 towerNumber-Token 的值（可能来自之前登录的 Set-Cookie）
+     * @param cookieToken 用于 Cookie 中 towerNumber-Token 的值（固定值）
      */
     private static String buildCountyJsonHeader(String authToken, String cookieToken) {
         // 【调试】打印token前20字符用于确认
         System.out.println("[ShuyunApi] buildCountyJsonHeader authToken: " + (authToken != null && authToken.length() > 20 ? authToken.substring(0, 20) + "..." : authToken));
         System.out.println("[ShuyunApi] buildCountyJsonHeader cookieToken: " + (cookieToken != null && cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
         
-        // 【核心】Cookie 与浏览器一致，towerNumber-Token 使用 cookieToken（可能与 authToken 不同）
+        // 【核心】Cookie 中的 towerNumber-Token 使用固定值
         String cookie = "SECKEY_ABVK=qeTsXE4y14X4ldH40SSQ0knt0W26i4ypYTlvXF67HHk%3D; "
                 + "BMAP_SECKEY=EoXHAf-lWPqVbjSv7_4j3cQvzlEFHd7SlUSefjm50pgPvz1UqmUf_LytsQlxN5IIAmV9_J9BF1WQIi-cBbxfyrULQHvuzq1J1hHzvHTweKWcFqtisDX98VY2MG-9NaVx2TOhX_IhsFrMPk9ZeqD9BFoUHztloIcOHcK3YkM97zwnbWwajm05accu9pXnwKKW; "
                 + "sysName=%E4%BC%8A%E4%B8%96%E8%B1%AA; "
@@ -936,7 +917,7 @@ public class ShuyunApi {
     /**
      * 获取县级待审核工单列表
      * @param pcToken PC端登录Token（Authorization）
-     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，固定值）
      * @param userId 区县经理代号（36745平阳/31950泰顺）
      * @return 工单列表JSON
      */
@@ -953,8 +934,8 @@ public class ShuyunApi {
                 + "&flowId=1025,1054,1055,1056,1131,1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1137,1143,1063"
                 + "&orderType=&xmlx=&area=&cityArea=";
 
-        // 【核心】使用双token：authToken用于Authorization，cookieToken用于Cookie
-        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        // 【核心】使用固定cookieToken的请求头
+        String headers = buildCountyApiHeader(pcToken);
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -1018,7 +999,7 @@ public class ShuyunApi {
     /**
      * 县级审核通过
      * @param pcToken PC端登录Token（Authorization）
-     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，固定值）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -1118,22 +1099,19 @@ public class ShuyunApi {
                 + "&userId=" + userId
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String post = "page=1&limit=10&userId=" + userId
-                + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
-
-        // 【核心】使用双token
-        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        // 【核心】使用 POST 请求（Content-Length: 0），请求头与浏览器完全一致
+        String headers = buildTaskListHeader(pcToken);
         
         // 【调试日志】详细输出请求信息
         System.out.println("[ShuyunApi] ========== 省级待办请求 ==========");
         System.out.println("[ShuyunApi] userId: " + userId + " (PROVINCE_AUDIT_USER_ID)");
-        System.out.println("[ShuyunApi] authToken: " + (pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
-        System.out.println("[ShuyunApi] cookieToken: " + (cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
+        System.out.println("[ShuyunApi] token: " + (pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
         System.out.println("[ShuyunApi] URL: " + url);
-        System.out.println("[ShuyunApi] POST: " + post);
         
         try {
-            String result = HttpUtil.post(url, post, headers, null);
+            // 【核心】使用 POST 请求，但 body 为空（Content-Length: 0），与浏览器一致
+            // 使用特殊的 "__EMPTY_BODY__" 标记告诉 HttpUtil 发送空 body
+            String result = HttpUtil.post(url, "__EMPTY_BODY__", headers, null);
             System.out.println("[ShuyunApi] Result length: " + (result != null ? result.length() : 0));
             if (result != null && !result.isEmpty()) {
                 System.out.println("[ShuyunApi] Result preview: " + result.substring(0, Math.min(200, result.length())));
@@ -1477,6 +1455,7 @@ public class ShuyunApi {
 
     /**
      * 从延期判断结果中提取 jobId（用于提交审核）
+     * 【核心】与易语言一致：从 "jobId":" 提取到 ","seletyp"
      * @param jsonStr API返回的JSON
      * @return jobId 字符串
      */
@@ -1485,14 +1464,37 @@ public class ShuyunApi {
             return "";
         }
         try {
+            // 【核心】与易语言一致：文本提取方式
+            // 易语言：jobId_ID ＝ 文本_取出中间文本 (延期判断文本, #常量_jobId1, #常量_jobId2)
+            // #常量_jobId1="jobId":" 
+            // #常量_jobId2=","seletyp
+            String startMarker = "\"jobId\":\"";
+            String endMarker = "\",\"seletyp";
+            
+            int startIndex = jsonStr.indexOf(startMarker);
+            if (startIndex == -1) {
+                // 尝试不带空格的变体
+                startMarker = "\"jobId\":\"";
+                startIndex = jsonStr.indexOf(startMarker);
+            }
+            
+            if (startIndex != -1) {
+                startIndex += startMarker.length();
+                int endIndex = jsonStr.indexOf(endMarker, startIndex);
+                if (endIndex != -1) {
+                    String jobId = jsonStr.substring(startIndex, endIndex);
+                    System.out.println("[ShuyunApi] 提取jobId_ID: " + jobId);
+                    return jobId;
+                }
+            }
+            
+            // 如果文本提取失败，回退到 JSON 解析
             JSONObject root = new JSONObject(jsonStr);
-
-            // 从 nextJobsList[0].jobId 获取
             JSONArray nextJobsList = root.optJSONArray("nextJobsList");
             if (nextJobsList != null && nextJobsList.length() > 0) {
                 JSONObject firstJob = nextJobsList.getJSONObject(0);
                 String jobId = firstJob.optString("jobId", "");
-                System.out.println("[ShuyunApi] 提取jobId_ID: " + jobId);
+                System.out.println("[ShuyunApi] 提取jobId_ID(JSON): " + jobId);
                 return jobId;
             }
 
