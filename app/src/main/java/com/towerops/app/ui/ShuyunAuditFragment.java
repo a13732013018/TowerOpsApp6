@@ -159,7 +159,7 @@ public class ShuyunAuditFragment extends Fragment {
         }
 
         // 市级已办列表点击事件
-        lvCityFinishedList.setOnItemClickListener((parent, view, position, id) -> {
+        lvCityFinishedList.setOnItemClickListener((parent, itemView, position, id) -> {
             if (cityFinishedTaskList != null && position < cityFinishedTaskList.size()) {
                 selectedCityFinishedTask = cityFinishedTaskList.get(position);
                 String jobName = selectedCityFinishedTask.jobName != null ? selectedCityFinishedTask.jobName : "";
