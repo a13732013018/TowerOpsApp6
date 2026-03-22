@@ -369,27 +369,52 @@ public class ShuyunAuditFragment extends Fragment {
 
                         String delayType = ShuyunApi.parseDelayResult(delayResult);
 
-                        // 提交审核
-                        String result;
+                        // 提交审核：两种都尝试，一种成功就OK
+                        String result = "";
+                        boolean auditSuccess = false;
+
                         if ("省监控审核".equals(delayType)) {
-                            // 延期审核
+                            // 延期审核优先
                             appendLog("延期判断: 省监控审核，执行延期审核");
                             result = ShuyunApi.submitCityDelayAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, task.jobId);
+                            appendLog("延期审核返回: " + (result != null ? result : "null"));
+
+                            if (ShuyunApi.isSuccess(result)) {
+                                auditSuccess = true;
+                            } else {
+                                // 延期审核失败，尝试普通审核
+                                appendLog("延期审核失败，尝试普通审核");
+                                result = ShuyunApi.submitCityAudit(pcToken,
+                                    task.orderNum, task.jobInstId, task.flowInstId,
+                                    task.jobId, task.workInstId, task.flowId, task.jobId);
+                                appendLog("普通审核返回: " + (result != null ? result : "null"));
+                                auditSuccess = ShuyunApi.isSuccess(result);
+                            }
                         } else {
-                            // 普通审核
+                            // 普通审核优先
                             appendLog("延期判断: 普通审核，执行普通审核");
                             result = ShuyunApi.submitCityAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, task.jobId);
+                            appendLog("普通审核返回: " + (result != null ? result : "null"));
+
+                            if (ShuyunApi.isSuccess(result)) {
+                                auditSuccess = true;
+                            } else {
+                                // 普通审核失败，尝试延期审核
+                                appendLog("普通审核失败，尝试延期审核");
+                                result = ShuyunApi.submitCityDelayAudit(pcToken,
+                                    task.orderNum, task.jobInstId, task.flowInstId,
+                                    task.jobId, task.workInstId, task.flowId, task.jobId);
+                                appendLog("延期审核返回: " + (result != null ? result : "null"));
+                                auditSuccess = ShuyunApi.isSuccess(result);
+                            }
                         }
 
-                        // 输出完整审核结果用于调试
-                        appendLog("审核返回: " + (result != null ? result : "null"));
-
-                        // 根据返回结果判断成功或失败
-                        if (ShuyunApi.isSuccess(result)) {
+                        // 最终结果
+                        if (auditSuccess) {
                             appendLog("✓ 审核通过: " + task.station_name);
                         } else {
                             appendLog("✗ 审核失败: " + task.station_name);
