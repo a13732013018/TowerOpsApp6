@@ -548,16 +548,25 @@ public class ShuyunApi {
         if ("{}".equals(jsonStr.trim())) return true;
         try {
             JSONObject root = new JSONObject(jsonStr);
-            // 判断flag字段（工单处理接口返回 flag="1" 表示成功）
-            if (root.has("flag")) {
-                return "1".equals(root.getString("flag"));
-            }
             // 根据不同接口判断success字段
             if (root.has("success")) {
                 return root.getBoolean("success");
             }
+            // status字段为200表示成功（登录接口）
+            if (root.has("status")) {
+                return root.getInt("status") == 200;
+            }
             if (root.has("code")) {
                 return "200".equals(root.getString("code")) || "0".equals(root.getString("code"));
+            }
+            // flag字段为"1"表示成功（工单处理接口），但flag="0"时不能仅凭此判断失败
+            if (root.has("flag")) {
+                String flag = root.getString("flag");
+                // 如果flag="1"直接返回成功
+                if ("1".equals(flag)) {
+                    return true;
+                }
+                // flag="0"时继续检查其他字段
             }
             // data字段存在即认为成功
             return root.has("data");
