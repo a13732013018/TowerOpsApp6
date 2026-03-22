@@ -544,6 +544,8 @@ public class ShuyunApi {
      */
     public static boolean isSuccess(String jsonStr) {
         if (jsonStr == null || jsonStr.isEmpty()) return false;
+        // 空对象 {} 也视为成功（审核接口成功时返回 {}）
+        if ("{}".equals(jsonStr.trim())) return true;
         try {
             JSONObject root = new JSONObject(jsonStr);
             // 根据不同接口判断success字段
@@ -997,7 +999,7 @@ public class ShuyunApi {
         String headers = buildCountyJsonHeader(pcToken);
 
         try {
-            String result = HttpUtil.put(url, post, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();

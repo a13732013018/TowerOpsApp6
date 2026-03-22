@@ -373,21 +373,26 @@ public class ShuyunAuditFragment extends Fragment {
                         String result;
                         if ("省监控审核".equals(delayType)) {
                             // 延期审核
+                            appendLog("延期判断: 省监控审核，执行延期审核");
                             result = ShuyunApi.submitCityDelayAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, task.jobId);
                         } else {
                             // 普通审核
+                            appendLog("延期判断: 普通审核，执行普通审核");
                             result = ShuyunApi.submitCityAudit(pcToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, task.jobId);
                         }
 
+                        // 输出完整审核结果用于调试
+                        appendLog("审核返回: " + (result != null ? result : "null"));
+
                         // 根据返回结果判断成功或失败
                         if (ShuyunApi.isSuccess(result)) {
                             appendLog("✓ 审核通过: " + task.station_name);
                         } else {
-                            appendLog("✗ 审核失败: " + task.station_name + " - " + result);
+                            appendLog("✗ 审核失败: " + task.station_name);
                         }
                     }
 
