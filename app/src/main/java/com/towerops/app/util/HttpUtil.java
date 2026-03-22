@@ -56,16 +56,38 @@ public class HttpUtil {
             if (headers != null && !headers.isEmpty()) {
                 String[] lines = headers.split("\n");
                 for (String line : lines) {
+                    // 【修正】支持 "Key: Value" 和 "Key:Value" 两种格式
                     int idx = line.indexOf(": ");
+                    if (idx == -1) {
+                        idx = line.indexOf(":");
+                    }
                     if (idx > 0) {
                         String key = line.substring(0, idx).trim();
-                        String val = line.substring(idx + 2).trim();
+                        String val = line.substring(idx + 1).trim();
+                        // 如果以空格开头，去掉空格
+                        if (val.startsWith(" ")) {
+                            val = val.substring(1);
+                        }
                         builder.header(key, val);
+                        System.out.println("[HttpUtil] Header: " + key + " = " + (key.equalsIgnoreCase("Cookie") || key.equalsIgnoreCase("Authorization") ? val.substring(0, Math.min(20, val.length())) + "..." : val));
                     }
                 }
             }
 
             Request request = builder.build();
+            
+            // 【调试】打印最终请求的所有header
+            System.out.println("[HttpUtil] Request URL: " + url);
+            System.out.println("[HttpUtil] Request headers:");
+            for (String name : request.headers().names()) {
+                String val = request.header(name);
+                if (name.equalsIgnoreCase("Cookie") || name.equalsIgnoreCase("Authorization")) {
+                    System.out.println("  " + name + ": " + (val != null ? val.substring(0, Math.min(20, val.length())) + "..." : "null"));
+                } else {
+                    System.out.println("  " + name + ": " + val);
+                }
+            }
+            
             try (Response response = CLIENT.newCall(request).execute()) {
                 int code = response.code();
                 String respBody = "";

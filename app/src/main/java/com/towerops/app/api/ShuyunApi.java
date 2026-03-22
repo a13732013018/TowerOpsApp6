@@ -604,8 +604,20 @@ public class ShuyunApi {
 
     /**
      * 县级/市级审核 form-urlencoded POST请求头（用于获取列表，对应易语言的数运协议头）
+     * 【修正】Cookie 格式与浏览器一致
      */
     private static String buildCountyApiHeader(String pcToken) {
+        // 【调试】打印token前20字符用于确认
+        System.out.println("[ShuyunApi] buildCountyApiHeader token: " + (pcToken != null && pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
+        
+        // 【核心】Cookie 与浏览器一致，towerNumber-Token 使用 pcToken
+        String cookie = "SECKEY_ABVK=qeTsXE4y14X4ldH40SSQ0knt0W26i4ypYTlvXF67HHk%3D; "
+                + "BMAP_SECKEY=EoXHAf-lWPqVbjSv7_4j3cQvzlEFHd7SlUSefjm50pgPvz1UqmUf_LytsQlxN5IIAmV9_J9BF1WQIi-cBbxfyrULQHvuzq1J1hHzvHTweKWcFqtisDX98VY2MG-9NaVx2TOhX_IhsFrMPk9ZeqD9BFoUHztloIcOHcK3YkM97zwnbWwajm05accu9pXnwKKW; "
+                + "sysName=%E4%BC%8A%E4%B8%96%E8%B1%AA; "
+                + "SameSite=Lax; "
+                + "Secure; "
+                + "towerNumber-Token=" + pcToken;
+        
         return "Accept: application/json, text/plain, */*\n"
                 + "Accept-Encoding: gzip, deflate\n"
                 + "Accept-Language: zh-CN,zh;q=0.9\n"
@@ -613,7 +625,7 @@ public class ShuyunApi {
                 + "Cache-Control: no-cache\n"
                 + "Connection: keep-alive\n"
                 + "Content-Type: application/x-www-form-urlencoded\n"
-                + "Cookie: towerNumber-Token=" + pcToken + "\n"
+                + "Cookie: " + cookie + "\n"
                 + "Host: zjtowercom.cn:8998\n"
                 + "Origin: http://zjtowercom.cn:8998\n"
                 + "Pragma: no-cache\n"
@@ -623,8 +635,20 @@ public class ShuyunApi {
 
     /**
      * 县级/市级审核 JSON POST请求头（用于提交审核）
+     * 【修正】Cookie 格式与浏览器一致
      */
     private static String buildCountyJsonHeader(String pcToken) {
+        // 【调试】打印token前20字符用于确认
+        System.out.println("[ShuyunApi] buildCountyJsonHeader token: " + (pcToken != null && pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
+        
+        // 【核心】Cookie 与浏览器一致，towerNumber-Token 使用 pcToken
+        String cookie = "SECKEY_ABVK=qeTsXE4y14X4ldH40SSQ0knt0W26i4ypYTlvXF67HHk%3D; "
+                + "BMAP_SECKEY=EoXHAf-lWPqVbjSv7_4j3cQvzlEFHd7SlUSefjm50pgPvz1UqmUf_LytsQlxN5IIAmV9_J9BF1WQIi-cBbxfyrULQHvuzq1J1hHzvHTweKWcFqtisDX98VY2MG-9NaVx2TOhX_IhsFrMPk9ZeqD9BFoUHztloIcOHcK3YkM97zwnbWwajm05accu9pXnwKKW; "
+                + "sysName=%E4%BC%8A%E4%B8%96%E8%B1%AA; "
+                + "SameSite=Lax; "
+                + "Secure; "
+                + "towerNumber-Token=" + pcToken;
+        
         return "Accept: application/json, text/plain, */*\n"
                 + "Accept-Encoding: gzip, deflate\n"
                 + "Accept-Language: zh-CN,zh;q=0.9\n"
@@ -632,7 +656,7 @@ public class ShuyunApi {
                 + "Cache-Control: no-cache\n"
                 + "Connection: keep-alive\n"
                 + "Content-Type: application/json;charset=UTF-8\n"
-                + "Cookie: towerNumber-Token=" + pcToken + "\n"
+                + "Cookie: " + cookie + "\n"
                 + "Host: zjtowercom.cn:8998\n"
                 + "Origin: http://zjtowercom.cn:8998\n"
                 + "Pragma: no-cache\n"
@@ -931,35 +955,56 @@ public class ShuyunApi {
 
     /**
      * 获取省级待审核工单列表
+     * 【核心】使用 PROVINCE_AUDIT_USER_ID = 32269
      * @param pcToken PC端登录Token
      * @param cityArea 区县代码（如330326）
      * @return 工单列表JSON
      */
     public static String getProvinceTaskList(String pcToken, String cityArea) {
+        // 【核心】与易语言一致：使用 PROVINCE_AUDIT_USER_ID (32269) 获取省级待办
+        String userId = PROVINCE_AUDIT_USER_ID;
+        
         // 与易语言一致：limit=10
         String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
                 + "?page=1"
                 + "&limit=10"
-                + "&userId=" + PROVINCE_AUDIT_USER_ID
+                + "&userId=" + userId
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String post = "page=1&limit=10&userId=" + PROVINCE_AUDIT_USER_ID
+        String post = "page=1&limit=10&userId=" + userId
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
         String headers = buildCountyApiHeader(pcToken);
         
-        // 调试日志
-        System.out.println("[ShuyunApi] getProvinceTaskList URL: " + url);
-        System.out.println("[ShuyunApi] getProvinceTaskList POST: " + post);
-        System.out.println("[ShuyunApi] getProvinceTaskList Headers: " + headers.replace(pcToken, pcToken.substring(0, 20) + "..."));
+        // 【调试日志】详细输出请求信息
+        System.out.println("[ShuyunApi] ========== 省级待办请求 ==========");
+        System.out.println("[ShuyunApi] userId: " + userId + " (PROVINCE_AUDIT_USER_ID)");
+        System.out.println("[ShuyunApi] URL: " + url);
+        System.out.println("[ShuyunApi] POST: " + post);
+        System.out.println("[ShuyunApi] Headers:");
+        String[] headerLines = headers.split("\n");
+        for (String line : headerLines) {
+            if (line.contains(pcToken)) {
+                System.out.println("  " + line.substring(0, Math.min(line.indexOf(pcToken) + 20, line.length())) + "...");
+            } else {
+                System.out.println("  " + line);
+            }
+        }
         
         try {
             String result = HttpUtil.post(url, post, headers, null);
-            System.out.println("[ShuyunApi] getProvinceTaskList Result length: " + (result != null ? result.length() : 0));
+            System.out.println("[ShuyunApi] Result length: " + (result != null ? result.length() : 0));
+            if (result != null && !result.isEmpty()) {
+                System.out.println("[ShuyunApi] Result preview: " + result.substring(0, Math.min(200, result.length())));
+            } else {
+                System.out.println("[ShuyunApi] Result is empty or null!");
+            }
+            System.out.println("[ShuyunApi] ========== 请求结束 ==========");
             return result != null ? result : "";
         } catch (Exception e) {
-            System.err.println("[ShuyunApi] getProvinceTaskList Exception: " + e.getMessage());
+            System.err.println("[ShuyunApi] Exception: " + e.getMessage());
             e.printStackTrace();
+            System.out.println("[ShuyunApi] ========== 请求异常结束 ==========");
             return "";
         }
     }
@@ -1173,9 +1218,17 @@ public class ShuyunApi {
                 + "\"gotoType\":\"taskTodo\"}";
 
         String headers = buildCountyJsonHeader(pcToken);
+        
+        // 【调试日志】
+        System.out.println("[ShuyunApi] checkDelay userId: " + userId);
+        System.out.println("[ShuyunApi] checkDelay POST: " + post.substring(0, Math.min(200, post.length())) + "...");
 
         try {
             String result = HttpUtil.post(url, post, headers, null);
+            System.out.println("[ShuyunApi] checkDelay result length: " + (result != null ? result.length() : 0));
+            if (result != null && result.length() > 0) {
+                System.out.println("[ShuyunApi] checkDelay result preview: " + result.substring(0, Math.min(300, result.length())));
+            }
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -1233,7 +1286,9 @@ public class ShuyunApi {
             JSONArray nextJobsList = root.optJSONArray("nextJobsList");
             if (nextJobsList != null && nextJobsList.length() > 0) {
                 JSONObject firstJob = nextJobsList.getJSONObject(0);
-                return firstJob.optString("jobId", "");
+                String jobId = firstJob.optString("jobId", "");
+                System.out.println("[ShuyunApi] 提取jobId_ID: " + jobId);
+                return jobId;
             }
 
             return "";
