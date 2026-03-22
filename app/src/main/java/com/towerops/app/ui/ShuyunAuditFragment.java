@@ -591,7 +591,7 @@ public class ShuyunAuditFragment extends Fragment {
     }
 
     /**
-     * 启动省级审核（根据易语言逻辑：从市级待办中筛选需要省级审核的工单）
+     * 启动省级审核（根据易语言逻辑：直接用32269获取待办）
      */
     private void startProvinceAudit() {
         // 优先从 Session 获取登录信息
@@ -629,66 +629,39 @@ public class ShuyunAuditFragment extends Fragment {
         selectedCityAreaIndex = selectedCountyIndex;
         String cityAreaCode = CITY_AREA_CODES[selectedCityAreaIndex];
 
-        // 【核心修改】根据易语言逻辑：先获取市级待办列表，从中筛选需要省级审核的工单
-        appendLog("正在获取市级待审核工单...");
-        String jsonStr = ShuyunApi.getCityTaskList(pcToken, cityAreaCode);
+        // 【核心】根据易语言逻辑：直接用32269获取待办工单（limit=10）
+        appendLog("正在获取省级待审核工单...");
+        String jsonStr = ShuyunApi.getProvinceTaskList(pcToken, cityAreaCode);
         List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
 
         if (taskList.isEmpty()) {
-            Toast.makeText(getContext(), "市级待审核工单为空", Toast.LENGTH_SHORT).show();
-            appendLog("市级待审核工单为空");
-            return;
-        }
-
-        // 筛选需要省级审核的工单（通过延期判断）
-        appendLog("正在筛选需要省级审核的工单...");
-        List<ShuyunApi.CountyTaskInfo> provinceTasks = new ArrayList<>();
-        for (ShuyunApi.CountyTaskInfo task : taskList) {
-            try {
-                // 调用延期判断
-                String delayResult = ShuyunApi.checkDelay(pcToken,
-                    task.orderNum, task.jobInstId, task.relaType,
-                    task.flowInstId, task.jobId, task.workInstId, task.flowId);
-                String delayType = ShuyunApi.parseDelayResult(delayResult);
-
-                // 如果需要省级审核，添加到列表
-                if ("省监控审核".equals(delayType)) {
-                    provinceTasks.add(task);
-                    appendLog("找到省级审核工单: " + task.station_name);
-                }
-            } catch (Exception e) {
-                // 忽略单个工单的延期判断错误
-            }
-        }
-
-        if (provinceTasks.isEmpty()) {
-            Toast.makeText(getContext(), "没有需要省级审核的工单", Toast.LENGTH_SHORT).show();
-            appendLog("没有需要省级审核的工单");
+            Toast.makeText(getContext(), "省级待审核工单为空", Toast.LENGTH_SHORT).show();
+            appendLog("省级待审核工单为空");
             return;
         }
 
         // 构建工单信息用于确认对话框
         StringBuilder taskInfo = new StringBuilder();
-        int count = Math.min(provinceTasks.size(), 10);
+        int count = Math.min(taskList.size(), 10);
         for (int i = 0; i < count; i++) {
-            ShuyunApi.CountyTaskInfo task = provinceTasks.get(i);
+            ShuyunApi.CountyTaskInfo task = taskList.get(i);
             taskInfo.append(i + 1).append(". ").append(task.station_name);
             if (task.orderNum != null && !task.orderNum.isEmpty()) {
                 taskInfo.append(" (").append(task.orderNum).append(")");
             }
             taskInfo.append("\n");
         }
-        if (provinceTasks.size() > 10) {
-            taskInfo.append("... 共").append(provinceTasks.size()).append("条");
+        if (taskList.size() > 10) {
+            taskInfo.append("... 共").append(taskList.size()).append("条");
         }
 
         // 弹出确认对话框
         new AlertDialog.Builder(requireContext())
                 .setTitle("省级审核确认")
-                .setMessage("发现 " + provinceTasks.size() + " 条需要省级审核的工单：\n\n" + taskInfo.toString() + "\n是否确认审核？")
+                .setMessage("发现 " + taskList.size() + " 条待审核工单：\n\n" + taskInfo.toString() + "\n是否确认审核？")
                 .setPositiveButton("确认审核", (dialog, which) -> {
                     // 用户确认后开始审核
-                    performProvinceAudit(provinceTasks, cityAreaCode);
+                    performProvinceAudit(taskList, cityAreaCode);
                 })
                 .setNegativeButton("取消", (dialog, which) -> {
                     appendLog("省级审核已取消");

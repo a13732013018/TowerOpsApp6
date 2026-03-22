@@ -548,6 +548,10 @@ public class ShuyunApi {
         if ("{}".equals(jsonStr.trim())) return true;
         try {
             JSONObject root = new JSONObject(jsonStr);
+            // 判断flag字段（工单处理接口返回 flag="1" 表示成功）
+            if (root.has("flag")) {
+                return "1".equals(root.getString("flag"));
+            }
             // 根据不同接口判断success字段
             if (root.has("success")) {
                 return root.getBoolean("success");
@@ -921,14 +925,14 @@ public class ShuyunApi {
      * @return 工单列表JSON
      */
     public static String getProvinceTaskList(String pcToken, String cityArea) {
-        // 与易语言一致：URL和body都带参数
+        // 与易语言一致：limit=10
         String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
                 + "?page=1"
-                + "&limit=50"
+                + "&limit=10"
                 + "&userId=" + PROVINCE_AUDIT_USER_ID
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String post = "page=1&limit=50&userId=" + PROVINCE_AUDIT_USER_ID
+        String post = "page=1&limit=10&userId=" + PROVINCE_AUDIT_USER_ID
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
         String headers = buildCountyApiHeader(pcToken);
