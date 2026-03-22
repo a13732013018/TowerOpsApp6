@@ -93,7 +93,8 @@ public class ShuyunAuditFragment extends Fragment {
     private int selectedCityAreaIndex = 0;
 
     // 登录信息（从Activity获取）
-    private String pcToken = "";
+    private String pcToken = "";           // Authorization 用的 token
+    private String cookieToken = "";       // Cookie 中 towerNumber-Token 用的 token
     private String userId = "";
 
     // 接口回调
@@ -130,6 +131,10 @@ public class ShuyunAuditFragment extends Fragment {
         // 如果Session中已有登录信息，直接使用
         if (!s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;  // 【核心】同时恢复 cookieToken
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;  // 如果没有保存cookieToken，使用pcToken作为备选
+            }
         }
 
         initViews(view);
@@ -240,8 +245,13 @@ public class ShuyunAuditFragment extends Fragment {
         Session s = Session.get();
         if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;
+            }
         } else if (callback != null) {
             pcToken = callback.getPcToken();
+            cookieToken = pcToken;  // 如果没有cookieToken，使用pcToken
         }
 
         if (pcToken == null || pcToken.isEmpty()) {
@@ -268,7 +278,8 @@ public class ShuyunAuditFragment extends Fragment {
                 try {
                     // 获取待审核工单列表
                     mainHandler.post(() -> updateStatus("获取工单中..."));
-                    String jsonStr = ShuyunApi.getCountyTaskList(pcToken, userId);
+                    // 【核心】使用双token调用
+                    String jsonStr = ShuyunApi.getCountyTaskList(pcToken, cookieToken, userId);
 
                     List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
 
@@ -310,8 +321,10 @@ public class ShuyunAuditFragment extends Fragment {
                         if (!isCountyRunning) break;
 
                         // 提交审核
+                        // 【核心】使用双token调用
                         String result = ShuyunApi.submitCountyAudit(
                             pcToken,
+                            cookieToken,
                             task.orderNum,
                             task.jobInstId,
                             task.flowInstId,
@@ -373,8 +386,13 @@ public class ShuyunAuditFragment extends Fragment {
         Session s = Session.get();
         if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;
+            }
         } else if (callback != null) {
             pcToken = callback.getPcToken();
+            cookieToken = pcToken;
         }
 
         if (pcToken == null || pcToken.isEmpty()) {
@@ -396,7 +414,7 @@ public class ShuyunAuditFragment extends Fragment {
         // 初始获取已办列表（原待办区域现在显示已办数据）
         try {
             // 获取已办列表
-            String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
+            String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cookieToken, cityAreaCode);
             List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
             // 原来显示待办的区域现在显示已办数据
             updateCityTodoList(finishedList);
@@ -420,14 +438,14 @@ public class ShuyunAuditFragment extends Fragment {
                     mainHandler.post(() -> updateStatus("获取市级工单中..."));
 
                     // 获取已办列表
-                    String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
+                    String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cookieToken, cityAreaCode);
                     List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
 
                     // 更新已办列表显示（原来显示待办的区域现在显示已办数据）
                     updateCityTodoList(finishedList);
 
                     // 也获取待办列表用于审核逻辑
-                    String jsonStr = ShuyunApi.getCityTaskList(pcToken, cityAreaCode);
+                    String jsonStr = ShuyunApi.getCityTaskList(pcToken, cookieToken, cityAreaCode);
                     List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
 
                     if (taskList.isEmpty()) {
@@ -469,7 +487,7 @@ public class ShuyunAuditFragment extends Fragment {
                         if (!isCityRunning) break;
 
                         // 延期判断（静默执行，不输出详细信息）
-                        String delayResult = ShuyunApi.checkDelay(pcToken,
+                        String delayResult = ShuyunApi.checkDelay(pcToken, cookieToken,
                             task.orderNum, task.jobInstId, task.relaType,
                             task.flowInstId, task.jobId, task.workInstId, task.flowId);
 
@@ -482,7 +500,7 @@ public class ShuyunAuditFragment extends Fragment {
 
                         if ("省监控审核".equals(delayType)) {
                             // 延期审核优先
-                            result = ShuyunApi.submitCityDelayAudit(pcToken,
+                            result = ShuyunApi.submitCityDelayAudit(pcToken, cookieToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
 
@@ -490,14 +508,14 @@ public class ShuyunAuditFragment extends Fragment {
                                 auditSuccess = true;
                             } else {
                                 // 延期审核失败，尝试普通审核
-                                result = ShuyunApi.submitCityAudit(pcToken,
+                                result = ShuyunApi.submitCityAudit(pcToken, cookieToken,
                                     task.orderNum, task.jobInstId, task.flowInstId,
                                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                                 auditSuccess = ShuyunApi.isSuccess(result);
                             }
                         } else {
                             // 普通审核优先
-                            result = ShuyunApi.submitCityAudit(pcToken,
+                            result = ShuyunApi.submitCityAudit(pcToken, cookieToken,
                                 task.orderNum, task.jobInstId, task.flowInstId,
                                 task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
 
@@ -505,7 +523,7 @@ public class ShuyunAuditFragment extends Fragment {
                                 auditSuccess = true;
                             } else {
                                 // 普通审核失败，尝试延期审核
-                                result = ShuyunApi.submitCityDelayAudit(pcToken,
+                                result = ShuyunApi.submitCityDelayAudit(pcToken, cookieToken,
                                     task.orderNum, task.jobInstId, task.flowInstId,
                                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                                 auditSuccess = ShuyunApi.isSuccess(result);
@@ -523,7 +541,7 @@ public class ShuyunAuditFragment extends Fragment {
                     // 本轮审核完成，获取已办列表后等待下一轮
                     if (isCityRunning) {
                         // 重新获取已办列表
-                        String finishedJson2 = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
+                        String finishedJson2 = ShuyunApi.getCityFinishedList(pcToken, cookieToken, cityAreaCode);
                         List<ShuyunApi.CountyTaskInfo> finishedList2 = ShuyunApi.parseCountyTaskList(finishedJson2);
                         appendLog("已办: " + finishedList2.size() + " 条");
 
@@ -599,8 +617,13 @@ public class ShuyunAuditFragment extends Fragment {
         Session s = Session.get();
         if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;
+            }
         } else if (callback != null) {
             pcToken = callback.getPcToken();
+            cookieToken = pcToken;
         }
 
         if (pcToken == null || pcToken.isEmpty()) {
@@ -633,8 +656,10 @@ public class ShuyunAuditFragment extends Fragment {
         // 【核心】根据易语言逻辑：直接用32269获取待办工单（limit=10）
         appendLog("正在获取省级待审核工单... 区域: " + CITY_AREA_NAMES[selectedCityAreaIndex] + "(" + cityAreaCode + ")");
         appendLog("Token: " + (pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
+        appendLog("CookieToken: " + (cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
         
-        String jsonStr = ShuyunApi.getProvinceTaskList(pcToken, cityAreaCode);
+        // 【核心】使用双token调用
+        String jsonStr = ShuyunApi.getProvinceTaskList(pcToken, cookieToken, cityAreaCode);
         
         // 调试日志：输出原始返回
         if (jsonStr == null || jsonStr.isEmpty()) {
@@ -782,7 +807,8 @@ public class ShuyunAuditFragment extends Fragment {
 
                     // 延期判断获取 jobId_ID（与易语言一致）
                     // 省级审核使用PROVINCE_AUDIT_USER_ID(32269)
-                    String delayResult = ShuyunApi.checkDelayForProvince(pcToken,
+                    // 【核心】使用双token调用
+                    String delayResult = ShuyunApi.checkDelayForProvince(pcToken, cookieToken,
                         task.orderNum, task.jobInstId, task.relaType,
                         task.flowInstId, task.jobId, task.workInstId, task.flowId);
 
@@ -795,13 +821,15 @@ public class ShuyunAuditFragment extends Fragment {
                     boolean delaySuccess = false;
 
                     // 1. 执行普通审核
-                    String result1 = ShuyunApi.submitProvinceAudit(pcToken,
+                    // 【核心】使用双token调用
+                    String result1 = ShuyunApi.submitProvinceAudit(pcToken, cookieToken,
                         task.orderNum, task.jobInstId, task.flowInstId,
                         task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                     normalSuccess = ShuyunApi.isSuccess(result1);
 
                     // 2. 执行延期审核
-                    String result2 = ShuyunApi.submitProvinceDelayAudit(pcToken,
+                    // 【核心】使用双token调用
+                    String result2 = ShuyunApi.submitProvinceDelayAudit(pcToken, cookieToken,
                         task.orderNum, task.jobInstId, task.flowInstId,
                         task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                     delaySuccess = ShuyunApi.isSuccess(result2);
@@ -874,8 +902,13 @@ public class ShuyunAuditFragment extends Fragment {
         // 检查PC端登录
         if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;
+            }
         } else if (callback != null) {
             pcToken = callback.getPcToken();
+            cookieToken = pcToken;
         }
 
         if (pcToken == null || pcToken.isEmpty()) {
@@ -904,7 +937,8 @@ public class ShuyunAuditFragment extends Fragment {
         new Thread(() -> {
             try {
                 // 延期判断获取 jobId_ID（省监控回单也使用省级审核的userId）
-                String delayResult = ShuyunApi.checkDelayForProvince(pcToken,
+                // 【核心】使用双token调用
+                String delayResult = ShuyunApi.checkDelayForProvince(pcToken, cookieToken,
                     task.orderNum, task.jobInstId, task.relaType,
                     task.flowInstId, task.jobId, task.workInstId, task.flowId);
 
@@ -917,7 +951,8 @@ public class ShuyunAuditFragment extends Fragment {
 
                 // 1. 执行普通审核
                 appendLog("执行普通审核...");
-                String result1 = ShuyunApi.submitProvinceAudit(pcToken,
+                // 【核心】使用双token调用
+                String result1 = ShuyunApi.submitProvinceAudit(pcToken, cookieToken,
                     task.orderNum, task.jobInstId, task.flowInstId,
                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                 normalSuccess = ShuyunApi.isSuccess(result1);
@@ -925,7 +960,8 @@ public class ShuyunAuditFragment extends Fragment {
 
                 // 2. 执行延期审核
                 appendLog("执行延期审核...");
-                String result2 = ShuyunApi.submitProvinceDelayAudit(pcToken,
+                // 【核心】使用双token调用
+                String result2 = ShuyunApi.submitProvinceDelayAudit(pcToken, cookieToken,
                     task.orderNum, task.jobInstId, task.flowInstId,
                     task.jobId, task.workInstId, task.flowId, jobIdFromDelay);
                 delaySuccess = ShuyunApi.isSuccess(result2);
@@ -964,6 +1000,10 @@ public class ShuyunAuditFragment extends Fragment {
         Session s = Session.get();
         if (s.shuyunPcToken != null && !s.shuyunPcToken.isEmpty()) {
             pcToken = s.shuyunPcToken;
+            cookieToken = s.shuyunPcTokenCookie;
+            if (cookieToken == null || cookieToken.isEmpty()) {
+                cookieToken = pcToken;
+            }
         }
 
         if (pcToken == null || pcToken.isEmpty()) {
@@ -973,7 +1013,8 @@ public class ShuyunAuditFragment extends Fragment {
         String cityAreaCode = CITY_AREA_CODES[selectedCountyIndex];
         new Thread(() -> {
             try {
-                String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cityAreaCode);
+                // 【核心】使用双token调用
+                String finishedJson = ShuyunApi.getCityFinishedList(pcToken, cookieToken, cityAreaCode);
                 List<ShuyunApi.CountyTaskInfo> finishedList = ShuyunApi.parseCountyTaskList(finishedJson);
                 updateCityFinishedList(finishedList);
             } catch (Exception e) {

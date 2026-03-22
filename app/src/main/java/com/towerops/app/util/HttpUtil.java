@@ -23,6 +23,16 @@ public class HttpUtil {
             .build();
 
     /**
+     * HTTP 响应结果封装（包含响应体和响应头）
+     */
+    public static class HttpResponse {
+        public String body = "";
+        public String setCookie = "";
+        public int code = 0;
+        public boolean success = false;
+    }
+
+    /**
      * POST 请求，返回响应体字符串
      *
      * @param url     目标地址
@@ -32,6 +42,22 @@ public class HttpUtil {
      * @return 响应体，失败返回空字符串
      */
     public static String post(String url, String post, String headers, String cookie) {
+        HttpResponse response = postWithHeaders(url, post, headers, cookie);
+        return response != null ? response.body : "";
+    }
+
+    /**
+     * POST 请求，返回完整响应（包含响应体和 Set-Cookie 头）
+     * 【核心】用于 PC 登录时获取 Set-Cookie 中的 towerNumber-Token
+     *
+     * @param url     目标地址
+     * @param post    POST 参数字符串
+     * @param headers 附加协议头
+     * @param cookie  Cookie 字符串
+     * @return HttpResponse 包含 body 和 setCookie
+     */
+    public static HttpResponse postWithHeaders(String url, String post, String headers, String cookie) {
+        HttpResponse result = new HttpResponse();
         try {
             // 根据Content-Type自动选择MediaType（兼容带charset的情况）
             MediaType mediaType = FORM_TYPE; // 默认
@@ -89,23 +115,30 @@ public class HttpUtil {
             }
             
             try (Response response = CLIENT.newCall(request).execute()) {
-                int code = response.code();
-                String respBody = "";
+                result.code = response.code();
+                result.success = result.code >= 200 && result.code < 300;
+                
+                // 【核心】提取 Set-Cookie 头
+                result.setCookie = response.header("Set-Cookie", "");
+                if (result.setCookie != null && !result.setCookie.isEmpty()) {
+                    System.out.println("[HttpUtil] Set-Cookie received: " + result.setCookie.substring(0, Math.min(50, result.setCookie.length())) + "...");
+                }
+                
                 if (response.body() != null) {
-                    respBody = response.body().string();
+                    result.body = response.body().string();
                 }
                 // 记录详细日志
-                System.out.println("[HttpUtil] POST " + url + " -> " + code);
-                if (code < 200 || code >= 300) {
-                    System.err.println("[HttpUtil] Error response: " + code + " body: " + respBody);
+                System.out.println("[HttpUtil] POST " + url + " -> " + result.code);
+                if (!result.success) {
+                    System.err.println("[HttpUtil] Error response: " + result.code + " body: " + result.body);
                 }
-                return respBody;
+                return result;
             }
         } catch (Exception e) {
             System.err.println("[HttpUtil] POST Exception: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             e.printStackTrace();
         }
-        return "";
+        return result;
     }
 
     /**

@@ -402,6 +402,7 @@ public class ShuyunMonitorFragment extends Fragment {
 
     /**
      * PC登录
+     * 【核心】同时获取 Authorization token 和 Cookie 中的 towerNumber-Token
      */
     private void doPcLogin() {
         String imgcode = etPcCaptcha.getText().toString().trim();
@@ -431,18 +432,24 @@ public class ShuyunMonitorFragment extends Fragment {
                     return;
                 }
 
-                String result = ShuyunApi.loginByPc(account.username, account.password, imgcode, currentPcIp);
+                // 【核心】使用新的登录方法，同时获取 token 和 setCookie
+                ShuyunApi.PcLoginResult loginResult = ShuyunApi.loginByPcWithCookie(account.username, account.password, imgcode, currentPcIp);
 
-                if (ShuyunApi.isSuccess(result)) {
-                    pcToken = ShuyunApi.parsePcToken(result);
+                if (loginResult.success) {
+                    pcToken = loginResult.token;
                     pcIp = currentPcIp;
                     isPcLoggedIn = true;
 
                     // 保存到Session并持久化
                     Session s = Session.get();
-                    s.shuyunPcToken = pcToken;
+                    s.shuyunPcToken = loginResult.token;           // Authorization 用的 token
+                    s.shuyunPcTokenCookie = loginResult.cookieToken; // Cookie 用的 towerNumber-Token
                     s.shuyunPcIp = pcIp;
                     s.saveShuyunLogin(getContext());
+
+                    System.out.println("[ShuyunMonitorFragment] PC登录成功");
+                    System.out.println("[ShuyunMonitorFragment] authToken: " + (loginResult.token.length() > 20 ? loginResult.token.substring(0, 20) + "..." : loginResult.token));
+                    System.out.println("[ShuyunMonitorFragment] cookieToken: " + (loginResult.cookieToken.length() > 20 ? loginResult.cookieToken.substring(0, 20) + "..." : loginResult.cookieToken));
 
                     mainHandler.post(() -> {
                         updateLoginStatus();
@@ -456,9 +463,9 @@ public class ShuyunMonitorFragment extends Fragment {
                     });
                 } else {
                     mainHandler.post(() -> {
-                        Toast.makeText(getContext(), "PC登录失败: " + result, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "PC登录失败", Toast.LENGTH_SHORT).show();
                         btnPcLogin.setEnabled(true);
-                        btnPcLogin.setText("PC登录");
+                        btnPcLogin.setText("登录");
                         // 登录失败后刷新验证码
                         loadCaptcha();
                     });
@@ -467,7 +474,7 @@ public class ShuyunMonitorFragment extends Fragment {
                 mainHandler.post(() -> {
                     Toast.makeText(getContext(), "PC登录异常: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     btnPcLogin.setEnabled(true);
-                    btnPcLogin.setText("PC登录");
+                    btnPcLogin.setText("登录");
                 });
             }
         }).start();

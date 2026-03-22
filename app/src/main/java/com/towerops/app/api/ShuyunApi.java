@@ -205,7 +205,7 @@ public class ShuyunApi {
     // 2. PC版登录
     // =====================================================================
     /**
-     * PC版登录（需要验证码）
+     * PC版登录（需要验证码）- 旧版本，只返回JSON字符串
      * @param username 用户名
      * @param password 密码（加密后的）
      * @param imgcode 验证码
@@ -228,6 +228,55 @@ public class ShuyunApi {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * PC版登录（需要验证码）- 【核心】新版本，同时获取 Authorization token 和 Set-Cookie
+     * @param username 用户名
+     * @param password 密码（加密后的）
+     * @param imgcode 验证码
+     * @param ip IP地址（从getImgcode获取）
+     * @return PcLoginResult 包含 token 和 cookieToken
+     */
+    public static PcLoginResult loginByPcWithCookie(String username, String password, String imgcode, String ip) {
+        String url = PC_BASE + "/api/auth/jwt/token";
+
+        String post = "{\"username\":\"" + username + "\","
+                + "\"password\":\"" + password + "\","
+                + "\"imgcode\":\"" + imgcode + "\","
+                + "\"ip\":\"" + ip + "\"}";
+
+        String headers = buildPcLoginHeader(post.length());
+        
+        PcLoginResult result = new PcLoginResult();
+        try {
+            // 【核心】使用 postWithHeaders 获取 Set-Cookie
+            HttpUtil.HttpResponse response = HttpUtil.postWithHeaders(url, post, headers, null);
+            
+            // 解析 JSON 获取 token
+            if (response.body != null && !response.body.isEmpty()) {
+                JSONObject root = new JSONObject(response.body);
+                result.token = root.optString("data", "");
+            }
+            
+            // 【核心】从 Set-Cookie 中提取 towerNumber-Token
+            if (response.setCookie != null && !response.setCookie.isEmpty()) {
+                result.cookieToken = extractTowerNumberToken(response.setCookie);
+                System.out.println("[ShuyunApi] Extracted cookieToken from Set-Cookie: " + 
+                    (result.cookieToken.length() > 20 ? result.cookieToken.substring(0, 20) + "..." : result.cookieToken));
+            }
+            
+            // 如果 cookieToken 为空，使用 token 作为备选
+            if (result.cookieToken.isEmpty()) {
+                result.cookieToken = result.token;
+                System.out.println("[ShuyunApi] cookieToken empty, using token as fallback");
+            }
+            
+            result.success = !result.token.isEmpty();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**
@@ -886,11 +935,12 @@ public class ShuyunApi {
     // =====================================================================
     /**
      * 获取县级待审核工单列表
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param userId 区县经理代号（36745平阳/31950泰顺）
      * @return 工单列表JSON
      */
-    public static String getCountyTaskList(String pcToken, String userId) {
+    public static String getCountyTaskList(String pcToken, String cookieToken, String userId) {
         // 与易语言完全一致：URL和body都带参数，使用POST请求（form-urlencoded）
         String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
                 + "?page=1"
@@ -903,7 +953,8 @@ public class ShuyunApi {
                 + "&flowId=1025,1054,1055,1056,1131,1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1137,1143,1063"
                 + "&orderType=&xmlx=&area=&cityArea=";
 
-        String headers = buildCountyApiHeader(pcToken);
+        // 【核心】使用双token：authToken用于Authorization，cookieToken用于Cookie
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -911,6 +962,13 @@ public class ShuyunApi {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * 获取县级待审核工单列表（兼容旧版本，使用同一个token）
+     */
+    public static String getCountyTaskList(String pcToken, String userId) {
+        return getCountyTaskList(pcToken, pcToken, userId);
     }
 
     /**
@@ -959,7 +1017,8 @@ public class ShuyunApi {
 
     /**
      * 县级审核通过
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -969,7 +1028,7 @@ public class ShuyunApi {
      * @param userId 区县经理代号
      * @return 审核结果
      */
-    public static String submitCountyAudit(String pcToken, String orderNum, String jobInstId,
+    public static String submitCountyAudit(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String userId) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -990,8 +1049,8 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        // 使用JSON PUT请求头（易语言 网页_访问_对象 第2参数=3 即PUT）
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
             String result = HttpUtil.put(url, post, headers, null);
@@ -1000,6 +1059,14 @@ public class ShuyunApi {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * 县级审核通过（兼容旧版本，使用同一个token）
+     */
+    public static String submitCountyAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String userId) {
+        return submitCountyAudit(pcToken, pcToken, orderNum, jobInstId, flowInstId, jobId, workInstId, flowId, userId);
     }
 
     /**
@@ -1035,11 +1102,12 @@ public class ShuyunApi {
     /**
      * 获取省级待审核工单列表
      * 【核心】使用 PROVINCE_AUDIT_USER_ID = 32269
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param cityArea 区县代码（如330326）
      * @return 工单列表JSON
      */
-    public static String getProvinceTaskList(String pcToken, String cityArea) {
+    public static String getProvinceTaskList(String pcToken, String cookieToken, String cityArea) {
         // 【核心】与易语言一致：使用 PROVINCE_AUDIT_USER_ID (32269) 获取省级待办
         String userId = PROVINCE_AUDIT_USER_ID;
         
@@ -1053,22 +1121,16 @@ public class ShuyunApi {
         String post = "page=1&limit=10&userId=" + userId
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String headers = buildCountyApiHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
         
         // 【调试日志】详细输出请求信息
         System.out.println("[ShuyunApi] ========== 省级待办请求 ==========");
         System.out.println("[ShuyunApi] userId: " + userId + " (PROVINCE_AUDIT_USER_ID)");
+        System.out.println("[ShuyunApi] authToken: " + (pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
+        System.out.println("[ShuyunApi] cookieToken: " + (cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
         System.out.println("[ShuyunApi] URL: " + url);
         System.out.println("[ShuyunApi] POST: " + post);
-        System.out.println("[ShuyunApi] Headers:");
-        String[] headerLines = headers.split("\n");
-        for (String line : headerLines) {
-            if (line.contains(pcToken)) {
-                System.out.println("  " + line.substring(0, Math.min(line.indexOf(pcToken) + 20, line.length())) + "...");
-            } else {
-                System.out.println("  " + line);
-            }
-        }
         
         try {
             String result = HttpUtil.post(url, post, headers, null);
@@ -1089,8 +1151,16 @@ public class ShuyunApi {
     }
 
     /**
+     * 获取省级待审核工单列表（兼容旧版本）
+     */
+    public static String getProvinceTaskList(String pcToken, String cityArea) {
+        return getProvinceTaskList(pcToken, pcToken, cityArea);
+    }
+
+    /**
      * 省级普通审核通过
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -1100,7 +1170,7 @@ public class ShuyunApi {
      * @param jobId_ID 延期判断返回的jobId
      * @return 审核结果
      */
-    public static String submitProvinceAudit(String pcToken, String orderNum, String jobInstId,
+    public static String submitProvinceAudit(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -1123,7 +1193,8 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + jobId_ID + "@10023\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
             String result = HttpUtil.put(url, post, headers, null);
@@ -1135,8 +1206,17 @@ public class ShuyunApi {
     }
 
     /**
+     * 省级普通审核通过（兼容旧版本）
+     */
+    public static String submitProvinceAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        return submitProvinceAudit(pcToken, pcToken, orderNum, jobInstId, flowInstId, jobId, workInstId, flowId, jobId_ID);
+    }
+
+    /**
      * 省级延期审核通过
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -1146,7 +1226,7 @@ public class ShuyunApi {
      * @param jobId_ID 延期判断返回的jobId
      * @return 审核结果
      */
-    public static String submitProvinceDelayAudit(String pcToken, String orderNum, String jobInstId,
+    public static String submitProvinceDelayAudit(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -1171,7 +1251,8 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
             String result = HttpUtil.put(url, post, headers, null);
@@ -1182,6 +1263,14 @@ public class ShuyunApi {
         }
     }
 
+    /**
+     * 省级延期审核通过（兼容旧版本）
+     */
+    public static String submitProvinceDelayAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        return submitProvinceDelayAudit(pcToken, pcToken, orderNum, jobInstId, flowInstId, jobId, workInstId, flowId, jobId_ID);
+    }
+
     // =====================================================================
     // 9. 市级审核接口（PC端API）
     // =====================================================================
@@ -1190,11 +1279,12 @@ public class ShuyunApi {
 
     /**
      * 获取市级待审核工单列表
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param cityArea 区县代码（如330326）
      * @return 工单列表JSON
      */
-    public static String getCityTaskList(String pcToken, String cityArea) {
+    public static String getCityTaskList(String pcToken, String cookieToken, String cityArea) {
         // 与易语言完全一致：URL和body都带参数，使用POST请求（form-urlencoded）
         String url = PC_BASE + "/api/flowable/flowable/task/listTodo"
                 + "?page=1"
@@ -1205,7 +1295,8 @@ public class ShuyunApi {
         String post = "page=1&limit=10&userId=" + CITY_AUDIT_USER_ID
                 + "&flowId=&orderType=&xmlx=&area=330300&cityArea=" + cityArea;
 
-        String headers = buildCountyApiHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -1216,12 +1307,20 @@ public class ShuyunApi {
     }
 
     /**
+     * 获取市级待审核工单列表（兼容旧版本）
+     */
+    public static String getCityTaskList(String pcToken, String cityArea) {
+        return getCityTaskList(pcToken, pcToken, cityArea);
+    }
+
+    /**
      * 获取市级已办工单列表
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param cityArea 区县代码（如330326）
      * @return 已办工单列表JSON
      */
-    public static String getCityFinishedList(String pcToken, String cityArea) {
+    public static String getCityFinishedList(String pcToken, String cookieToken, String cityArea) {
         // 与易语言一致：URL和body都带参数，使用POST请求（form-urlencoded）
         // limit=10用于获取更多数据，以便分离显示前3条+省监控审核工单
         String url = PC_BASE + "/api/flowable/flowable/task/listToFinish"
@@ -1233,7 +1332,8 @@ public class ShuyunApi {
         String post = "page=1&limit=10&userId=" + CITY_AUDIT_USER_ID
                 + "&flowId=&orderType=&area=330300&cityArea=" + cityArea;
 
-        String headers = buildCountyApiHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -1244,8 +1344,16 @@ public class ShuyunApi {
     }
 
     /**
+     * 获取市级已办工单列表（兼容旧版本）
+     */
+    public static String getCityFinishedList(String pcToken, String cityArea) {
+        return getCityFinishedList(pcToken, pcToken, cityArea);
+    }
+
+    /**
      * 延期判断接口（市级审核用）
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param relaType 关联类型
@@ -1255,14 +1363,23 @@ public class ShuyunApi {
      * @param flowId 流程ID
      * @return 延期判断结果JSON
      */
+    public static String checkDelay(String pcToken, String cookieToken, String orderNum, String jobInstId,
+            String relaType, String flowInstId, String jobId, String workInstId, String flowId) {
+        return checkDelayWithUserId(pcToken, cookieToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId, CITY_AUDIT_USER_ID);
+    }
+
+    /**
+     * 延期判断接口（市级审核用，兼容旧版本）
+     */
     public static String checkDelay(String pcToken, String orderNum, String jobInstId,
             String relaType, String flowInstId, String jobId, String workInstId, String flowId) {
-        return checkDelayWithUserId(pcToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId, CITY_AUDIT_USER_ID);
+        return checkDelay(pcToken, pcToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId);
     }
 
     /**
      * 延期判断接口（省级审核用）
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param relaType 关联类型
@@ -1272,15 +1389,23 @@ public class ShuyunApi {
      * @param flowId 流程ID
      * @return 延期判断结果JSON
      */
+    public static String checkDelayForProvince(String pcToken, String cookieToken, String orderNum, String jobInstId,
+            String relaType, String flowInstId, String jobId, String workInstId, String flowId) {
+        return checkDelayWithUserId(pcToken, cookieToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId, PROVINCE_AUDIT_USER_ID);
+    }
+
+    /**
+     * 延期判断接口（省级审核用，兼容旧版本）
+     */
     public static String checkDelayForProvince(String pcToken, String orderNum, String jobInstId,
             String relaType, String flowInstId, String jobId, String workInstId, String flowId) {
-        return checkDelayWithUserId(pcToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId, PROVINCE_AUDIT_USER_ID);
+        return checkDelayForProvince(pcToken, pcToken, orderNum, jobInstId, relaType, flowInstId, jobId, workInstId, flowId);
     }
 
     /**
      * 延期判断接口（通用）
      */
-    private static String checkDelayWithUserId(String pcToken, String orderNum, String jobInstId,
+    private static String checkDelayWithUserId(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String relaType, String flowInstId, String jobId, String workInstId, String flowId, String userId) {
         String url = PC_BASE + "/api/flowable/orderInfo/showWorkInfo";
 
@@ -1296,7 +1421,8 @@ public class ShuyunApi {
                 + "\"requireId\":\"" + orderNum + "\","
                 + "\"gotoType\":\"taskTodo\"}";
 
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
         
         // 【调试日志】
         System.out.println("[ShuyunApi] checkDelay userId: " + userId);
@@ -1379,7 +1505,8 @@ public class ShuyunApi {
 
     /**
      * 市级普通审核通过
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -1389,7 +1516,7 @@ public class ShuyunApi {
      * @param jobId_ID 延期判断返回的jobId
      * @return 审核结果
      */
-    public static String submitCityAudit(String pcToken, String orderNum, String jobInstId,
+    public static String submitCityAudit(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -1406,7 +1533,8 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + jobId_ID + "@10023\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
             String result = HttpUtil.put(url, post, headers, null);
@@ -1418,8 +1546,17 @@ public class ShuyunApi {
     }
 
     /**
+     * 市级普通审核通过（兼容旧版本）
+     */
+    public static String submitCityAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        return submitCityAudit(pcToken, pcToken, orderNum, jobInstId, flowInstId, jobId, workInstId, flowId, jobId_ID);
+    }
+
+    /**
      * 市级延期审核通过
-     * @param pcToken PC端登录Token
+     * @param pcToken PC端登录Token（Authorization）
+     * @param cookieToken PC端登录Token（Cookie中的towerNumber-Token，可为空）
      * @param orderNum 工单编号
      * @param jobInstId 任务实例ID
      * @param flowInstId 流程实例ID
@@ -1429,7 +1566,7 @@ public class ShuyunApi {
      * @param jobId_ID 延期判断返回的jobId
      * @return 审核结果
      */
-    public static String submitCityDelayAudit(String pcToken, String orderNum, String jobInstId,
+    public static String submitCityDelayAudit(String pcToken, String cookieToken, String orderNum, String jobInstId,
             String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
         String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
@@ -1448,7 +1585,8 @@ public class ShuyunApi {
                 + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
                 + "\"copyUsers\":\"" + "" + "\"}";
 
-        String headers = buildCountyJsonHeader(pcToken);
+        // 【核心】使用双token
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
             String result = HttpUtil.put(url, post, headers, null);
@@ -1457,6 +1595,14 @@ public class ShuyunApi {
             e.printStackTrace();
             return "";
         }
+    }
+
+    /**
+     * 市级延期审核通过（兼容旧版本）
+     */
+    public static String submitCityDelayAudit(String pcToken, String orderNum, String jobInstId,
+            String flowInstId, String jobId, String workInstId, String flowId, String jobId_ID) {
+        return submitCityDelayAudit(pcToken, pcToken, orderNum, jobInstId, flowInstId, jobId, workInstId, flowId, jobId_ID);
     }
 
     /**
