@@ -323,24 +323,27 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private void executePlanSite(ShuyunApi.ProvinceInnerTaskInfo item, 
             String groupId, String groupName, String upSiteTime) {
         Session s = Session.get();
-        String pcToken = s.shuyunPcToken;
+        final String pcToken = s.shuyunPcToken;
         String cookieToken = s.shuyunPcTokenCookie;
         if (cookieToken == null || cookieToken.isEmpty()) cookieToken = pcToken;
+        final String finalCookieToken = cookieToken;
         
-        String cityArea = CITY_AREA_CODES[selectedCountyIndex];
+        final String cityArea = CITY_AREA_CODES[selectedCountyIndex];
+        final String stationCode = item.station_code;
+        final String stationName = item.station_name;
         
-        tvStatus.setText("正在执行计划上站: " + item.station_name + "...");
+        tvStatus.setText("正在执行计划上站: " + stationName + "...");
         
         new Thread(() -> {
             try {
-                String result = ShuyunApi.saveSitePlan(pcToken, cookieToken, 
+                String result = ShuyunApi.saveSitePlan(pcToken, finalCookieToken, 
                     cityArea, groupId, groupName, 
-                    item.station_code, item.station_name, upSiteTime);
+                    stationCode, stationName, upSiteTime);
                 
                 mainHandler.post(() -> {
                     if (result.contains("\"status\":200") || result.contains("\"code\":200")) {
-                        Toast.makeText(requireContext(), "计划上站成功: " + item.station_name, Toast.LENGTH_SHORT).show();
-                        tvStatus.setText("计划上站成功: " + item.station_name);
+                        Toast.makeText(requireContext(), "计划上站成功: " + stationName, Toast.LENGTH_SHORT).show();
+                        tvStatus.setText("计划上站成功: " + stationName);
                     } else {
                         Toast.makeText(requireContext(), "计划上站失败: " + result, Toast.LENGTH_LONG).show();
                         tvStatus.setText("计划上站失败");
@@ -360,35 +363,48 @@ public class ProvinceInnerOrderFragment extends Fragment {
      */
     private void executeReceipt(ShuyunApi.ProvinceInnerTaskInfo item, String receiptId) {
         Session s = Session.get();
-        String pcToken = s.shuyunPcToken;
+        final String pcToken = s.shuyunPcToken;
         String cookieToken = s.shuyunPcTokenCookie;
         if (cookieToken == null || cookieToken.isEmpty()) cookieToken = pcToken;
+        final String finalCookieToken = cookieToken;
         
-        tvStatus.setText("正在执行回单: " + item.station_name + "...");
+        final String flowInstId = item.flowInstId;
+        final String jobId = item.jobId;
+        final String workInstId = item.workInstId;
+        final String orderNum = item.orderNum;
+        final String flowId = item.flowId;
+        final String jobInstId = item.jobInstId;
+        final String stationCode = item.station_code;
+        final String orderType = item.order_type;
+        final String workType = item.workType;
+        final String stationName = item.station_name;
+        final String flowName = item.flowName;
+        
+        tvStatus.setText("正在执行回单: " + stationName + "...");
         
         new Thread(() -> {
             try {
                 // 步骤一：真正的工单流转
-                String step1Result = ShuyunApi.receiptStepOne(pcToken, cookieToken,
-                    receiptId, item.flowInstId, item.jobId, item.workInstId,
-                    item.orderNum, item.flowId, item.jobInstId);
+                String step1Result = ShuyunApi.receiptStepOne(pcToken, finalCookieToken,
+                    receiptId, flowInstId, jobId, workInstId,
+                    orderNum, flowId, jobInstId);
                 
                 // 仿生延迟
                 Thread.sleep(4000 + new Random().nextInt(4000));
                 
                 // 步骤二：记录操作日志
-                String step2Result = ShuyunApi.receiptStepTwo(pcToken, cookieToken,
-                    receiptId, item.station_code, item.order_type, item.orderNum,
-                    item.jobId, item.workInstId, item.workType, item.station_name,
-                    item.flowId, item.flowName);
+                String step2Result = ShuyunApi.receiptStepTwo(pcToken, finalCookieToken,
+                    receiptId, stationCode, orderType, orderNum,
+                    jobId, workInstId, workType, stationName,
+                    flowId, flowName);
                 
                 // 解析结果
                 ShuyunApi.ReceiptResult result = ShuyunApi.parseReceiptResult(step1Result);
                 
                 mainHandler.post(() -> {
                     if (result.success) {
-                        Toast.makeText(requireContext(), "回单成功: " + item.station_name, Toast.LENGTH_SHORT).show();
-                        tvStatus.setText("回单成功: " + item.station_name);
+                        Toast.makeText(requireContext(), "回单成功: " + stationName, Toast.LENGTH_SHORT).show();
+                        tvStatus.setText("回单成功: " + stationName);
                         // 从列表中移除已回单的工单
                         removeItemFromList(item);
                     } else {
