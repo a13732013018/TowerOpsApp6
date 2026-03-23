@@ -293,12 +293,18 @@ public class MainActivity extends AppCompatActivity {
         Button btnStart = wof.getBtnStartMonitor();
         Button btnStop  = wof.getBtnStopMonitor();
         if (monitorService != null && monitorService.isRunning()) {
-            btnStart.setText("开启监控");
+            // 监控中：标题改为"监控中"，按钮禁用但保持原色（不变灰）
+            btnStart.setText("监控中");
             btnStart.setEnabled(false);
+            btnStart.setAlpha(1.0f); // 强制保持不透明，避免系统 disabled 变灰
+            btnStart.setBackgroundResource(R.drawable.bg_button_primary_gradient);
             btnStop.setEnabled(true);
         } else {
+            // 已停止：恢复"开启监控"，按钮可用
             btnStart.setText("开启监控");
             btnStart.setEnabled(true);
+            btnStart.setAlpha(1.0f);
+            btnStart.setBackgroundResource(R.drawable.bg_button_primary_gradient);
             btnStop.setEnabled(true);
         }
     }
