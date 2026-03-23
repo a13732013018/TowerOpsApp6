@@ -1945,27 +1945,30 @@ public class ShuyunApi {
     public static String receiptStepOne(String pcToken, String cookieToken,
             String receiptId, String flowInstId, String jobId, String workInstId,
             String orderNum, String flowId, String jobInstId) {
-        String url = PC_BASE + "/api/flowable/flowable/task/finishTask";
+        // 综合上站回单使用与其他审核接口相同的 complete 接口（PUT请求）
+        String url = PC_BASE + "/api/flowable/flowable/task/complete";
 
-        // finishTask 接口要求 JSON body（与浏览器请求一致）
+        // JSON body 与 complete 接口一致，回单时 nextJobAndUser/copyUsers 留空
         String jsonBody = "{"
+            + "\"orderNum\":\"" + orderNum + "\","
             + "\"userId\":\"" + receiptId + "\","
+            + "\"jobInstId\":\"" + jobInstId + "\","
             + "\"flowInstId\":\"" + flowInstId + "\","
             + "\"jobId\":\"" + jobId + "\","
             + "\"workInstId\":\"" + workInstId + "\","
-            + "\"orderNum\":\"" + orderNum + "\","
             + "\"flowId\":\"" + flowId + "\","
-            + "\"jobInstId\":\"" + jobInstId + "\","
-            + "\"formId\":\"\","
-            + "\"formType\":\"\""
+            + "\"dealContent\":\"通过\","
+            + "\"operType\":\"01\","
+            + "\"nextJobAndUser\":\"\","
+            + "\"copyUsers\":\"\""
             + "}";
 
-        String headers = buildCountyApiHeader(pcToken, cookieToken);
-        headers = headers.replace("Content-Type: application/x-www-form-urlencoded",
-                                  "Content-Type: application/json");
+        // Content-Type: application/json
+        String headers = buildCountyJsonHeader(pcToken, cookieToken);
 
         try {
-            String result = HttpUtil.post(url, jsonBody, headers, null);
+            // 使用 PUT 请求（与其他审核通过接口一致）
+            String result = HttpUtil.put(url, jsonBody, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
