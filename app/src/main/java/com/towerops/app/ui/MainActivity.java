@@ -72,11 +72,8 @@ import java.util.Locale;
  */
 public class MainActivity extends AppCompatActivity {
 
-    // UI 控件
+    // UI 控件 —— 配置区控件现已迁移至 WorkOrderFragment，通过 getter 懒获取
     private TextView        tvUserInfo, tvProgress, tvNextRun, tvPowerOutageCountStatus, tvRoundComplete, btnLogout;
-    private CheckBox        cbFeedback, cbAccept, cbRevert;
-    private EditText        etFbMin, etFbMax, etAccMin, etAccMax, etIntMin, etIntMax;
-    private Button          btnStart, btnStop;
 
     // ===== 停电监控相关控件 =====
     private TabLayout        tabLayout;
@@ -162,12 +159,21 @@ public class MainActivity extends AppCompatActivity {
 
         bindViews();
         setupRecycler();
-        setupConfigWatchers();
         setupTabLayout();         // 初始化Tab切换
         updateUserInfo();
 
-        btnStart.setOnClickListener(v -> startMonitor());
-        btnStop.setOnClickListener(v  -> stopMonitor());
+        // 配置区按钮监听：Fragment ready 后由 bindControlsFromFragment() 设置
+        // 注册 ViewPager2 页面切换回调，首次切到位置0时绑定控件
+        viewPager.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    bindControlsFromFragment();
+                }
+            }
+        });
+        // 初始就在第0页，延迟一帧等 Fragment onViewCreated 执行完毕
+        viewPager.post(this::bindControlsFromFragment);
         btnLogout.setOnClickListener(v -> doLogout());
 
         Intent intent = new Intent(this, MonitorService.class);
@@ -223,14 +229,16 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "服务未就绪，请稍候", Toast.LENGTH_SHORT).show();
             return;
         }
-        // 移除 isRunning 检查，允许重新启动监控
-        // 原代码: if (monitorService.isRunning()) { ... return; }
-        // 这会导致停止后再次点击无法刷新数据
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null || wof.getEtIntervalMin() == null) {
+            Toast.makeText(this, "界面未就绪，请稍候", Toast.LENGTH_SHORT).show();
+            return;
+        }
         buildConfig();
         // [BUG-20 修复] 改用新方法名，触发立即重新调度
         monitorService.setIntervalAndReschedule(
-                parseInt(etIntMin.getText().toString(), 90),
-                parseInt(etIntMax.getText().toString(), 120));
+                parseInt(wof.getEtIntervalMin().getText().toString(), 90),
+                parseInt(wof.getEtIntervalMax().getText().toString(), 120));
         monitorService.startMonitor();
         syncButtonState();
         tvProgress.setText("等待首次执行...");
@@ -280,13 +288,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void syncButtonState() {
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null || wof.getBtnStartMonitor() == null) return;
+        Button btnStart = wof.getBtnStartMonitor();
+        Button btnStop  = wof.getBtnStopMonitor();
         if (monitorService != null && monitorService.isRunning()) {
             btnStart.setText("开启监控");
-            btnStart.setEnabled(false);  // 运行时禁用开始按钮
+            btnStart.setEnabled(false);
             btnStop.setEnabled(true);
         } else {
             btnStart.setText("开启监控");
-            btnStart.setEnabled(true);   // 停止时启用开始按钮
+            btnStart.setEnabled(true);
             btnStop.setEnabled(true);
         }
     }
@@ -294,6 +306,20 @@ public class MainActivity extends AppCompatActivity {
     // ── 配置监听 ──────────────────────────────────────────────────────────
 
     private void setupConfigWatchers() {
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null) return;
+        EditText etFbMin  = wof.getEtFeedbackMin();
+        EditText etFbMax  = wof.getEtFeedbackMax();
+        EditText etAccMin = wof.getEtAcceptMin();
+        EditText etAccMax = wof.getEtAcceptMax();
+        EditText etIntMin = wof.getEtIntervalMin();
+        EditText etIntMax = wof.getEtIntervalMax();
+        CheckBox cbFeedback = wof.getCbAutoFeedback();
+        CheckBox cbAccept   = wof.getCbAutoAccept();
+        CheckBox cbRevert   = wof.getCbAutoRevert();
+
+        if (etFbMin == null) return; // 控件还未就绪，等下次触发
+
         // [BUG-18 修复] TextWatcher 通过防抖触发，连续输入停止300ms后才写入
         TextWatcher watcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -325,23 +351,27 @@ public class MainActivity extends AppCompatActivity {
      */
     private void applyConfigNow() {
         buildConfig();
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null || wof.getEtIntervalMin() == null) return;
         if (serviceBound && monitorService != null) {
             // [BUG-20 修复] 改用新方法名，阈值修改立即生效
             monitorService.setIntervalAndReschedule(
-                    parseInt(etIntMin.getText().toString(), 90),
-                    parseInt(etIntMax.getText().toString(), 120));
+                    parseInt(wof.getEtIntervalMin().getText().toString(), 90),
+                    parseInt(wof.getEtIntervalMax().getText().toString(), 120));
         }
     }
 
     private void buildConfig() {
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null || wof.getCbAutoFeedback() == null) return;
         Session s        = Session.get();
-        String fb        = cbFeedback.isChecked() ? "true" : "false";
-        String acc       = cbAccept.isChecked()   ? "true" : "false";
-        String rev       = cbRevert.isChecked()   ? "true" : "false";
-        String fbMinStr  = defaultIfEmpty(etFbMin.getText().toString().trim(),  "70");
-        String fbMaxStr  = defaultIfEmpty(etFbMax.getText().toString().trim(),  "90");
-        String accMinStr = defaultIfEmpty(etAccMin.getText().toString().trim(), "60");
-        String accMaxStr = defaultIfEmpty(etAccMax.getText().toString().trim(), "90");
+        String fb        = wof.getCbAutoFeedback().isChecked() ? "true" : "false";
+        String acc       = wof.getCbAutoAccept().isChecked()   ? "true" : "false";
+        String rev       = wof.getCbAutoRevert().isChecked()   ? "true" : "false";
+        String fbMinStr  = defaultIfEmpty(wof.getEtFeedbackMin().getText().toString().trim(), "70");
+        String fbMaxStr  = defaultIfEmpty(wof.getEtFeedbackMax().getText().toString().trim(), "90");
+        String accMinStr = defaultIfEmpty(wof.getEtAcceptMin().getText().toString().trim(),   "60");
+        String accMaxStr = defaultIfEmpty(wof.getEtAcceptMax().getText().toString().trim(),   "90");
 
         s.appConfig = fb  + "\u0001"
                     + acc + "\u0001"
@@ -354,28 +384,16 @@ public class MainActivity extends AppCompatActivity {
     // ── 视图初始化 ────────────────────────────────────────────────────────
 
     private void bindViews() {
-        tvUserInfo          = findViewById(R.id.tvUserInfo);
-        tvProgress          = findViewById(R.id.tvProgress);
-        tvNextRun           = findViewById(R.id.tvNextRun);
+        tvUserInfo               = findViewById(R.id.tvUserInfo);
+        tvProgress               = findViewById(R.id.tvProgress);
+        tvNextRun                = findViewById(R.id.tvNextRun);
         tvPowerOutageCountStatus = findViewById(R.id.tvPowerOutageCountStatus);
-        tvRoundComplete     = findViewById(R.id.tvRoundComplete);
-        btnLogout           = findViewById(R.id.btnLogout);
-        cbFeedback  = findViewById(R.id.cbAutoFeedback);
-        cbAccept    = findViewById(R.id.cbAutoAccept);
-        cbRevert    = findViewById(R.id.cbAutoRevert);
-        etFbMin     = findViewById(R.id.etFeedbackMin);
-        etFbMax     = findViewById(R.id.etFeedbackMax);
-        etAccMin    = findViewById(R.id.etAcceptMin);
-        etAccMax    = findViewById(R.id.etAcceptMax);
-        etIntMin    = findViewById(R.id.etIntervalMin);
-        etIntMax    = findViewById(R.id.etIntervalMax);
-        btnStart    = findViewById(R.id.btnStartMonitor);
-        btnStop     = findViewById(R.id.btnStopMonitor);
+        tvRoundComplete          = findViewById(R.id.tvRoundComplete);
+        btnLogout                = findViewById(R.id.btnLogout);
 
-        // ===== 停电监控控件 =====
-        tabLayout              = findViewById(R.id.tabLayout);
-        viewPager             = findViewById(R.id.viewPager);
-        // RecyclerView 和排序按钮在 fragment 布局中，由 fragment 自行处理
+        // ===== Tab / ViewPager =====
+        tabLayout   = findViewById(R.id.tabLayout);
+        viewPager   = findViewById(R.id.viewPager);
 
         // ===== 设置ViewPager2 =====
         pagerAdapter = new MainPagerAdapter(this);
@@ -386,20 +404,36 @@ public class MainActivity extends AppCompatActivity {
         // 连接TabLayout和ViewPager2，实现滑动切换
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             switch (position) {
-                case 0:
-                    tab.setText("工单监控");
-                    break;
-                case 1:
-                    tab.setText("停电监控");
-                    break;
-                case 2:
-                    tab.setText("智联工单");
-                    break;
-                case 3:
-                    tab.setText("数运工单");
-                    break;
+                case 0: tab.setText("工单监控"); break;
+                case 1: tab.setText("停电监控"); break;
+                case 2: tab.setText("智联工单"); break;
+                case 3: tab.setText("数运工单"); break;
             }
         }).attach();
+    }
+
+    /**
+     * 从 WorkOrderFragment 获取配置控件引用，设置按钮监听和输入监听。
+     * 在 Fragment onViewCreated 完成后（通过 viewPager.post / 页面切换回调）调用。
+     */
+    private boolean controlsBound = false;
+
+    private void bindControlsFromFragment() {
+        if (controlsBound) return;
+        WorkOrderFragment wof = getWorkOrderFragment();
+        if (wof == null || wof.getBtnStartMonitor() == null) return;
+
+        // 绑定按钮点击
+        wof.getBtnStartMonitor().setOnClickListener(v -> startMonitor());
+        wof.getBtnStopMonitor().setOnClickListener(v  -> stopMonitor());
+
+        // 绑定输入监听（防抖写入配置）
+        setupConfigWatchers();
+
+        // 同步按钮状态
+        syncButtonState();
+
+        controlsBound = true;
     }
 
     private void setupRecycler() {

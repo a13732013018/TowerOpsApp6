@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,11 +22,25 @@ import java.util.List;
 
 /**
  * 工单监控Fragment
+ * 包含：配置控制面板（开关+按钮+阈值输入）、排序工具栏、工单列表
  */
 public class WorkOrderFragment extends Fragment {
 
     private WorkOrderAdapter adapter;
     private RecyclerView recyclerView;
+
+    // ===== 配置区控件 =====
+    private CheckBox cbAutoFeedback;
+    private CheckBox cbAutoAccept;
+    private CheckBox cbAutoRevert;
+    private Button   btnStartMonitor;
+    private Button   btnStopMonitor;
+    private EditText etIntervalMin;
+    private EditText etIntervalMax;
+    private EditText etFeedbackMin;
+    private EditText etFeedbackMax;
+    private EditText etAcceptMin;
+    private EditText etAcceptMax;
 
     public static WorkOrderFragment newInstance() {
         return new WorkOrderFragment();
@@ -39,6 +56,21 @@ public class WorkOrderFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // 绑定配置区控件
+        cbAutoFeedback  = view.findViewById(R.id.cbAutoFeedback);
+        cbAutoAccept    = view.findViewById(R.id.cbAutoAccept);
+        cbAutoRevert    = view.findViewById(R.id.cbAutoRevert);
+        btnStartMonitor = view.findViewById(R.id.btnStartMonitor);
+        btnStopMonitor  = view.findViewById(R.id.btnStopMonitor);
+        etIntervalMin   = view.findViewById(R.id.etIntervalMin);
+        etIntervalMax   = view.findViewById(R.id.etIntervalMax);
+        etFeedbackMin   = view.findViewById(R.id.etFeedbackMin);
+        etFeedbackMax   = view.findViewById(R.id.etFeedbackMax);
+        etAcceptMin     = view.findViewById(R.id.etAcceptMin);
+        etAcceptMax     = view.findViewById(R.id.etAcceptMax);
+
+        // 绑定列表
         recyclerView = view.findViewById(R.id.recyclerWorkOrders);
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -184,4 +216,18 @@ public class WorkOrderFragment extends Fragment {
             recyclerView.setAdapter(adapter);
         }
     }
+
+    // ===== 配置区控件公共访问方法 =====
+
+    public CheckBox getCbAutoFeedback()  { return cbAutoFeedback; }
+    public CheckBox getCbAutoAccept()    { return cbAutoAccept; }
+    public CheckBox getCbAutoRevert()    { return cbAutoRevert; }
+    public Button   getBtnStartMonitor() { return btnStartMonitor; }
+    public Button   getBtnStopMonitor()  { return btnStopMonitor; }
+    public EditText getEtIntervalMin()   { return etIntervalMin; }
+    public EditText getEtIntervalMax()   { return etIntervalMax; }
+    public EditText getEtFeedbackMin()   { return etFeedbackMin; }
+    public EditText getEtFeedbackMax()   { return etFeedbackMax; }
+    public EditText getEtAcceptMin()     { return etAcceptMin; }
+    public EditText getEtAcceptMax()     { return etAcceptMax; }
 }
