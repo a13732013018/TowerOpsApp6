@@ -272,7 +272,7 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private void executeSign(ShuyunApi.ProvinceInnerTaskInfo item) {
         Session s = Session.get();
         String appToken = s.shuyunAppToken;
-        String userId = s.shuyunUserId;
+        String userId = s.shuyunAppUserId;
 
         if (appToken == null || appToken.isEmpty()) {
             Toast.makeText(requireContext(), "请先登录数运APP", Toast.LENGTH_SHORT).show();
@@ -949,7 +949,7 @@ public class ProvinceInnerOrderFragment extends Fragment {
 
         new Thread(() -> {
             try {
-                String json = ShuyunApi.getToSignTaskList(appToken, s.shuyunUserId);
+                String json = ShuyunApi.getToSignTaskList(appToken, s.shuyunAppUserId);
                 List<ShuyunApi.ProvinceInnerTaskInfo> taskList =
                         ShuyunApi.parseToSignTaskList(json);
 
