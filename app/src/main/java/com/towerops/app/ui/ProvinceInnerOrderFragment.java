@@ -716,6 +716,9 @@ public class ProvinceInnerOrderFragment extends Fragment {
             updateAllSortButtons();
             applySort();
         });
+
+        // 初始化排序按钮显示状态（确保文字和颜色与状态一致）
+        updateAllSortButtons();
     }
     
     /** 更新所有排序按钮显示 */
@@ -739,26 +742,23 @@ public class ProvinceInnerOrderFragment extends Fragment {
     
     /** 更新排序按钮显示 */
     private void updateSortButton(Button btn, int state, String baseText) {
-        String text = baseText;
-        int color = 0xFFE5E7EB; // 默认灰色
-        int textColor = 0xFF333333;
-        
         switch (state) {
             case SORT_ASC:
-                text = baseText + " ↑";
-                color = 0xFFDBEAFE; // 浅蓝色
-                textColor = 0xFF2563EB;
+                btn.setText(baseText + " ↑");
+                btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFDBEAFE));
+                btn.setTextColor(0xFF2563EB);
                 break;
             case SORT_DESC:
-                text = baseText + " ↓";
-                color = 0xFFDBEAFE;
-                textColor = 0xFF2563EB;
+                btn.setText(baseText + " ↓");
+                btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFDBEAFE));
+                btn.setTextColor(0xFF2563EB);
+                break;
+            default: // SORT_NONE
+                btn.setText(baseText);
+                btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFE5E7EB));
+                btn.setTextColor(0xFF333333);
                 break;
         }
-        
-        btn.setText(text);
-        btn.setBackgroundColor(color);
-        btn.setTextColor(textColor);
     }
     
     /** 应用排序 */

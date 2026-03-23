@@ -1946,20 +1946,26 @@ public class ShuyunApi {
             String receiptId, String flowInstId, String jobId, String workInstId,
             String orderNum, String flowId, String jobInstId) {
         String url = PC_BASE + "/api/flowable/flowable/task/finishTask";
-        
-        String post = "userId=" + receiptId
-            + "&flowInstId=" + flowInstId
-            + "&jobId=" + jobId
-            + "&workInstId=" + workInstId
-            + "&orderNum=" + orderNum
-            + "&flowId=" + flowId
-            + "&jobInstId=" + jobInstId
-            + "&formId=&formType=";
-        
+
+        // finishTask 接口要求 JSON body（与浏览器请求一致）
+        String jsonBody = "{"
+            + "\"userId\":\"" + receiptId + "\","
+            + "\"flowInstId\":\"" + flowInstId + "\","
+            + "\"jobId\":\"" + jobId + "\","
+            + "\"workInstId\":\"" + workInstId + "\","
+            + "\"orderNum\":\"" + orderNum + "\","
+            + "\"flowId\":\"" + flowId + "\","
+            + "\"jobInstId\":\"" + jobInstId + "\","
+            + "\"formId\":\"\","
+            + "\"formType\":\"\""
+            + "}";
+
         String headers = buildCountyApiHeader(pcToken, cookieToken);
-        
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded",
+                                  "Content-Type: application/json");
+
         try {
-            String result = HttpUtil.post(url, post, headers, null);
+            String result = HttpUtil.post(url, jsonBody, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -2024,49 +2030,48 @@ public class ShuyunApi {
         ReceiptResult result = new ReceiptResult();
         result.success = false;
         result.message = "未知错误";
-        
+
         if (jsonStr == null || jsonStr.isEmpty()) {
             result.message = "网络超时或被拦截";
             return result;
         }
-        
+
         try {
             JSONObject root = new JSONObject(jsonStr);
-            
-            // 第一步：检查内层 data.msg 是否有报错
-            JSONObject data = root.optJSONObject("data");
-            if (data != null) {
-                String dataMsg = data.optString("msg", "");
-                if (!dataMsg.isEmpty()) {
-                    result.success = false;
-                    result.message = "失败:" + dataMsg;
-                    return result;
-                }
-            }
-            
-            // 第二步：检查外层状态码
+
+            // 第一步：取外层状态码（returnCode 优先，没有再取 code）
             String returnCode = root.optString("returnCode", "");
             if (returnCode.isEmpty()) {
                 returnCode = root.optString("code", "");
             }
-            
+
+            // 第二步：判断是否成功
             if ("1".equals(returnCode) || "200".equals(returnCode) || "0".equals(returnCode)) {
                 result.success = true;
                 result.message = "回单执行成功";
-            } else {
-                String returnMsg = root.optString("returnMsg", "");
-                if (returnMsg.isEmpty()) {
-                    returnMsg = root.optString("msg", "");
-                }
-                result.success = false;
-                result.message = "失败:" + (returnMsg.isEmpty() ? "未知业务异常" : returnMsg);
+                return result;
             }
-            
+
+            // 第三步：失败时，依次尝试从 returnMsg / msg / data.msg 取错误描述
+            String errMsg = root.optString("returnMsg", "").trim();
+            if (errMsg.isEmpty()) errMsg = root.optString("msg", "").trim();
+            if (errMsg.isEmpty()) {
+                JSONObject data = root.optJSONObject("data");
+                if (data != null) errMsg = data.optString("msg", "").trim();
+            }
+            // 如果还是空，把原始响应截取前100字符附上
+            if (errMsg.isEmpty()) {
+                String raw = jsonStr.length() > 100 ? jsonStr.substring(0, 100) + "..." : jsonStr;
+                errMsg = "接口返回: " + raw;
+            }
+            result.success = false;
+            result.message = "失败: " + errMsg;
+
         } catch (Exception e) {
             result.success = false;
-            result.message = "失败:服务器系统异常(502)";
+            result.message = "失败: 解析异常(" + e.getMessage() + ")";
         }
-        
+
         return result;
     }
 
