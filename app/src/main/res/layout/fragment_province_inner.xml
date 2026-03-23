@@ -15,7 +15,41 @@
         android:background="@android:color/white"
         android:layout_marginTop="6dp">
 
-        <!-- 第一行：小组选择 + 工单类型 -->
+        <!-- 第一行：站名搜索 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/etSearchStation"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:hint="输入站名搜索"
+                android:textSize="12sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:background="@drawable/bg_spinner"
+                android:singleLine="true" />
+
+            <Button
+                android:id="@+id/btnSearch"
+                android:layout_width="60dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:text="定位"
+                android:textSize="11sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#10B981"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+
+        <!-- 第二行：小组选择 + 工单类型 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,7 +91,7 @@
                 android:padding="6dp" />
         </LinearLayout>
 
-        <!-- 第二行：区县 + 处理人 -->
+        <!-- 第三行：区县 + 处理人 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -99,7 +133,65 @@
                 android:padding="6dp" />
         </LinearLayout>
 
-        <!-- 第三行：查询按钮 -->
+        <!-- 第四行：排序按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="排序:"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <Button
+                android:id="@+id/btnSortStation"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="站名"
+                android:textSize="10sp"
+                android:textColor="#333333"
+                android:backgroundTint="#E5E7EB"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btnSortTime"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="完成时间"
+                android:textSize="10sp"
+                android:textColor="#333333"
+                android:backgroundTint="#E5E7EB"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btnSortType"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="工单类型"
+                android:textSize="10sp"
+                android:textColor="#333333"
+                android:backgroundTint="#E5E7EB"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+
+        <!-- 第五行：查询按钮 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

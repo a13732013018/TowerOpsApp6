@@ -28,9 +28,13 @@ import com.towerops.app.model.Session;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -131,6 +135,13 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private Spinner spinnerCounty;      // 区县选择器
     private Button btnQuery;
     private TextView tvStatus;
+    
+    // 搜索和排序
+    private EditText etSearchStation;
+    private Button btnSearch;
+    private Button btnSortStation;
+    private Button btnSortTime;
+    private Button btnSortType;
 
     // ── 状态 ────────────────────────────────────────────────────────
     private int selectedGroupIndex      = 0;   // 0=第一小组, 1=第二小组
@@ -138,6 +149,18 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private int selectedOrderTypeIndex  = 0;   // 工单类型下标
     private int selectedCountyIndex     = 0;   // 区县下标
     private volatile boolean isQuerying = false;
+    
+    // ── 排序状态 ─────────────────────────────────────────────────────
+    private static final int SORT_NONE = 0;
+    private static final int SORT_ASC = 1;   // 正序
+    private static final int SORT_DESC = 2;  // 倒序
+    private int sortStationState = SORT_NONE;
+    private int sortTimeState = SORT_NONE;
+    private int sortTypeState = SORT_NONE;
+    
+    // ── 原始数据缓存 ─────────────────────────────────────────────────
+    private List<ShuyunApi.ProvinceInnerTaskInfo> originalData = new ArrayList<>();
+    private Map<String, Integer> stationOrderCount = new HashMap<>(); // 站点工单数量统计
 
     // ── 主线程Handler ────────────────────────────────────────────────
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -171,6 +194,13 @@ public class ProvinceInnerOrderFragment extends Fragment {
         spinnerCounty  = view.findViewById(R.id.spinnerPICounty);
         btnQuery       = view.findViewById(R.id.btnPIQuery);
         tvStatus       = view.findViewById(R.id.tvPIStatus);
+        
+        // 搜索和排序
+        etSearchStation = view.findViewById(R.id.etSearchStation);
+        btnSearch = view.findViewById(R.id.btnSearch);
+        btnSortStation = view.findViewById(R.id.btnSortStation);
+        btnSortTime = view.findViewById(R.id.btnSortTime);
+        btnSortType = view.findViewById(R.id.btnSortType);
 
         adapter = new ProvinceInnerOrderAdapter();
         rvOrders.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -341,7 +371,11 @@ public class ProvinceInnerOrderFragment extends Fragment {
                     stationCode, stationName, upSiteTime);
                 
                 mainHandler.post(() -> {
-                    if (result.contains("\"status\":200") || result.contains("\"code\":200")) {
+                    // 判断成功：status=200 或 code=200 或 code=1
+                    boolean isSuccess = result.contains("\"status\":200") 
+                            || result.contains("\"code\":200")
+                            || result.contains("\"code\":1");
+                    if (isSuccess) {
                         Toast.makeText(requireContext(), "计划上站成功: " + stationName, Toast.LENGTH_SHORT).show();
                         tvStatus.setText("计划上站成功: " + stationName);
                     } else {
@@ -512,6 +546,138 @@ public class ProvinceInnerOrderFragment extends Fragment {
         });
 
         btnQuery.setOnClickListener(v -> startQuery());
+        
+        // 搜索按钮
+        btnSearch.setOnClickListener(v -> searchAndLocate());
+        
+        // 排序按钮
+        btnSortStation.setOnClickListener(v -> {
+            resetSortStates();
+            sortStationState = (sortStationState + 1) % 3;
+            updateSortButton(btnSortStation, sortStationState, "站名");
+            applySort();
+        });
+        
+        btnSortTime.setOnClickListener(v -> {
+            resetSortStates();
+            sortTimeState = (sortTimeState + 1) % 3;
+            updateSortButton(btnSortTime, sortTimeState, "完成时间");
+            applySort();
+        });
+        
+        btnSortType.setOnClickListener(v -> {
+            resetSortStates();
+            sortTypeState = (sortTypeState + 1) % 3;
+            updateSortButton(btnSortType, sortTypeState, "工单类型");
+            applySort();
+        });
+    }
+    
+    /** 重置所有排序状态 */
+    private void resetSortStates() {
+        sortStationState = SORT_NONE;
+        sortTimeState = SORT_NONE;
+        sortTypeState = SORT_NONE;
+        updateSortButton(btnSortStation, SORT_NONE, "站名");
+        updateSortButton(btnSortTime, SORT_NONE, "完成时间");
+        updateSortButton(btnSortType, SORT_NONE, "工单类型");
+    }
+    
+    /** 更新排序按钮显示 */
+    private void updateSortButton(Button btn, int state, String baseText) {
+        String text = baseText;
+        int color = 0xFFE5E7EB; // 默认灰色
+        int textColor = 0xFF333333;
+        
+        switch (state) {
+            case SORT_ASC:
+                text = baseText + " ↑";
+                color = 0xFFDBEAFE; // 浅蓝色
+                textColor = 0xFF2563EB;
+                break;
+            case SORT_DESC:
+                text = baseText + " ↓";
+                color = 0xFFDBEAFE;
+                textColor = 0xFF2563EB;
+                break;
+        }
+        
+        btn.setText(text);
+        btn.setBackgroundColor(color);
+        btn.setTextColor(textColor);
+    }
+    
+    /** 应用排序 */
+    private void applySort() {
+        if (originalData.isEmpty()) return;
+        
+        List<ShuyunApi.ProvinceInnerTaskInfo> sortedList = new ArrayList<>(originalData);
+        
+        Comparator<ShuyunApi.ProvinceInnerTaskInfo> comparator = null;
+        
+        if (sortStationState != SORT_NONE) {
+            comparator = (a, b) -> {
+                String nameA = a.station_name != null ? a.station_name : "";
+                String nameB = b.station_name != null ? b.station_name : "";
+                int result = nameA.compareTo(nameB);
+                return sortStationState == SORT_ASC ? result : -result;
+            };
+        } else if (sortTimeState != SORT_NONE) {
+            comparator = (a, b) -> {
+                String timeA = a.req_comp_time != null ? a.req_comp_time : "";
+                String timeB = b.req_comp_time != null ? b.req_comp_time : "";
+                int result = timeA.compareTo(timeB);
+                return sortTimeState == SORT_ASC ? result : -result;
+            };
+        } else if (sortTypeState != SORT_NONE) {
+            comparator = (a, b) -> {
+                String typeA = a.order_type != null ? a.order_type : "";
+                String typeB = b.order_type != null ? b.order_type : "";
+                int result = typeA.compareTo(typeB);
+                return sortTypeState == SORT_ASC ? result : -result;
+            };
+        }
+        
+        if (comparator != null) {
+            Collections.sort(sortedList, comparator);
+        }
+        
+        adapter.setData(sortedList);
+    }
+    
+    /** 搜索并定位到指定站点 */
+    private void searchAndLocate() {
+        String keyword = etSearchStation.getText().toString().trim();
+        if (keyword.isEmpty()) {
+            Toast.makeText(requireContext(), "请输入站名", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (originalData.isEmpty()) {
+            Toast.makeText(requireContext(), "请先查询数据", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 查找匹配的站点
+        int targetPosition = -1;
+        for (int i = 0; i < originalData.size(); i++) {
+            ShuyunApi.ProvinceInnerTaskInfo item = originalData.get(i);
+            if (item.station_name != null && 
+                item.station_name.toLowerCase().contains(keyword.toLowerCase())) {
+                targetPosition = i;
+                break;
+            }
+        }
+        
+        if (targetPosition >= 0) {
+            // 滚动到指定位置
+            rvOrders.scrollToPosition(targetPosition);
+            // 高亮显示（通过adapter实现）
+            adapter.setHighlightPosition(targetPosition);
+            tvStatus.setText("已定位到: " + originalData.get(targetPosition).station_name);
+        } else {
+            Toast.makeText(requireContext(), "未找到匹配的站点", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // ── 查询主逻辑 ───────────────────────────────────────────────────
@@ -623,9 +789,25 @@ public class ProvinceInnerOrderFragment extends Fragment {
                     for (int i = 0; i < resultList.size(); i++) {
                         resultList.get(i).index = String.valueOf(i + 1);
                     }
+                    
+                    // 统计每个站点的工单数量
+                    stationOrderCount.clear();
+                    for (ShuyunApi.ProvinceInnerTaskInfo item : resultList) {
+                        String stationName = item.station_name != null ? item.station_name : "";
+                        if (!stationName.isEmpty()) {
+                            stationOrderCount.put(stationName, 
+                                stationOrderCount.getOrDefault(stationName, 0) + 1);
+                        }
+                    }
+                    
+                    // 保存原始数据
+                    originalData.clear();
+                    originalData.addAll(resultList);
+                    
                     mainHandler.post(() -> {
-                        adapter.setData(resultList);
-                        tvStatus.setText("查询完成，共 " + resultList.size() + " 条工单");
+                        adapter.setDataWithCount(resultList, stationOrderCount);
+                        tvStatus.setText("查询完成，共 " + resultList.size() + " 条工单，" 
+                            + stationOrderCount.size() + " 个站点");
                         btnQuery.setEnabled(true);
                         btnQuery.setText("我的待办");
                         isQuerying = false;

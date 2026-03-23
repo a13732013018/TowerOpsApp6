@@ -12,7 +12,9 @@ import com.towerops.app.R;
 import com.towerops.app.api.ShuyunApi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 省内待办工单列表适配器
@@ -20,6 +22,8 @@ import java.util.List;
 public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInnerOrderAdapter.ViewHolder> {
 
     private List<ShuyunApi.ProvinceInnerTaskInfo> items = new ArrayList<>();
+    private Map<String, Integer> stationCountMap = new HashMap<>();
+    private int highlightPosition = -1;
     private OnItemClickListener itemClickListener;
     private OnItemLongClickListener itemLongClickListener;
 
@@ -44,6 +48,23 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
         if (newItems != null) {
             items.addAll(newItems);
         }
+        notifyDataSetChanged();
+    }
+    
+    public void setDataWithCount(List<ShuyunApi.ProvinceInnerTaskInfo> newItems, Map<String, Integer> countMap) {
+        items.clear();
+        if (newItems != null) {
+            items.addAll(newItems);
+        }
+        stationCountMap.clear();
+        if (countMap != null) {
+            stationCountMap.putAll(countMap);
+        }
+        notifyDataSetChanged();
+    }
+    
+    public void setHighlightPosition(int position) {
+        highlightPosition = position;
         notifyDataSetChanged();
     }
 
@@ -72,27 +93,27 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
         return new ViewHolder(view);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ShuyunApi.ProvinceInnerTaskInfo item = items.get(position);
-        holder.bind(item);
-        
-        // 点击事件
-        holder.itemView.setOnClickListener(v -> {
-            if (itemClickListener != null) {
-                itemClickListener.onItemClick(item, position);
-            }
-        });
-        
-        // 长按事件（双击效果用长按代替，或可以用连续两次点击检测）
-        holder.itemView.setOnLongClickListener(v -> {
-            if (itemLongClickListener != null) {
-                itemLongClickListener.onItemLongClick(item, position);
-                return true;
-            }
-            return false;
-        });
-    }
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            ShuyunApi.ProvinceInnerTaskInfo item = items.get(position);
+            holder.bind(item, stationCountMap, position == highlightPosition);
+            
+            // 点击事件
+            holder.itemView.setOnClickListener(v -> {
+                if (itemClickListener != null) {
+                    itemClickListener.onItemClick(item, position);
+                }
+            });
+            
+            // 长按事件（双击效果用长按代替，或可以用连续两次点击检测）
+            holder.itemView.setOnLongClickListener(v -> {
+                if (itemLongClickListener != null) {
+                    itemLongClickListener.onItemLongClick(item, position);
+                    return true;
+                }
+                return false;
+            });
+        }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvIndex;
@@ -100,25 +121,29 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
         private final TextView tvGroup;
         private final TextView tvCreateTime;
         private final TextView tvStationName;
+        private final TextView tvOrderCount;
         private final TextView tvOrderNum;
         private final TextView tvOrderType;
         private final TextView tvFlowName;
         private final TextView tvReqTime;
+        private final View itemView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            this.itemView = itemView;
             tvIndex       = itemView.findViewById(R.id.tvPIIndex);
             tvHandler     = itemView.findViewById(R.id.tvPIHandler);
             tvGroup       = itemView.findViewById(R.id.tvPIGroup);
             tvCreateTime  = itemView.findViewById(R.id.tvPICreateTime);
             tvStationName = itemView.findViewById(R.id.tvPIStationName);
+            tvOrderCount  = itemView.findViewById(R.id.tvPIOrderCount);
             tvOrderNum    = itemView.findViewById(R.id.tvPIOrderNum);
             tvOrderType   = itemView.findViewById(R.id.tvPIOrderType);
             tvFlowName    = itemView.findViewById(R.id.tvPIFlowName);
             tvReqTime     = itemView.findViewById(R.id.tvPIReqTime);
         }
 
-        public void bind(ShuyunApi.ProvinceInnerTaskInfo item) {
+        public void bind(ShuyunApi.ProvinceInnerTaskInfo item, Map<String, Integer> countMap, boolean isHighlighted) {
             // 序号
             String idx = item.index != null && !item.index.isEmpty() ? item.index : "-";
             tvIndex.setText(idx);
@@ -141,6 +166,12 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
 
             // 站点名称
             tvStationName.setText(item.station_name != null ? item.station_name : "");
+
+            // 工单数量
+            String stationName = item.station_name != null ? item.station_name : "";
+            int count = countMap.getOrDefault(stationName, 1);
+            tvOrderCount.setText("(" + count + "张)");
+            tvOrderCount.setVisibility(count > 1 ? View.VISIBLE : View.GONE);
 
             // 工单号
             tvOrderNum.setText("工单: " + (item.orderNum != null ? item.orderNum : ""));
@@ -167,6 +198,13 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
                 tvReqTime.setVisibility(View.VISIBLE);
             } else {
                 tvReqTime.setVisibility(View.GONE);
+            }
+
+            // 高亮显示
+            if (isHighlighted) {
+                itemView.setBackgroundColor(0xFFFFF3CD); // 淡黄色背景
+            } else {
+                itemView.setBackgroundColor(0xFFFFFFFF); // 白色背景
             }
         }
 
