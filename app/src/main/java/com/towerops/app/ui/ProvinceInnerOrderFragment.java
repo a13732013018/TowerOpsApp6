@@ -498,11 +498,10 @@ public class ProvinceInnerOrderFragment extends Fragment {
      */
     private void executeReceipt(ShuyunApi.ProvinceInnerTaskInfo item, String receiptId) {
         Session s = Session.get();
-        final String pcToken = s.shuyunPcToken;
-        String cookieToken = s.shuyunPcTokenCookie;
-        if (cookieToken == null || cookieToken.isEmpty()) cookieToken = pcToken;
-        final String finalCookieToken = cookieToken;
-        
+        // 【关键】使用 APP token，不是 PC token
+        final String appToken = s.shuyunAppToken;
+        final String countyManagerCode = s.countyManagerCode;
+
         final String flowInstId = item.flowInstId;
         final String jobId = item.jobId;
         final String workInstId = item.workInstId;
@@ -514,28 +513,31 @@ public class ProvinceInnerOrderFragment extends Fragment {
         final String workType = item.workType;
         final String stationName = item.station_name;
         final String flowName = item.flowName;
-        
+
         tvStatus.setText("正在执行回单: " + stationName + "...");
-        
+
         new Thread(() -> {
             try {
-                // 步骤一：真正的工单流转
-                String step1Result = ShuyunApi.receiptStepOne(pcToken, finalCookieToken,
+                // 仿生延迟（排队闸机，3.5~6.5秒）
+                Thread.sleep(3500 + new Random().nextInt(3000));
+
+                // 步骤一：真正的工单流转（APP代理接口）
+                String step1Result = ShuyunApi.receiptStepOne(appToken,
                     receiptId, flowInstId, jobId, workInstId,
-                    orderNum, flowId, jobInstId);
-                
-                // 仿生延迟
+                    orderNum, flowId, jobInstId, countyManagerCode);
+
+                // 仿生延迟（步骤间，4~8秒）
                 Thread.sleep(4000 + new Random().nextInt(4000));
-                
-                // 步骤二：记录操作日志
-                String step2Result = ShuyunApi.receiptStepTwo(pcToken, finalCookieToken,
+
+                // 步骤二：记录操作日志（APP代理接口）
+                String step2Result = ShuyunApi.receiptStepTwo(appToken,
                     receiptId, stationCode, orderType, orderNum,
                     jobId, workInstId, workType, stationName,
                     flowId, flowName);
-                
-                // 解析结果
+
+                // 解析步骤一的结果（穿透式鉴定）
                 ShuyunApi.ReceiptResult result = ShuyunApi.parseReceiptResult(step1Result);
-                
+
                 mainHandler.post(() -> {
                     if (result.success) {
                         Toast.makeText(requireContext(), "回单成功: " + stationName, Toast.LENGTH_SHORT).show();

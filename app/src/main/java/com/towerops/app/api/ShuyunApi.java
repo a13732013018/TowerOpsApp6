@@ -1930,45 +1930,53 @@ public class ShuyunApi {
     /**
      * 综合上站回单 - 步骤一（真正的工单流转）
      * 对应易语言 数运APP回单_步骤一
-     * 
-     * @param pcToken PC登录token
-     * @param cookieToken Cookie token
-     * @param receiptId 处理人ID
+     *
+     * 【关键】使用 APP 服务器代理接口（223.95.77.175:19021），不是PC服务器
+     * 通过 requestType="put" 委托服务器转发 PUT 请求
+     * nextJobAndUser = jobId纯字母部分 + "_002@" + 区县经理代号
+     *
+     * @param appToken  数运APP登录token（不是PC token）
+     * @param receiptId 处理人ID（如 "12001"）
      * @param flowInstId 流程实例ID
      * @param jobId 任务ID
      * @param workInstId 工作实例ID
      * @param orderNum 工单号
      * @param flowId 流程ID
      * @param jobInstId 任务实例ID
+     * @param countyManagerCode 区县经理代号（如 "36745"）
      * @return API响应JSON
      */
-    public static String receiptStepOne(String pcToken, String cookieToken,
+    public static String receiptStepOne(String appToken,
             String receiptId, String flowInstId, String jobId, String workInstId,
-            String orderNum, String flowId, String jobInstId) {
-        // 综合上站回单使用与其他审核接口相同的 complete 接口（PUT请求）
-        String url = PC_BASE + "/api/flowable/flowable/task/complete";
+            String orderNum, String flowId, String jobInstId, String countyManagerCode) {
+        String url = APP_BASE + "/zjtt-app-server/mobiledata";
 
-        // JSON body 与 complete 接口一致，回单时 nextJobAndUser/copyUsers 留空
-        String jsonBody = "{"
-            + "\"orderNum\":\"" + orderNum + "\","
-            + "\"userId\":\"" + receiptId + "\","
-            + "\"jobInstId\":\"" + jobInstId + "\","
+        // jobId 只保留字母部分（对应易语言 文本区分_只取字母）
+        String jobIdLetters = jobId.replaceAll("[^a-zA-Z]", "");
+        String nextJobAndUser = jobIdLetters + "_002@" + countyManagerCode;
+
+        String post = "data={"
+            + "\"head\":{\"Authorization\":\"" + appToken + "\"},"
+            + "\"requestType\":\"put\","
+            + "\"data\":{"
             + "\"flowInstId\":\"" + flowInstId + "\","
             + "\"jobId\":\"" + jobId + "\","
+            + "\"dealContent\":\"ok\","
             + "\"workInstId\":\"" + workInstId + "\","
+            + "\"orderNum\":\"" + orderNum + "\","
+            + "\"nextJobAndUser\":\"" + nextJobAndUser + "\","
+            + "\"operType\":\"011\","
             + "\"flowId\":\"" + flowId + "\","
-            + "\"dealContent\":\"通过\","
-            + "\"operType\":\"01\","
-            + "\"nextJobAndUser\":\"\","
-            + "\"copyUsers\":\"\""
-            + "}";
+            + "\"userId\":\"" + receiptId + "\","
+            + "\"jobInstId\":\"" + jobInstId + "\""
+            + "},"
+            + "\"interfaceName\":\"/api/flowable/flowable/task/complete\","
+            + "\"apiType\":\"REST\""
+            + "}&action=CoreInterfaceBean.commonInterfaceHandler";
 
-        // Content-Type: application/json
-        String headers = buildCountyJsonHeader(pcToken, cookieToken);
-
+        String headers = buildAppHeader(appToken);
         try {
-            // 使用 PUT 请求（与其他审核通过接口一致）
-            String result = HttpUtil.put(url, jsonBody, headers, null);
+            String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -1979,9 +1987,11 @@ public class ShuyunApi {
     /**
      * 综合上站回单 - 步骤二（记录操作日志）
      * 对应易语言 数运APP回单_步骤二
-     * 
-     * @param pcToken PC登录token
-     * @param cookieToken Cookie token
+     *
+     * 【关键】使用 APP 服务器代理接口，接口路径为 /api/flowable/zhszCountClicks/insert
+     * 字段包含 jobName("接单")、remark("综合上站-处理成功")、createBy、isZhsz("1")
+     *
+     * @param appToken  数运APP登录token
      * @param receiptId 处理人ID
      * @param stationCode 站点代码
      * @param orderType 工单类型
@@ -1994,25 +2004,35 @@ public class ShuyunApi {
      * @param flowName 流程名称
      * @return API响应JSON
      */
-    public static String receiptStepTwo(String pcToken, String cookieToken,
+    public static String receiptStepTwo(String appToken,
             String receiptId, String stationCode, String orderType, String orderNum,
             String jobId, String workInstId, String workType, String stationName,
             String flowId, String flowName) {
-        String url = PC_BASE + "/api/manager/workOrderInfo/save-info";
-        
-        String post = "userId=" + receiptId
-            + "&stationCode=" + stationCode
-            + "&orderType=" + orderType
-            + "&orderNum=" + orderNum
-            + "&jobId=" + jobId
-            + "&workInstId=" + workInstId
-            + "&workType=" + workType
-            + "&stationName=" + stationName
-            + "&flowId=" + flowId
-            + "&flowName=" + flowName;
-        
-        String headers = buildCountyApiHeader(pcToken, cookieToken);
-        
+        String url = APP_BASE + "/zjtt-app-server/mobiledata";
+
+        String post = "data={"
+            + "\"head\":{\"Authorization\":\"" + appToken + "\"},"
+            + "\"requestType\":\"post\","
+            + "\"data\":{"
+            + "\"jobName\":\"接单\","
+            + "\"stationCode\":\"" + stationCode + "\","
+            + "\"orderType\":\"" + orderType + "\","
+            + "\"orderNum\":\"" + orderNum + "\","
+            + "\"remark\":\"综合上站-处理成功\","
+            + "\"flowName\":\"" + flowName + "\","
+            + "\"jobId\":\"" + jobId + "\","
+            + "\"createBy\":\"" + receiptId + "\","
+            + "\"isZhsz\":\"1\","
+            + "\"workInstId\":\"" + workInstId + "\","
+            + "\"workType\":\"" + workType + "\","
+            + "\"stationName\":\"" + stationName + "\","
+            + "\"flowId\":\"" + flowId + "\""
+            + "},"
+            + "\"interfaceName\":\"/api/flowable/zhszCountClicks/insert\","
+            + "\"apiType\":\"REST\""
+            + "}&action=CoreInterfaceBean.commonInterfaceHandler";
+
+        String headers = buildAppHeader(appToken);
         try {
             String result = HttpUtil.post(url, post, headers, null);
             return result != null ? result : "";
@@ -2024,10 +2044,10 @@ public class ShuyunApi {
 
     /**
      * 解析回单结果（穿透式鉴定引擎）
-     * 对应易语言的JSON解析逻辑
-     * 
-     * @param jsonStr API返回的JSON
-     * @return 解析后的状态信息
+     * 完全对应易语言"穿透式鉴定引擎"逻辑：
+     *   1. 先穿透内层：data.msg 有内容 → 绝对失败
+     *   2. 内层干净 → 看外层 returnCode（1/200/0 = 成功）
+     *   3. 否则取 returnMsg/msg 作为错误描述
      */
     public static ReceiptResult parseReceiptResult(String jsonStr) {
         ReceiptResult result = new ReceiptResult();
@@ -2035,44 +2055,53 @@ public class ShuyunApi {
         result.message = "未知错误";
 
         if (jsonStr == null || jsonStr.isEmpty()) {
-            result.message = "网络超时或被拦截";
+            result.message = "失败:网络超时或被拦截";
             return result;
         }
 
         try {
             JSONObject root = new JSONObject(jsonStr);
 
-            // 第一步：取外层状态码（returnCode 优先，没有再取 code）
-            String returnCode = root.optString("returnCode", "");
-            if (returnCode.isEmpty()) {
-                returnCode = root.optString("code", "");
+            // 第一步：穿透内层，看 data.msg 是否有报错（有内容 = 绝对失败）
+            JSONObject data = root.optJSONObject("data");
+            String dataMsg = "";
+            if (data != null) {
+                dataMsg = data.optString("msg", "").trim();
             }
 
-            // 第二步：判断是否成功
-            if ("1".equals(returnCode) || "200".equals(returnCode) || "0".equals(returnCode)) {
+            if (!dataMsg.isEmpty()) {
+                // 内层 data.msg 有内容，判定失败
+                result.success = false;
+                result.message = "失败:" + dataMsg;
+                return result;
+            }
+
+            // 第二步：内层干净，看外层状态码
+            String headCode = root.optString("returnCode", "").trim();
+            if (headCode.isEmpty()) {
+                headCode = root.optString("code", "").trim();  // 兼容其他接口
+            }
+
+            if ("1".equals(headCode) || "200".equals(headCode) || "0".equals(headCode)) {
                 result.success = true;
                 result.message = "回单执行成功";
                 return result;
             }
 
-            // 第三步：失败时，依次尝试从 returnMsg / msg / data.msg 取错误描述
+            // 第三步：网关层错误，取 returnMsg/msg
             String errMsg = root.optString("returnMsg", "").trim();
-            if (errMsg.isEmpty()) errMsg = root.optString("msg", "").trim();
             if (errMsg.isEmpty()) {
-                JSONObject data = root.optJSONObject("data");
-                if (data != null) errMsg = data.optString("msg", "").trim();
+                errMsg = root.optString("msg", "").trim();
             }
-            // 如果还是空，把原始响应截取前100字符附上
             if (errMsg.isEmpty()) {
-                String raw = jsonStr.length() > 100 ? jsonStr.substring(0, 100) + "..." : jsonStr;
-                errMsg = "接口返回: " + raw;
+                errMsg = "未知业务异常";
             }
             result.success = false;
-            result.message = "失败: " + errMsg;
+            result.message = "失败:" + errMsg;
 
         } catch (Exception e) {
             result.success = false;
-            result.message = "失败: 解析异常(" + e.getMessage() + ")";
+            result.message = "失败:服务器系统异常";
         }
 
         return result;
