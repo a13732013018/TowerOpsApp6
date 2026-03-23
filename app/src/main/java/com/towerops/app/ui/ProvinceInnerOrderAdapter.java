@@ -128,7 +128,7 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
         private final TextView tvOrderCount;
         private final TextView tvOrderNum;
         private final TextView tvOrderType;
-        private final TextView tvJobName;
+        private final TextView tvDataName;
         private final TextView tvFlowName;
         private final TextView tvReqTime;
         private final View itemView;
@@ -144,7 +144,7 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
             tvOrderCount  = itemView.findViewById(R.id.tvPIOrderCount);
             tvOrderNum    = itemView.findViewById(R.id.tvPIOrderNum);
             tvOrderType   = itemView.findViewById(R.id.tvPIOrderType);
-            tvJobName     = itemView.findViewById(R.id.tvPIJobName);
+            tvDataName    = itemView.findViewById(R.id.tvPIDataName);
             tvFlowName    = itemView.findViewById(R.id.tvPIFlowName);
             tvReqTime     = itemView.findViewById(R.id.tvPIReqTime);
         }
@@ -185,12 +185,12 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
             // 工单类型标签
             tvOrderType.setText(resolveOrderTypeName(item.order_type));
 
-            // 任务类型
-            if (item.jobName != null && !item.jobName.isEmpty()) {
-                tvJobName.setText("任务：" + item.jobName);
-                tvJobName.setVisibility(View.VISIBLE);
+            // 任务类型(data_name)
+            if (item.data_name != null && !item.data_name.isEmpty()) {
+                tvDataName.setText(item.data_name);
+                tvDataName.setVisibility(View.VISIBLE);
             } else {
-                tvJobName.setVisibility(View.GONE);
+                tvDataName.setVisibility(View.GONE);
             }
 
             // 流程名

@@ -136,16 +136,16 @@
                 android:paddingBottom="2dp" />
         </LinearLayout>
 
-        <!-- 任务类型 -->
+        <!-- 任务类型(data_name) -->
         <TextView
-            android:id="@+id/tvPIJobName"
+            android:id="@+id/tvPIDataName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="任务：发电保障"
+            android:text="设备信号不准确异常整治"
             android:textSize="11sp"
             android:textColor="#059669"
             android:layout_marginTop="3dp"
-            android:maxLines="1"
+            android:maxLines="2"
             android:ellipsize="end" />
 
         <!-- 流程名称 / 环节 -->

@@ -117,7 +117,7 @@ public class ProvinceInnerOrderFragment extends Fragment {
     };
 
     // ── 工单类型 ────────────────────────────────────────────────────
-    private static final String[] ORDER_TYPE_NAMES  = {"全部", "应急", "投诉", "综合", "其他"};
+    private static final String[] ORDER_TYPE_NAMES  = {"全部", "一般省内任务派单流程", "省内简易派单流程", "智联业务综合派单流程", "退服隐患整治工单"};
     private static final String[] ORDER_TYPE_CODES  = {
         "1124,1220,1028,1063",
         "1028",
@@ -145,7 +145,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private Button btnSortType;
     private Button btnSortCount;
     private Button btnSortHandler;
-    private Button btnSortDispatchTime;
 
     // ── 状态 ────────────────────────────────────────────────────────
     private int selectedGroupIndex      = 0;   // 0=第一小组, 1=第二小组
@@ -163,7 +162,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private int sortTypeState = SORT_NONE;
     private int sortCountState = SORT_NONE;
     private int sortHandlerState = SORT_NONE;
-    private int sortDispatchTimeState = SORT_NONE;
     
     // ── 原始数据缓存 ─────────────────────────────────────────────────
     private List<ShuyunApi.ProvinceInnerTaskInfo> originalData = new ArrayList<>();
@@ -210,7 +208,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
         btnSortType = view.findViewById(R.id.btnSortType);
         btnSortCount = view.findViewById(R.id.btnSortCount);
         btnSortHandler = view.findViewById(R.id.btnSortHandler);
-        btnSortDispatchTime = view.findViewById(R.id.btnSortDispatchTime);
         
         // 待签查询按钮
         btnToSignQuery = view.findViewById(R.id.btnToSignQuery);
@@ -229,13 +226,12 @@ public class ProvinceInnerOrderFragment extends Fragment {
      * 显示操作选择对话框（计划上站 / 综合上站回单 / 签到）
      */
     private void showActionDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
-        // 判断是否为待签工单（有jobId但没有flowInstId或为空）
-        boolean isToSign = item.jobId != null && !item.jobId.isEmpty()
-                && (item.flowInstId == null || item.flowInstId.isEmpty());
+        // 判断是否为待签工单（有jobId即可签到）
+        boolean hasJobId = item.jobId != null && !item.jobId.isEmpty();
 
         String[] options;
-        if (isToSign) {
-            options = new String[]{"签到接单"};
+        if (hasJobId) {
+            options = new String[]{"签到接单", "计划上站", "综合上站回单"};
         } else {
             options = new String[]{"计划上站", "综合上站回单"};
         }
@@ -243,15 +239,25 @@ public class ProvinceInnerOrderFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
             .setTitle("选择操作 - " + item.station_name)
             .setItems(options, (dialog, which) -> {
-                if (isToSign) {
-                    // 待签工单 - 签到
-                    showSignConfirmDialog(item);
-                } else if (which == 0) {
-                    // 计划上站
-                    showPlanSiteDialog(item);
+                if (hasJobId) {
+                    if (which == 0) {
+                        // 签到
+                        showSignConfirmDialog(item);
+                    } else if (which == 1) {
+                        // 计划上站
+                        showPlanSiteDialog(item);
+                    } else {
+                        // 综合上站回单
+                        showReceiptConfirmDialog(item);
+                    }
                 } else {
-                    // 综合上站回单
-                    showReceiptConfirmDialog(item);
+                    if (which == 0) {
+                        // 计划上站
+                        showPlanSiteDialog(item);
+                    } else {
+                        // 综合上站回单
+                        showReceiptConfirmDialog(item);
+                    }
                 }
             })
             .setNegativeButton("取消", null)
@@ -262,12 +268,15 @@ public class ProvinceInnerOrderFragment extends Fragment {
      * 显示签到确认对话框
      */
     private void showSignConfirmDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
+        String message = "站点: " + (item.station_name != null ? item.station_name : "未知") + "\n"
+                + "工单: " + (item.orderNum != null ? item.orderNum : "未知") + "\n"
+                + "类型: " + (item.data_name != null ? item.data_name : (item.jobName != null ? item.jobName : "未知")) + "\n"
+                + "流程: " + (item.flowName != null ? item.flowName : "未知") + "\n\n"
+                + "确认执行签到操作？";
+        
         new AlertDialog.Builder(requireContext())
             .setTitle("确认签到")
-            .setMessage("站点: " + item.station_name + "\n"
-                    + "工单: " + item.orderNum + "\n"
-                    + "任务: " + item.jobName + "\n\n"
-                    + "确认执行签到操作？")
+            .setMessage(message)
             .setPositiveButton("确认签到", (dialog, which) -> {
                 executeSign(item);
             })
@@ -704,21 +713,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
                 sortTimeState = SORT_NONE;
                 sortTypeState = SORT_NONE;
                 sortCountState = SORT_NONE;
-                sortDispatchTimeState = SORT_NONE;
-            }
-            updateAllSortButtons();
-            applySort();
-        });
-        
-        // 派单时间排序
-        btnSortDispatchTime.setOnClickListener(v -> {
-            sortDispatchTimeState = (sortDispatchTimeState + 1) % 3;
-            if (sortDispatchTimeState != SORT_NONE) {
-                sortStationState = SORT_NONE;
-                sortTimeState = SORT_NONE;
-                sortTypeState = SORT_NONE;
-                sortCountState = SORT_NONE;
-                sortHandlerState = SORT_NONE;
             }
             updateAllSortButtons();
             applySort();
@@ -728,11 +722,10 @@ public class ProvinceInnerOrderFragment extends Fragment {
     /** 更新所有排序按钮显示 */
     private void updateAllSortButtons() {
         updateSortButton(btnSortStation, sortStationState, "站名");
-        updateSortButton(btnSortTime, sortTimeState, "要求完成时间");
+        updateSortButton(btnSortTime, sortTimeState, "完成时间");
         updateSortButton(btnSortType, sortTypeState, "工单类型");
-        updateSortButton(btnSortCount, sortCountState, "工单数量");
+        updateSortButton(btnSortCount, sortCountState, "数量");
         updateSortButton(btnSortHandler, sortHandlerState, "接单人");
-        updateSortButton(btnSortDispatchTime, sortDispatchTimeState, "派单时间");
     }
     
     /** 重置所有排序状态 */
@@ -742,7 +735,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
         sortTypeState = SORT_NONE;
         sortCountState = SORT_NONE;
         sortHandlerState = SORT_NONE;
-        sortDispatchTimeState = SORT_NONE;
         updateAllSortButtons();
     }
     
@@ -814,13 +806,6 @@ public class ProvinceInnerOrderFragment extends Fragment {
                 String handlerB = b.handler != null ? b.handler : "";
                 int result = handlerA.compareTo(handlerB);
                 return sortHandlerState == SORT_ASC ? result : -result;
-            };
-        } else if (sortDispatchTimeState != SORT_NONE) {
-            comparator = (a, b) -> {
-                String timeA = a.createTime != null ? a.createTime : "";
-                String timeB = b.createTime != null ? b.createTime : "";
-                int result = timeA.compareTo(timeB);
-                return sortDispatchTimeState == SORT_ASC ? result : -result;
             };
         }
         
