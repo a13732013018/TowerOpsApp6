@@ -658,31 +658,39 @@ public class ShuyunAuditFragment extends Fragment {
         appendLog("Token: " + (pcToken.length() > 20 ? pcToken.substring(0, 20) + "..." : pcToken));
         appendLog("CookieToken: " + (cookieToken.length() > 20 ? cookieToken.substring(0, 20) + "..." : cookieToken));
         
-        // 【核心】使用双token调用
-        String jsonStr = ShuyunApi.getProvinceTaskList(pcToken, cookieToken, cityAreaCode);
-        
-        // 调试日志：输出原始返回
-        if (jsonStr == null || jsonStr.isEmpty()) {
-            appendLog("省级待办返回: [空]");
-            appendLog("可能原因: token失效、网络错误、服务器返回空");
-        } else {
-            appendLog("省级待办返回长度: " + jsonStr.length());
-            appendLog("省级待办返回: " + (jsonStr.length() > 300 ? jsonStr.substring(0, 300) + "..." : jsonStr));
-        }
-        
-        List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
-        appendLog("解析后工单数量: " + taskList.size());
+        // 【核心】在后台线程中执行网络请求
+        new Thread(() -> {
+            // 【核心】使用双token调用
+            String jsonStr = ShuyunApi.getProvinceTaskList(pcToken, cookieToken, cityAreaCode);
+            
+            // 调试日志：输出原始返回
+            mainHandler.post(() -> {
+                if (jsonStr == null || jsonStr.isEmpty()) {
+                    appendLog("省级待办返回: [空]");
+                    appendLog("可能原因: token失效、网络错误、服务器返回空");
+                } else {
+                    appendLog("省级待办返回长度: " + jsonStr.length());
+                    appendLog("省级待办返回: " + (jsonStr.length() > 300 ? jsonStr.substring(0, 300) + "..." : jsonStr));
+                }
+            });
+            
+            List<ShuyunApi.CountyTaskInfo> taskList = ShuyunApi.parseCountyTaskList(jsonStr);
+            
+            mainHandler.post(() -> {
+                appendLog("解析后工单数量: " + taskList.size());
 
-        if (taskList.isEmpty()) {
-            Toast.makeText(getContext(), "省级待审核工单为空", Toast.LENGTH_SHORT).show();
-            appendLog("省级待审核工单为空 (解析后0条)");
-            return;
-        }
-
-        // 弹出工单选择对话框（支持多选）
-        showProvinceTaskSelectionDialog(taskList, cityAreaCode);
+                if (taskList.isEmpty()) {
+                    Toast.makeText(getContext(), "省级待审核工单为空", Toast.LENGTH_SHORT).show();
+                    appendLog("省级待审核工单为空 (解析后0条)");
+                    return;
+                }
+                
+                // 弹出工单选择对话框（支持多选）
+                showProvinceTaskSelectionDialog(taskList, cityAreaCode);
+            });
+        }).start();
     }
-
+    
     /**
      * 显示省级工单选择对话框（支持多选）
      */
