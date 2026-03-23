@@ -1,5 +1,6 @@
 package com.towerops.app.ui;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,7 +10,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ScrollView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +64,26 @@ public class ProvinceInnerOrderFragment extends Fragment {
         {"蔡亮",     "黄经兴、蔡亮"},
         {"陈德岳",   "陈德岳"},
     };
+
+    // ── 计划上站小组配置（与易语言一致）────────────────────────────────
+    // 分组常量数组（用于匹配站点名称）
+    private static final String[] PLAN_GROUP_CONSTANTS = {
+        "抢修1组", "抢修2组", "综合1组", "综合2组", "室分1组"
+    };
+    // 小组ID数组
+    private static final String[] PLAN_GROUP_IDS = {"361", "363", "365", "367", "369"};
+    // 小组名称数组（平阳区域）
+    private static final String[] PLAN_GROUP_NAMES_PY = {
+        "抢修1组-昆阳片区", "抢修2组-鳌江片区", "综合1组-水头片区", 
+        "综合2组-顺溪片区", "全区域-机动组"
+    };
+    // 小组名称数组（其他区域/泰顺）
+    private static final String[] PLAN_GROUP_NAMES_OT = {
+        "综合小组", "专业小组（仕阳片巡检）", "专业巡检（雅阳片巡检小组）",
+        "专业巡检（罗阳片巡检小组）", "专业小组（泗溪片巡检小组）"
+    };
+    // 其他区域小组ID
+    private static final String[] PLAN_GROUP_IDS_OT = {"261", "263", "265", "267", "269"};
 
     // ── 小组成员 ────────────────────────────────────────────────────
     private static final String[][] GROUP1_MEMBERS = {
@@ -152,6 +175,252 @@ public class ProvinceInnerOrderFragment extends Fragment {
         adapter = new ProvinceInnerOrderAdapter();
         rvOrders.setLayoutManager(new LinearLayoutManager(getContext()));
         rvOrders.setAdapter(adapter);
+        
+        // 设置长按监听（双击效果）
+        adapter.setOnItemLongClickListener((item, position) -> {
+            showActionDialog(item);
+        });
+    }
+    
+    /**
+     * 显示操作选择对话框（计划上站 / 综合上站回单）
+     */
+    private void showActionDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
+        String[] options = {"计划上站", "综合上站回单"};
+        new AlertDialog.Builder(requireContext())
+            .setTitle("选择操作 - " + item.station_name)
+            .setItems(options, (dialog, which) -> {
+                if (which == 0) {
+                    // 计划上站
+                    showPlanSiteDialog(item);
+                } else {
+                    // 综合上站回单
+                    showReceiptConfirmDialog(item);
+                }
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+    
+    /**
+     * 显示计划上站对话框
+     */
+    private void showPlanSiteDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
+        // 根据站点名称匹配小组
+        String[] groupInfo = matchPlanGroup(item.station_name);
+        String groupId = groupInfo[0];
+        String groupName = groupInfo[1];
+        
+        // 创建对话框布局
+        LinearLayout layout = new LinearLayout(requireContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(40, 20, 40, 20);
+        
+        TextView tvInfo = new TextView(requireContext());
+        tvInfo.setText("站点: " + item.station_name + "\n匹配小组: " + groupName);
+        tvInfo.setTextSize(14);
+        tvInfo.setPadding(0, 0, 0, 20);
+        layout.addView(tvInfo);
+        
+        EditText etDate = new EditText(requireContext());
+        etDate.setHint("上站日期 (yyyy-MM-dd)");
+        // 默认明天
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date tomorrow = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
+        etDate.setText(sdf.format(tomorrow));
+        layout.addView(etDate);
+        
+        new AlertDialog.Builder(requireContext())
+            .setTitle("计划上站")
+            .setView(layout)
+            .setPositiveButton("确定", (dialog, which) -> {
+                String date = etDate.getText().toString().trim();
+                if (date.isEmpty()) {
+                    Toast.makeText(requireContext(), "请输入上站日期", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                executePlanSite(item, groupId, groupName, date);
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+    
+    /**
+     * 显示回单确认对话框
+     */
+    private void showReceiptConfirmDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
+        // 根据处理人姓名匹配receiptId
+        String receiptId = matchHandlerId(item.handler, selectedGroupIndex);
+        if (receiptId == null || receiptId.isEmpty()) {
+            Toast.makeText(requireContext(), "未匹配到处理人ID: " + item.handler, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        new AlertDialog.Builder(requireContext())
+            .setTitle("确认综合上站回单")
+            .setMessage("站点: " + item.station_name + "\n处理人: " + item.handler + "(" + receiptId + ")\n\n确定执行回单操作？")
+            .setPositiveButton("确定", (dialog, which) -> {
+                executeReceipt(item, receiptId);
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+    
+    /**
+     * 匹配计划上站小组
+     * 对应易语言的分组常量匹配逻辑
+     */
+    private String[] matchPlanGroup(String stationName) {
+        if (stationName == null || stationName.isEmpty()) {
+            return getRandomGroup();
+        }
+        
+        // 在分组常量中查找匹配的站点
+        for (int i = 0; i < PLAN_GROUP_CONSTANTS.length; i++) {
+            if (stationName.contains(PLAN_GROUP_CONSTANTS[i])) {
+                String groupId = PLAN_GROUP_IDS[i];
+                String groupName = selectedGroupIndex == 0 ? PLAN_GROUP_NAMES_PY[i] : PLAN_GROUP_NAMES_OT[i];
+                return new String[]{groupId, groupName};
+            }
+        }
+        
+        // 未匹配到，使用随机保底
+        return getRandomGroup();
+    }
+    
+    /**
+     * 获取随机小组（保底逻辑）
+     */
+    private String[] getRandomGroup() {
+        Random random = new Random();
+        if (selectedGroupIndex == 0) {
+            // 平阳区域
+            int idx = random.nextInt(PLAN_GROUP_IDS.length);
+            return new String[]{PLAN_GROUP_IDS[idx], PLAN_GROUP_NAMES_PY[idx]};
+        } else {
+            // 其他区域
+            int idx = random.nextInt(PLAN_GROUP_IDS_OT.length);
+            return new String[]{PLAN_GROUP_IDS_OT[idx], PLAN_GROUP_NAMES_OT[idx]};
+        }
+    }
+    
+    /**
+     * 根据处理人姓名匹配ID
+     */
+    private String matchHandlerId(String handlerName, int groupIndex) {
+        String[][] members = groupIndex == 0 ? GROUP1_MEMBERS : GROUP2_MEMBERS;
+        for (String[] member : members) {
+            if (member[1].equals(handlerName)) {
+                return member[0];
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 执行计划上站
+     */
+    private void executePlanSite(ShuyunApi.ProvinceInnerTaskInfo item, 
+            String groupId, String groupName, String upSiteTime) {
+        Session s = Session.get();
+        String pcToken = s.shuyunPcToken;
+        String cookieToken = s.shuyunPcTokenCookie;
+        if (cookieToken == null || cookieToken.isEmpty()) cookieToken = pcToken;
+        
+        String cityArea = CITY_AREA_CODES[selectedCountyIndex];
+        
+        tvStatus.setText("正在执行计划上站: " + item.station_name + "...");
+        
+        new Thread(() -> {
+            try {
+                String result = ShuyunApi.saveSitePlan(pcToken, cookieToken, 
+                    cityArea, groupId, groupName, 
+                    item.station_code, item.station_name, upSiteTime);
+                
+                mainHandler.post(() -> {
+                    if (result.contains("\"status\":200") || result.contains("\"code\":200")) {
+                        Toast.makeText(requireContext(), "计划上站成功: " + item.station_name, Toast.LENGTH_SHORT).show();
+                        tvStatus.setText("计划上站成功: " + item.station_name);
+                    } else {
+                        Toast.makeText(requireContext(), "计划上站失败: " + result, Toast.LENGTH_LONG).show();
+                        tvStatus.setText("计划上站失败");
+                    }
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    Toast.makeText(requireContext(), "计划上站异常: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    tvStatus.setText("计划上站异常");
+                });
+            }
+        }).start();
+    }
+    
+    /**
+     * 执行综合上站回单
+     */
+    private void executeReceipt(ShuyunApi.ProvinceInnerTaskInfo item, String receiptId) {
+        Session s = Session.get();
+        String pcToken = s.shuyunPcToken;
+        String cookieToken = s.shuyunPcTokenCookie;
+        if (cookieToken == null || cookieToken.isEmpty()) cookieToken = pcToken;
+        
+        tvStatus.setText("正在执行回单: " + item.station_name + "...");
+        
+        new Thread(() -> {
+            try {
+                // 步骤一：真正的工单流转
+                String step1Result = ShuyunApi.receiptStepOne(pcToken, cookieToken,
+                    receiptId, item.flowInstId, item.jobId, item.workInstId,
+                    item.orderNum, item.flowId, item.jobInstId);
+                
+                // 仿生延迟
+                Thread.sleep(4000 + new Random().nextInt(4000));
+                
+                // 步骤二：记录操作日志
+                String step2Result = ShuyunApi.receiptStepTwo(pcToken, cookieToken,
+                    receiptId, item.station_code, item.order_type, item.orderNum,
+                    item.jobId, item.workInstId, item.workType, item.station_name,
+                    item.flowId, item.flowName);
+                
+                // 解析结果
+                ShuyunApi.ReceiptResult result = ShuyunApi.parseReceiptResult(step1Result);
+                
+                mainHandler.post(() -> {
+                    if (result.success) {
+                        Toast.makeText(requireContext(), "回单成功: " + item.station_name, Toast.LENGTH_SHORT).show();
+                        tvStatus.setText("回单成功: " + item.station_name);
+                        // 从列表中移除已回单的工单
+                        removeItemFromList(item);
+                    } else {
+                        Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show();
+                        tvStatus.setText(result.message);
+                    }
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    Toast.makeText(requireContext(), "回单异常: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    tvStatus.setText("回单异常");
+                });
+            }
+        }).start();
+    }
+    
+    /**
+     * 从列表中移除已处理的工单
+     */
+    private void removeItemFromList(ShuyunApi.ProvinceInnerTaskInfo item) {
+        List<ShuyunApi.ProvinceInnerTaskInfo> currentList = new ArrayList<>();
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            ShuyunApi.ProvinceInnerTaskInfo currentItem = adapter.getItem(i);
+            if (currentItem != null && !currentItem.orderNum.equals(item.orderNum)) {
+                currentList.add(currentItem);
+            }
+        }
+        // 重新编号
+        for (int i = 0; i < currentList.size(); i++) {
+            currentList.get(i).index = String.valueOf(i + 1);
+        }
+        adapter.setData(currentList);
     }
 
     private void setupSpinners() {

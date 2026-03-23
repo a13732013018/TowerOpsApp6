@@ -20,6 +20,24 @@ import java.util.List;
 public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInnerOrderAdapter.ViewHolder> {
 
     private List<ShuyunApi.ProvinceInnerTaskInfo> items = new ArrayList<>();
+    private OnItemClickListener itemClickListener;
+    private OnItemLongClickListener itemLongClickListener;
+
+    public interface OnItemClickListener {
+        void onItemClick(ShuyunApi.ProvinceInnerTaskInfo item, int position);
+    }
+
+    public interface OnItemLongClickListener {
+        void onItemLongClick(ShuyunApi.ProvinceInnerTaskInfo item, int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.itemClickListener = listener;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.itemLongClickListener = listener;
+    }
 
     public void setData(List<ShuyunApi.ProvinceInnerTaskInfo> newItems) {
         items.clear();
@@ -58,6 +76,22 @@ public class ProvinceInnerOrderAdapter extends RecyclerView.Adapter<ProvinceInne
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ShuyunApi.ProvinceInnerTaskInfo item = items.get(position);
         holder.bind(item);
+        
+        // 点击事件
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(item, position);
+            }
+        });
+        
+        // 长按事件（双击效果用长按代替，或可以用连续两次点击检测）
+        holder.itemView.setOnLongClickListener(v -> {
+            if (itemLongClickListener != null) {
+                itemLongClickListener.onItemLongClick(item, position);
+                return true;
+            }
+            return false;
+        });
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

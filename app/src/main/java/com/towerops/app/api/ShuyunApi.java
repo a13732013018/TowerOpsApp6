@@ -1873,4 +1873,208 @@ public class ShuyunApi {
         }
         return list;
     }
+
+    // ============================================================
+    // 省内待办 - 计划上站 & 综合上站回单 API
+    // ============================================================
+
+    /**
+     * 计划上站 - 保存计划信息
+     * 对应易语言 子程序_综合上站计划
+     * 
+     * @param pcToken PC登录token
+     * @param cookieToken Cookie token
+     * @param cityArea 区县代码（如330326）
+     * @param groupId 小组ID（如361, 363等）
+     * @param groupName 小组名称
+     * @param stationCode 站点代码
+     * @param stationName 站点名称
+     * @param upSiteTime 上站时间（格式：yyyy-MM-dd）
+     * @return API响应JSON
+     */
+    public static String saveSitePlan(String pcToken, String cookieToken,
+            String cityArea, String groupId, String groupName,
+            String stationCode, String stationName, String upSiteTime) {
+        String url = PC_BASE + "/api/manager/site-plan-manage/save-info";
+        
+        // 构建JSON body
+        String jsonBody = "{"
+            + "\"area\":\"330300\","
+            + "\"city\":[\"" + cityArea + "\"],"
+            + "\"groupId\":" + groupId + ","
+            + "\"groupName\":\"" + groupName + "\","
+            + "\"siteCode\":\"\","
+            + "\"siteName\":\"\","
+            + "\"upStiteTime\":\"" + upSiteTime + " 00:00:00\","
+            + "\"addStation\":[{"
+            + "\"stationCode\":\"" + stationCode + "\","
+            + "\"stationName\":\"" + stationName + "\","
+            + "\"areaCode\":\"330300\","
+            + "\"cityCode\":\"" + cityArea + "\""
+            + "}]}"
+            + "}";
+        
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        headers = headers.replace("Content-Type: application/x-www-form-urlencoded", 
+                                  "Content-Type: application/json");
+        
+        try {
+            String result = HttpUtil.post(url, jsonBody, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 综合上站回单 - 步骤一（真正的工单流转）
+     * 对应易语言 数运APP回单_步骤一
+     * 
+     * @param pcToken PC登录token
+     * @param cookieToken Cookie token
+     * @param receiptId 处理人ID
+     * @param flowInstId 流程实例ID
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param orderNum 工单号
+     * @param flowId 流程ID
+     * @param jobInstId 任务实例ID
+     * @return API响应JSON
+     */
+    public static String receiptStepOne(String pcToken, String cookieToken,
+            String receiptId, String flowInstId, String jobId, String workInstId,
+            String orderNum, String flowId, String jobInstId) {
+        String url = PC_BASE + "/api/flowable/flowable/task/finishTask";
+        
+        String post = "userId=" + receiptId
+            + "&flowInstId=" + flowInstId
+            + "&jobId=" + jobId
+            + "&workInstId=" + workInstId
+            + "&orderNum=" + orderNum
+            + "&flowId=" + flowId
+            + "&jobInstId=" + jobInstId
+            + "&formId=&formType=";
+        
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 综合上站回单 - 步骤二（记录操作日志）
+     * 对应易语言 数运APP回单_步骤二
+     * 
+     * @param pcToken PC登录token
+     * @param cookieToken Cookie token
+     * @param receiptId 处理人ID
+     * @param stationCode 站点代码
+     * @param orderType 工单类型
+     * @param orderNum 工单号
+     * @param jobId 任务ID
+     * @param workInstId 工作实例ID
+     * @param workType 工作类型
+     * @param stationName 站点名称
+     * @param flowId 流程ID
+     * @param flowName 流程名称
+     * @return API响应JSON
+     */
+    public static String receiptStepTwo(String pcToken, String cookieToken,
+            String receiptId, String stationCode, String orderType, String orderNum,
+            String jobId, String workInstId, String workType, String stationName,
+            String flowId, String flowName) {
+        String url = PC_BASE + "/api/manager/workOrderInfo/save-info";
+        
+        String post = "userId=" + receiptId
+            + "&stationCode=" + stationCode
+            + "&orderType=" + orderType
+            + "&orderNum=" + orderNum
+            + "&jobId=" + jobId
+            + "&workInstId=" + workInstId
+            + "&workType=" + workType
+            + "&stationName=" + stationName
+            + "&flowId=" + flowId
+            + "&flowName=" + flowName;
+        
+        String headers = buildCountyApiHeader(pcToken, cookieToken);
+        
+        try {
+            String result = HttpUtil.post(url, post, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 解析回单结果（穿透式鉴定引擎）
+     * 对应易语言的JSON解析逻辑
+     * 
+     * @param jsonStr API返回的JSON
+     * @return 解析后的状态信息
+     */
+    public static ReceiptResult parseReceiptResult(String jsonStr) {
+        ReceiptResult result = new ReceiptResult();
+        result.success = false;
+        result.message = "未知错误";
+        
+        if (jsonStr == null || jsonStr.isEmpty()) {
+            result.message = "网络超时或被拦截";
+            return result;
+        }
+        
+        try {
+            JSONObject root = new JSONObject(jsonStr);
+            
+            // 第一步：检查内层 data.msg 是否有报错
+            JSONObject data = root.optJSONObject("data");
+            if (data != null) {
+                String dataMsg = data.optString("msg", "");
+                if (!dataMsg.isEmpty()) {
+                    result.success = false;
+                    result.message = "失败:" + dataMsg;
+                    return result;
+                }
+            }
+            
+            // 第二步：检查外层状态码
+            String returnCode = root.optString("returnCode", "");
+            if (returnCode.isEmpty()) {
+                returnCode = root.optString("code", "");
+            }
+            
+            if ("1".equals(returnCode) || "200".equals(returnCode) || "0".equals(returnCode)) {
+                result.success = true;
+                result.message = "回单执行成功";
+            } else {
+                String returnMsg = root.optString("returnMsg", "");
+                if (returnMsg.isEmpty()) {
+                    returnMsg = root.optString("msg", "");
+                }
+                result.success = false;
+                result.message = "失败:" + (returnMsg.isEmpty() ? "未知业务异常" : returnMsg);
+            }
+            
+        } catch (Exception e) {
+            result.success = false;
+            result.message = "失败:服务器系统异常(502)";
+        }
+        
+        return result;
+    }
+
+    /**
+     * 回单结果数据类
+     */
+    public static class ReceiptResult {
+        public boolean success;
+        public String message;
+    }
 }
