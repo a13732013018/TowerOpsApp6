@@ -162,6 +162,9 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private int sortTypeState = SORT_NONE;
     private int sortCountState = SORT_NONE;
     private int sortHandlerState = SORT_NONE;
+
+    // 待签工单模式标志（true=待签工单，false=我的待办）
+    private boolean isToSignMode = false;
     
     // ── 原始数据缓存 ─────────────────────────────────────────────────
     private List<ShuyunApi.ProvinceInnerTaskInfo> originalData = new ArrayList<>();
@@ -226,11 +229,11 @@ public class ProvinceInnerOrderFragment extends Fragment {
      * 显示操作选择对话框（计划上站 / 综合上站回单 / 签到）
      */
     private void showActionDialog(ShuyunApi.ProvinceInnerTaskInfo item) {
-        // 判断是否为待签工单（有jobId即可签到）
-        boolean hasJobId = item.jobId != null && !item.jobId.isEmpty();
+        // 只有在待签工单模式下才显示签到选项
+        boolean canSign = isToSignMode && item.jobId != null && !item.jobId.isEmpty();
 
         String[] options;
-        if (hasJobId) {
+        if (canSign) {
             options = new String[]{"签到接单", "计划上站", "综合上站回单"};
         } else {
             options = new String[]{"计划上站", "综合上站回单"};
@@ -239,7 +242,7 @@ public class ProvinceInnerOrderFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
             .setTitle("选择操作 - " + item.station_name)
             .setItems(options, (dialog, which) -> {
-                if (hasJobId) {
+                if (canSign) {
                     if (which == 0) {
                         // 签到
                         showSignConfirmDialog(item);
@@ -877,6 +880,9 @@ public class ProvinceInnerOrderFragment extends Fragment {
             return;
         }
 
+        // 设置为我的待办模式（不显示签到选项）
+        isToSignMode = false;
+
         // 获取PC登录Token
         Session s = Session.get();
         String pcToken     = s.shuyunPcToken;
@@ -1015,6 +1021,9 @@ public class ProvinceInnerOrderFragment extends Fragment {
             Toast.makeText(getContext(), "查询中，请稍候...", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // 设置为待签工单模式（显示签到选项）
+        isToSignMode = true;
 
         // 获取数运APP登录Token
         Session s = Session.get();
