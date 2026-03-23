@@ -229,6 +229,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "服务未就绪，请稍候", Toast.LENGTH_SHORT).show();
             return;
         }
+        // 已在监控中，忽略重复点击
+        if (monitorService.isRunning()) return;
         WorkOrderFragment wof = getWorkOrderFragment();
         if (wof == null || wof.getEtIntervalMin() == null) {
             Toast.makeText(this, "界面未就绪，请稍候", Toast.LENGTH_SHORT).show();
@@ -293,18 +295,14 @@ public class MainActivity extends AppCompatActivity {
         Button btnStart = wof.getBtnStartMonitor();
         Button btnStop  = wof.getBtnStopMonitor();
         if (monitorService != null && monitorService.isRunning()) {
-            // 监控中：标题改为"监控中"，按钮禁用但保持原色（不变灰）
+            // 监控中：只改文字，不禁用（避免系统变灰）
             btnStart.setText("监控中");
-            btnStart.setEnabled(false);
-            btnStart.setAlpha(1.0f); // 强制保持不透明，避免系统 disabled 变灰
-            btnStart.setBackgroundResource(R.drawable.bg_button_primary_gradient);
+            btnStart.setEnabled(true);
             btnStop.setEnabled(true);
         } else {
-            // 已停止：恢复"开启监控"，按钮可用
+            // 已停止：恢复"开启监控"
             btnStart.setText("开启监控");
             btnStart.setEnabled(true);
-            btnStart.setAlpha(1.0f);
-            btnStart.setBackgroundResource(R.drawable.bg_button_primary_gradient);
             btnStop.setEnabled(true);
         }
     }
