@@ -169,34 +169,35 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="分组统计"
+                    android:text="专业统计"
                     android:textSize="11sp"
                     android:textColor="#9CA3AF"
                     android:paddingBottom="4dp"/>
 
-                <!-- 统计表头 -->
+                <!-- 统计表头：专业+数量 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="20dp"
                     android:orientation="horizontal"
                     android:background="#111827">
-                    <TextView android:layout_width="50dp" android:layout_height="match_parent"
-                        android:text="分组" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="机房" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="机房及配套" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="机柜" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="机柜及配套" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="拉远" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="RRU拉远" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:text="铁塔" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="室分" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="室内分布" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="其他" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                     <TextView android:layout_width="40dp" android:layout_height="match_parent"
                         android:text="合计" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
                 </LinearLayout>
@@ -316,7 +317,7 @@
                 android:background="#FFFFFF"
                 android:padding="8dp">
 
-                <!-- 第一行：计划名+区域+查询按钮 -->
+                <!-- 第一行：计划年+查询按钮 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -326,31 +327,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="计划:"
+                        android:text="计划年:"
                         android:textSize="12sp"
                         android:textColor="#374151"
                         android:layout_marginEnd="4dp"/>
 
                     <Spinner
                         android:id="@+id/spinnerPlanYear"
-                        android:layout_width="0dp"
-                        android:layout_height="32dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_edittext"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="区域:"
-                        android:textSize="12sp"
-                        android:textColor="#374151"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="4dp"/>
-
-                    <Spinner
-                        android:id="@+id/spinnerArea"
                         android:layout_width="0dp"
                         android:layout_height="32dp"
                         android:layout_weight="1"

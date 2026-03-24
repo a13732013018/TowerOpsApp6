@@ -71,7 +71,7 @@ public class XunjianFragment extends Fragment {
     private TextView thZhilianSeq, thZhilianGroup, thZhilianTasksn, thZhilianStation, thZhilianMajor, thZhilianCreatetime;
 
     // Panel 2: APP 质检
-    private Spinner spinnerPlanYear, spinnerArea, spinnerQualityYear, spinnerQualityMonth;
+    private Spinner spinnerPlanYear, spinnerQualityYear, spinnerQualityMonth;
     private CheckBox cbQualityByMonth, cbQualityToday;
     private Button btnQueryQuality;
     private ProgressBar progressQuality;
@@ -126,7 +126,6 @@ public class XunjianFragment extends Fragment {
     private volatile int qualityMonth = 3;
     private volatile boolean qualityByMonth = false;
     private volatile boolean qualityTodayOnly = false;
-    private volatile int currentAreaIndex = 0;
     private volatile String currentPlanName = "2026";
 
     // 统计数组（索引0=汇总 1-5=各组）
@@ -229,7 +228,6 @@ public class XunjianFragment extends Fragment {
 
         // Panel 2
         spinnerPlanYear    = v.findViewById(R.id.spinnerPlanYear);
-        spinnerArea        = v.findViewById(R.id.spinnerArea);
         spinnerQualityYear = v.findViewById(R.id.spinnerQualityYear);
         spinnerQualityMonth= v.findViewById(R.id.spinnerQualityMonth);
         cbQualityByMonth   = v.findViewById(R.id.cbQualityByMonth);
@@ -408,13 +406,6 @@ public class XunjianFragment extends Fragment {
         spinnerPlanYear.setAdapter(new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item, years));
 
-        // 区域
-        List<String> areas = new ArrayList<>();
-        areas.add("平阳");
-        areas.add("泰顺");
-        spinnerArea.setAdapter(new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_item, areas));
-
         // 质检年份
         List<String> qYears = new ArrayList<>();
         for (int y = curYear; y >= curYear - 1; y--) qYears.add(String.valueOf(y));
@@ -467,9 +458,8 @@ public class XunjianFragment extends Fragment {
                 return;
             }
 
-            // 计数矩阵 [6组][5专业]，索引0-based
-            int[][] matrix = new int[6][5];
-            String[] groupNames = {"综合1组","综合2组","综合3组","综合4组","综合5组","室分1组"};
+            // ③ 纯专业计数：0=机房及配套 1=机柜及配套 2=RRU拉远 3=铁塔 4=室内分布 5=其他
+            int[] majorCount = new int[6];
 
             int total = arr.length();
             tvUnstartCount.setText("未巡检: " + total + " 条");
@@ -480,25 +470,22 @@ public class XunjianFragment extends Fragment {
                 String applymajor   = XunjianApi.cleanNull(item.optString("applymajor"));
                 String tasksn       = XunjianApi.cleanNull(item.optString("tasksn"));
                 String deviceid     = XunjianApi.cleanNull(item.optString("deviceid"));
-                String stationcode  = XunjianApi.cleanNull(item.optString("stationcode"));
                 String date         = XunjianApi.cleanNull(item.optString("date"));
-                String mainplanname = XunjianApi.cleanNull(item.optString("mainplanname"));
 
-                // 分组匹配
-                String groupName = matchGroup(stationname);
-                int groupIdx = groupIndexOf(groupName, groupNames);
-
-                // 专业序号（0-based）：机房0 机柜1 拉远2 铁塔3 室内分布4
-                int majorIdx = -1;
-                if ("机房及配套".equals(applymajor))    majorIdx = 0;
-                else if ("机柜及配套".equals(applymajor)) majorIdx = 1;
-                else if ("RRU拉远".equals(applymajor))  majorIdx = 2;
-                else if ("铁塔".equals(applymajor))     majorIdx = 3;
-                else if ("室内分布".equals(applymajor)) majorIdx = 4;
-
-                if (groupIdx >= 0 && majorIdx >= 0) {
-                    matrix[groupIdx][majorIdx]++;
+                // 专业计数
+                int majorIdx;
+                switch (applymajor) {
+                    case "机房及配套": majorIdx = 0; break;
+                    case "机柜及配套": majorIdx = 1; break;
+                    case "RRU拉远":   majorIdx = 2; break;
+                    case "铁塔":      majorIdx = 3; break;
+                    case "室内分布":  majorIdx = 4; break;
+                    default:          majorIdx = 5; break;
                 }
+                majorCount[majorIdx]++;
+
+                // 分组匹配（列表显示用）
+                String groupName = matchGroup(stationname);
 
                 // 缓存数据
                 UnstartRow r = new UnstartRow();
@@ -511,7 +498,7 @@ public class XunjianFragment extends Fragment {
             // 渲染列表（默认顺序）
             sortAndRenderUnstart();
             // 渲染统计
-            renderUnstartStat(matrix, groupNames);
+            renderUnstartStat(majorCount);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -520,48 +507,36 @@ public class XunjianFragment extends Fragment {
     }
 
 
-    private void renderUnstartStat(int[][] matrix, String[] groupNames) {
-        String[] majorHeaders = {"机房", "机柜", "拉远", "铁塔", "室分"};
-        int[] colTotal = new int[5];
+    private void renderUnstartStat(int[] majorCount) {
+        llUnstartStat.removeAllViews();
         int grandTotal = 0;
+        for (int c : majorCount) grandTotal += c;
 
-        for (int g = 0; g < 6; g++) {
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setPadding(4, 2, 4, 2);
-            row.setBackgroundColor(g % 2 == 0 ? Color.parseColor("#1F2937") : Color.parseColor("#111827"));
+        LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(4, 4, 4, 4);
+        row.setBackgroundColor(Color.parseColor("#0D1117"));
 
-            addCell(row, 50, groupNames[g], 9, Gravity.CENTER).setTextColor(Color.parseColor("#D1D5DB"));
-
-            int rowTotal = 0;
-            for (int m = 0; m < 5; m++) {
-                int val = matrix[g][m];
-                rowTotal += val;
-                colTotal[m] += val;
-                addCellWeight(row, 1, String.valueOf(val), 9, Gravity.CENTER)
-                        .setTextColor(val > 0 ? Color.parseColor("#FCD34D") : Color.parseColor("#6B7280"));
-            }
-            grandTotal += rowTotal;
-            addCell(row, 40, String.valueOf(rowTotal), 9, Gravity.CENTER)
-                    .setTextColor(Color.parseColor("#60A5FA"));
-
-            llUnstartStat.addView(row);
+        // 专业颜色：有数量用黄色高亮，无则灰色
+        int[] colors = {
+            Color.parseColor("#FCD34D"), // 机房
+            Color.parseColor("#FCD34D"), // 机柜
+            Color.parseColor("#FCD34D"), // 拉远
+            Color.parseColor("#F87171"), // 铁塔（橙红）
+            Color.parseColor("#FCD34D"), // 室分
+            Color.parseColor("#6B7280"), // 其他
+        };
+        for (int m = 0; m < 6; m++) {
+            int val = majorCount[m];
+            TextView tv = addCellWeight(row, 1, String.valueOf(val), 10, Gravity.CENTER);
+            tv.setTextColor(val > 0 ? colors[m] : Color.parseColor("#4B5563"));
+            if (val > 0) tv.setTypeface(null, android.graphics.Typeface.BOLD);
         }
+        TextView tvTotal = addCell(row, 40, String.valueOf(grandTotal), 10, Gravity.CENTER);
+        tvTotal.setTextColor(Color.parseColor("#34D399"));
+        tvTotal.setTypeface(null, android.graphics.Typeface.BOLD);
 
-        // 合计行
-        LinearLayout totalRow = new LinearLayout(getContext());
-        totalRow.setOrientation(LinearLayout.HORIZONTAL);
-        totalRow.setPadding(4, 2, 4, 2);
-        totalRow.setBackgroundColor(Color.parseColor("#0D1117"));
-
-        addCell(totalRow, 50, "总计", 9, Gravity.CENTER).setTextColor(Color.parseColor("#F9FAFB"));
-        for (int m = 0; m < 5; m++) {
-            addCellWeight(totalRow, 1, String.valueOf(colTotal[m]), 9, Gravity.CENTER)
-                    .setTextColor(Color.parseColor("#34D399"));
-        }
-        addCell(totalRow, 40, String.valueOf(grandTotal), 9, Gravity.CENTER)
-                .setTextColor(Color.parseColor("#F59E0B"));
-        llUnstartStat.addView(totalRow);
+        llUnstartStat.addView(row);
     }
 
     // =========================================================
@@ -645,7 +620,6 @@ public class XunjianFragment extends Fragment {
         }
 
         // 读取 UI 配置
-        currentAreaIndex = spinnerArea.getSelectedItemPosition();
         String planYearStr = (String) spinnerPlanYear.getSelectedItem();
         currentPlanName = "全部".equals(planYearStr) ? "2026" : planYearStr;
         qualityByMonth  = cbQualityByMonth.isChecked();
@@ -787,6 +761,12 @@ public class XunjianFragment extends Fragment {
                 pkg.inspecttime  = XunjianApi.cleanNull(t.optString("inspecttime"));
                 pkg.taskid       = XunjianApi.cleanNull(t.optString("taskid"));
                 pkg.taskuserid   = XunjianApi.cleanNull(t.optString("taskuserid"));
+
+                // ② 只加入今日巡检的站点（starttime 或 endtime 包含今日日期）
+                String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                boolean isTodayTask = pkg.starttime.startsWith(todayDate) || pkg.endtime.startsWith(todayDate);
+                if (!isTodayTask) continue;
+
                 synchronized (taskPool) { taskPool.add(pkg); }
             }
         }
@@ -1101,17 +1081,10 @@ public class XunjianFragment extends Fragment {
 
     private void renderQualityReport() {
         llQualityReport.removeAllViews();
-        String[] names, members;
-        int groupCount;
-        if (currentAreaIndex == 0) {
-            names = new String[]{"综合1组","综合2组","综合3组","综合4组","综合5组","合计"};
-            members = new String[]{"陶大取、卢智伟","陈龙、林元龙","高树调、倪传井","苏忠前、许方喜","黄经兴、蔡亮",""};
-            groupCount = 6;
-        } else {
-            names = new String[]{"罗阳片区","雅阳片区","泗溪片区","仕阳片区","合计",""};
-            members = new String[]{"朱兴达","王成","夏念悦","胡叙渐","",""};
-            groupCount = 5;
-        }
+        // 区域由taskuser自动匹配，报表展示平阳综合组（与统计数组一致）
+        String[] names   = {"综合1组","综合2组","综合3组","综合4组","综合5组","合计"};
+        String[] members = {"陶大取、卢智伟","陈龙、林元龙","高树调、倪传井","苏忠前、许方喜","黄经兴、蔡亮",""};
+        int groupCount = 6;
 
         for (int i = 1; i <= groupCount; i++) {
             int gi = (i == groupCount) ? 6 : i; // 最后一行用汇总槽
@@ -1423,26 +1396,23 @@ public class XunjianFragment extends Fragment {
     }
 
     /**
-     * 综合分组匹配（优先站名，其次 taskuser）
+     * 综合分组匹配（优先匹配平阳，再匹配泰顺）
      * @return [groupName, groupIndex(1-based，0=未知)]
      */
     private String[] getGroupInfo(String taskuser, String stationname) {
-        // 区域0（平阳）
-        if (currentAreaIndex == 0) {
-            for (int g = 0; g < TASKUSER_AREA0.length; g++) {
-                for (String name : TASKUSER_AREA0[g]) {
-                    if (taskuser.contains(name)) {
-                        return new String[]{GROUPNAMES_AREA0[g], String.valueOf(g + 1)};
-                    }
+        // 先尝试平阳分组
+        for (int g = 0; g < TASKUSER_AREA0.length; g++) {
+            for (String name : TASKUSER_AREA0[g]) {
+                if (taskuser.contains(name)) {
+                    return new String[]{GROUPNAMES_AREA0[g], String.valueOf(g + 1)};
                 }
             }
-        } else {
-            // 区域1（泰顺）
-            for (int g = 0; g < TASKUSER_AREA1.length; g++) {
-                for (String name : TASKUSER_AREA1[g]) {
-                    if (taskuser.contains(name)) {
-                        return new String[]{GROUPNAMES_AREA1[g], String.valueOf(g + 1)};
-                    }
+        }
+        // 再尝试泰顺分组
+        for (int g = 0; g < TASKUSER_AREA1.length; g++) {
+            for (String name : TASKUSER_AREA1[g]) {
+                if (taskuser.contains(name)) {
+                    return new String[]{GROUPNAMES_AREA1[g], String.valueOf(g + 1)};
                 }
             }
         }
