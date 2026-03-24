@@ -30,40 +30,72 @@
                 android:textSize="11sp"
                 android:textStyle="bold"/>
 
+            <!-- 日期减1天 -->
+            <Button
+                android:id="@+id/btnDateMinus"
+                android:layout_width="28dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="4dp"
+                android:text="◀"
+                android:textSize="10sp"
+                android:textColor="@color/text_inverse"
+                android:background="@drawable/bg_button_gray"
+                android:stateListAnimator="@null"
+                android:letterSpacing="0"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"/>
+
             <EditText
                 android:id="@+id/etMetricsDate"
                 android:layout_width="0dp"
                 android:layout_height="32dp"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
                 android:background="@drawable/bg_input_white"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
                 android:text=""
-                android:hint="如：2025-01"
+                android:hint="yyyy-mm-dd"
                 android:textColor="@color/text_primary"
                 android:textSize="11sp"
                 android:inputType="text"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:singleLine="true"/>
+
+            <!-- 日期加1天 -->
+            <Button
+                android:id="@+id/btnDatePlus"
+                android:layout_width="28dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="6dp"
+                android:text="▶"
+                android:textSize="10sp"
+                android:textColor="@color/text_inverse"
+                android:background="@drawable/bg_button_gray"
+                android:stateListAnimator="@null"
+                android:letterSpacing="0"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"/>
 
             <Button
                 android:id="@+id/btnMetricsQuery"
-                android:layout_width="72dp"
-                android:layout_height="32dp"
+                android:layout_width="64dp"
+                android:layout_height="36dp"
                 android:text="查询"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_inverse"
                 android:background="@drawable/bg_button_primary_gradient"
                 android:stateListAnimator="@null"
-                android:letterSpacing="0"/>
+                android:letterSpacing="0"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"/>
 
             <Button
                 android:id="@+id/btnMetricsQueryAll"
-                android:layout_width="72dp"
-                android:layout_height="32dp"
+                android:layout_width="64dp"
+                android:layout_height="36dp"
                 android:layout_marginStart="4dp"
                 android:text="查全部"
                 android:textSize="11sp"
@@ -71,7 +103,9 @@
                 android:textColor="@color/text_inverse"
                 android:background="@drawable/bg_button_gray"
                 android:stateListAnimator="@null"
-                android:letterSpacing="0"/>
+                android:letterSpacing="0"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

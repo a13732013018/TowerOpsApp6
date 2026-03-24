@@ -2327,38 +2327,37 @@ public class ShuyunApi {
     }
 
     /**
-     * FSU离线率  /api/report/report/dataTable/xxx（占位，接口号参考其他已知接口）
-     * 字段: DATA_DATE, AREA_NAME 等（按实际返回解析）
+     * FSU离线率  /api/report/report/dataTable/2022010400
      */
     public static String queryFsuOfflineRate(String pcToken, String startTime) {
-        String url = PC_BASE + "/api/report/report/dataTable/2022010401";
+        String url = PC_BASE + "/api/report/report/dataTable/2022010400";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
         return postMetrics(url, body, pcToken);
     }
 
     /**
-     * 故障工单处理合格率  
+     * 故障工单处理合格率  /api/report/report/dataTable/4
      */
     public static String queryFaultOrderQuality(String pcToken, String startTime) {
-        String url = PC_BASE + "/api/report/report/dataTable/2022011201";
+        String url = PC_BASE + "/api/report/report/dataTable/4";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
         return postMetrics(url, body, pcToken);
     }
 
     /**
-     * 疑似退服  
+     * 疑似退服  /api/report/report/dataTable/2021120920
      */
     public static String querySuspectedOutOfService(String pcToken, String startTime) {
-        String url = PC_BASE + "/api/report/report/dataTable/2022010501";
+        String url = PC_BASE + "/api/report/report/dataTable/2021120920";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
         return postMetrics(url, body, pcToken);
     }
 
     /**
-     * 超频告警整治有效性  
+     * 超频告警整治有效性  /api/report/report/dataTable/2022010602
      */
     public static String queryAlarmEffectiveness(String pcToken, String startTime) {
-        String url = PC_BASE + "/api/report/report/dataTable/2022010801";
+        String url = PC_BASE + "/api/report/report/dataTable/2022010602";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
         return postMetrics(url, body, pcToken);
     }

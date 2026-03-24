@@ -27,7 +27,9 @@ import com.towerops.app.model.Session;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -70,14 +72,14 @@ public class MetricsFragment extends Fragment {
         // PUE有效率
         {"序号", "区县", "纳管站址", "有效站址", "有效率(%)", "达标站址", "达标率(%)",
          "I级", "II级", "III级", "IIII级", "日期"},
-        // FSU离线率
-        {"序号", "区县", "数据"},
+        // FSU离线率（动态列，由接口响应决定）
+        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
         // 故障工单合格率
-        {"序号", "区县", "数据"},
+        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
         // 疑似退服
-        {"序号", "区县", "数据"},
+        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
         // 超频告警整治有效性
-        {"序号", "区县", "数据"},
+        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
     };
 
     private static final int[] COL_WIDTH_DP = {70, 80, 70, 80, 80, 70, 90};
@@ -103,10 +105,16 @@ public class MetricsFragment extends Fragment {
 
         Button btnQuery    = view.findViewById(R.id.btnMetricsQuery);
         Button btnQueryAll = view.findViewById(R.id.btnMetricsQueryAll);
+        Button btnDateMinus = view.findViewById(R.id.btnDateMinus);
+        Button btnDatePlus  = view.findViewById(R.id.btnDatePlus);
 
-        // 默认填入当前年月
-        String defaultDate = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+        // 默认填入今天 yyyy-MM-dd
+        String defaultDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         etDate.setText(defaultDate);
+
+        // ◀▶ 日期调整（±1天）
+        btnDateMinus.setOnClickListener(v -> shiftDate(-1));
+        btnDatePlus.setOnClickListener(v  -> shiftDate(+1));
 
         // 初始化子Tab
         for (String name : TAB_NAMES) {
@@ -206,19 +214,23 @@ public class MetricsFragment extends Fragment {
                 return;
             }
 
-            String[] headers = HEADERS[tabIdx];
-            // 绘制表头
-            addRow(llHeader, headers, true, tabIdx);
-
-            // 绘制数据行
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject row = data.getJSONObject(i);
-                String[] cells = buildCells(tabIdx, row, i + 1);
-                LinearLayout rowView = new LinearLayout(requireContext());
-                rowView.setOrientation(LinearLayout.HORIZONTAL);
-                rowView.setBackgroundColor(i % 2 == 0 ? Color.parseColor("#FFFFFF") : Color.parseColor("#F0F4FF"));
-                addRow(rowView, cells, false, tabIdx);
-                llRows.addView(rowView);
+            if (tabIdx >= 3) {
+                // FSU/故障/疑似/超频：动态读取第一行所有 key 作为表头
+                renderDynamic(tabIdx, data);
+            } else {
+                String[] headers = HEADERS[tabIdx];
+                // 绘制表头
+                addRow(llHeader, headers, true, tabIdx);
+                // 绘制数据行
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject row = data.getJSONObject(i);
+                    String[] cells = buildCells(tabIdx, row, i + 1);
+                    LinearLayout rowView = new LinearLayout(requireContext());
+                    rowView.setOrientation(LinearLayout.HORIZONTAL);
+                    rowView.setBackgroundColor(i % 2 == 0 ? Color.parseColor("#FFFFFF") : Color.parseColor("#F0F4FF"));
+                    addRow(rowView, cells, false, tabIdx);
+                    llRows.addView(rowView);
+                }
             }
             setStatus(TAB_NAMES[tabIdx] + " · 共 " + data.length() + " 条");
 
@@ -226,6 +238,47 @@ public class MetricsFragment extends Fragment {
             setStatus("解析失败：" + e.getMessage());
         }
     }
+
+    /** 动态列渲染：用第一行的 JSON key 作为表头，按 key 顺序展示每行数据 */
+    private void renderDynamic(int tabIdx, JSONArray data) throws Exception {
+        JSONObject firstRow = data.getJSONObject(0);
+        // 收集所有 key（先区县/地市，再其他）
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        // 优先展示区域列
+        for (String areaKey : new String[]{"AREA_NAME", "LAT_NAME", "DISTRICT_NAME", "REGION_NAME"}) {
+            if (firstRow.has(areaKey) && !keys.contains(areaKey)) {
+                keys.add(areaKey);
+                break;
+            }
+        }
+        java.util.Iterator<String> it = firstRow.keys();
+        while (it.hasNext()) {
+            String k = it.next();
+            if (!keys.contains(k)) keys.add(k);
+        }
+
+        // 表头：序号 + 所有key
+        String[] headerArr = new String[keys.size() + 1];
+        headerArr[0] = "序号";
+        for (int i = 0; i < keys.size(); i++) headerArr[i + 1] = keys.get(i);
+        addRow(llHeader, headerArr, true, tabIdx);
+
+        // 数据行
+        for (int r = 0; r < data.length(); r++) {
+            JSONObject row = data.getJSONObject(r);
+            String[] cells = new String[keys.size() + 1];
+            cells[0] = String.valueOf(r + 1);
+            for (int c = 0; c < keys.size(); c++) {
+                cells[c + 1] = row.optString(keys.get(c), "");
+            }
+            LinearLayout rowView = new LinearLayout(requireContext());
+            rowView.setOrientation(LinearLayout.HORIZONTAL);
+            rowView.setBackgroundColor(r % 2 == 0 ? Color.parseColor("#FFFFFF") : Color.parseColor("#F0F4FF"));
+            addRow(rowView, cells, false, tabIdx);
+            llRows.addView(rowView);
+        }
+    }
+
 
     // ─── 按Tab取JSON字段组成cell数组 ──────────────────────────────
     private String[] buildCells(int tabIdx, JSONObject row, int seq) {
@@ -337,6 +390,23 @@ public class MetricsFragment extends Fragment {
     private void clearTable() {
         if (llHeader != null) llHeader.removeAllViews();
         if (llRows != null) llRows.removeAllViews();
+    }
+
+    // ─── 日期 ±1 天 ────────────────────────────────────────────────
+    private void shiftDate(int days) {
+        String cur = etDate.getText().toString().trim();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            Date d = sdf.parse(cur);
+            if (d == null) d = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(d);
+            cal.add(Calendar.DAY_OF_MONTH, days);
+            etDate.setText(sdf.format(cal.getTime()));
+        } catch (ParseException e) {
+            // 解析失败就用今天
+            etDate.setText(sdf.format(new Date()));
+        }
     }
 
     private void setStatus(String msg) {
