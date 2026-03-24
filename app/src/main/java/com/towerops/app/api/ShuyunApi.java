@@ -2445,6 +2445,7 @@ public class ShuyunApi {
     public static String getKaoHeOrderList(String pcToken, String cookieToken, String cityArea) {
         String cToken = (cookieToken != null && !cookieToken.isEmpty()) ? cookieToken : pcToken;
         String flowIds = "1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1131,1137,1143,1124,1160,1024,1220";
+        // URL带参（GET参数）
         String url = PC_BASE + "/api/flowable/flowable/task/listToOrder"
                 + "?page=1&limit=10000"
                 + "&flowId=" + flowIds
@@ -2452,11 +2453,24 @@ public class ShuyunApi {
                 + "&stationName=&stationCode=&sortType=&group_id=&xmlx="
                 + "&startTime1=2016-02-10+00:00:00&startTime2=2030-03-30+00:00:00"
                 + "&endTime1=&endTime2=&area_code=330300&cityArea=" + cityArea;
+        // POST body（与易语言 post 变量完全一致）
+        String post = "page=1&limit=10000"
+                + "&flowId=" + flowIds
+                + "&orderType=&jobId=&orderStatusFlag=R,N&user_id=12376"
+                + "&stationName=&stationCode=&sortType=&group_id=&xmlx="
+                + "&startTime1=2016-02-10+00:00:00&startTime2=2030-03-30+00:00:00"
+                + "&endTime1=&endTime2=&area_code=330300&cityArea=" + cityArea;
         String headers = buildCountyApiHeader(pcToken, cToken);
+        android.util.Log.d("KaoHeOrder", "请求URL: " + url);
+        android.util.Log.d("KaoHeOrder", "pcToken前30: " + (pcToken != null && pcToken.length() > 30 ? pcToken.substring(0, 30) : pcToken));
         try {
-            String result = HttpUtil.get(url, headers, null);
+            // 改用POST请求（与易语言 网页_访问_对象(url,1,post...) 一致，1=POST）
+            String result = HttpUtil.post(url, post, headers, null);
+            android.util.Log.d("KaoHeOrder", "返回长度: " + (result != null ? result.length() : 0));
+            android.util.Log.d("KaoHeOrder", "返回前200: " + (result != null && result.length() > 200 ? result.substring(0, 200) : result));
             return result != null ? result : "";
         } catch (Exception e) {
+            android.util.Log.e("KaoHeOrder", "请求异常: " + e.getMessage());
             e.printStackTrace();
             return "";
         }
