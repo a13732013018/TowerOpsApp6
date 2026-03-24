@@ -54,6 +54,8 @@ public class MetricsFragment extends Fragment {
     private LinearLayout llRows;
 
     private int currentTab = 0;
+    // 缓存每个Tab的最后一次查询结果（查全部时所有Tab同时填入）
+    private final String[] tabCache = new String[7];
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -124,7 +126,12 @@ public class MetricsFragment extends Fragment {
             @Override public void onTabSelected(TabLayout.Tab tab) {
                 currentTab = tab.getPosition();
                 clearTable();
-                tvStatus.setText("已切换到【" + TAB_NAMES[currentTab] + "】，点击查询");
+                // 有缓存数据则直接渲染，否则提示
+                if (tabCache[currentTab] != null && !tabCache[currentTab].isEmpty()) {
+                    renderTable(currentTab, tabCache[currentTab]);
+                } else {
+                    tvStatus.setText("已切换到【" + TAB_NAMES[currentTab] + "】，点击查询");
+                }
             }
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) {}
@@ -155,11 +162,14 @@ public class MetricsFragment extends Fragment {
         setStatus("查询中...");
         executor.execute(() -> {
             String json = fetchByTab(currentTab, pcToken, cookieToken, date);
-            mainHandler.post(() -> renderTable(currentTab, json));
+            mainHandler.post(() -> {
+                tabCache[currentTab] = json;  // 写缓存
+                renderTable(currentTab, json);
+            });
         });
     }
 
-    // ─── 查询全部Tab（并行） ──────────────────────────────────────
+    // ─── 查询全部Tab（并发，结果缓存，切换Tab可立即查看） ───────────
     private void queryAllTabs() {
         String date = etDate.getText().toString().trim();
         if (date.isEmpty()) {
@@ -174,15 +184,31 @@ public class MetricsFragment extends Fragment {
         }
         String cookieToken = (s.shuyunPcTokenCookie != null && !s.shuyunPcTokenCookie.isEmpty())
                 ? s.shuyunPcTokenCookie : pcToken;
-        setStatus("正在查询全部指标...");
+
+        // 清空旧缓存
+        for (int i = 0; i < tabCache.length; i++) tabCache[i] = null;
+        // 进度计数
+        final int[] doneCount = {0};
+        setStatus("正在查询全部指标（0/" + TAB_NAMES.length + "）...");
+
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int tabIdx = i;
+            final String finalPcToken = pcToken;
+            final String finalCookieToken = cookieToken;
             executor.execute(() -> {
-                String json = fetchByTab(tabIdx, pcToken, cookieToken, date);
+                String json = fetchByTab(tabIdx, finalPcToken, finalCookieToken, date);
                 mainHandler.post(() -> {
-                    // 只渲染当前展示的Tab
-                    if (tabIdx == currentTab) renderTable(tabIdx, json);
-                    setStatus("全部查询完成");
+                    tabCache[tabIdx] = json;  // 写缓存
+                    doneCount[0]++;
+                    setStatus("正在查询全部指标（" + doneCount[0] + "/" + TAB_NAMES.length + "）...");
+                    // 当前展示的Tab完成时立刻刷新显示
+                    if (tabIdx == currentTab) {
+                        renderTable(tabIdx, json);
+                    }
+                    // 全部完成
+                    if (doneCount[0] == TAB_NAMES.length) {
+                        setStatus("全部查询完成，切换Tab可查看各指标数据");
+                    }
                 });
             });
         }

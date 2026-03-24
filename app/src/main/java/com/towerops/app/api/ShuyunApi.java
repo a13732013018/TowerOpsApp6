@@ -2489,10 +2489,21 @@ public class ShuyunApi {
 
         try {
             org.json.JSONObject root = new org.json.JSONObject(jsonStr);
+            // 打印返回码便于排查
+            int code = root.optInt("code", root.optInt("status", 0));
+            String msg = root.optString("msg", root.optString("message", ""));
+            android.util.Log.d("ShuyunApi", "[考核工单] code=" + code + " msg=" + msg);
             org.json.JSONObject data = root.optJSONObject("data");
-            if (data == null) return result;
+            if (data == null) {
+                android.util.Log.w("ShuyunApi", "[考核工单] data is null, raw=" + (jsonStr.length() > 200 ? jsonStr.substring(0, 200) : jsonStr));
+                return result;
+            }
             org.json.JSONArray rows = data.optJSONArray("rows");
-            if (rows == null) return result;
+            if (rows == null) {
+                android.util.Log.w("ShuyunApi", "[考核工单] rows is null");
+                return result;
+            }
+            android.util.Log.d("ShuyunApi", "[考核工单] rows.length=" + rows.length());
 
             int seq = 0;
             for (int i = 0; i < rows.length(); i++) {

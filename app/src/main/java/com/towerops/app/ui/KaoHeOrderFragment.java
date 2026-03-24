@@ -39,14 +39,14 @@ import java.util.concurrent.Executors;
  */
 public class KaoHeOrderFragment extends Fragment {
 
-    // ── 行政区划（与省内待办Tab一致） ───────────────────────────────
+    // ── 行政区划 ──────────────────────────────────────────────────────
     private static final String[] CITY_AREA_NAMES = {
-        "全部", "平阳县", "泰顺县", "鹿城区", "苍南县", "文成县",
-        "瑞安市", "乐清市", "龙湾区", "洞头区", "永嘉县", "龙港市"
+        "全部", "平阳县", "泰顺县", "瓯海区", "苍南县", "文成县",
+        "瑞安市", "乐清市", "鹿城区", "龙湾区", "洞头区", "永嘉县", "龙港市"
     };
     private static final String[] CITY_AREA_CODES = {
-        "", "330326", "330329", "330302", "330327", "330328",
-        "330381", "330382", "330303", "330305", "330324", "330383"
+        "", "330326", "330329", "330304", "330327", "330328",
+        "330381", "330382", "330302", "330303", "330305", "330324", "330383"
     };
 
     // ── 分组常量（对应易语言 分组常量数组+分组名称数组） ──────────────
@@ -181,13 +181,13 @@ public class KaoHeOrderFragment extends Fragment {
 
         // 读取过滤状态
         boolean f10 = cbFilter10.isChecked();
+        boolean f18 = cbFilter18.isChecked();  // 修复：读取实际状态，原来写死为false
         boolean f17 = cbFilter17.isChecked();
         boolean f13 = cbFilter13.isChecked();
         boolean f14 = cbFilter14.isChecked();
         boolean f15 = cbFilter15.isChecked();
         boolean f16 = cbFilter16.isChecked();
         boolean f22 = cbFilter22.isChecked();
-        boolean f18 = false;
 
         isQuerying = true;
         btnQuery.setEnabled(false);  // 查询中禁用按钮
@@ -198,6 +198,8 @@ public class KaoHeOrderFragment extends Fragment {
         executor.execute(() -> {
             try {
                 String json = ShuyunApi.getKaoHeOrderList(pcToken, cookieToken, cityArea);
+                // 打印原始返回前300字符供排查
+                android.util.Log.d("KaoHeOrder", "raw: " + (json.length() > 300 ? json.substring(0, 300) : json));
                 List<ShuyunApi.KaoHeOrderInfo> list = ShuyunApi.parseKaoHeOrderList(
                         json, f10, f18, f13, f14, f15, f16, f17, f22,
                         STATION_GROUP_RULES);
