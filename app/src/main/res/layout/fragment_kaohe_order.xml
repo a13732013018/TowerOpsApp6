@@ -66,8 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="6dp"
-                android:flexWrap="wrap">
+                android:layout_marginTop="6dp">
 
                 <!-- 选择框10：过滤自动审核/省监控等环节 -->
                 <CheckBox
