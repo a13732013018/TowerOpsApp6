@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="#FFFFFF">
 
     <!-- ===== 顶部子Tab栏 ===== -->
     <HorizontalScrollView
@@ -101,11 +101,12 @@
                 <Button
                     android:id="@+id/btnQueryUnstart"
                     android:layout_width="80dp"
-                    android:layout_height="30dp"
+                    android:layout_height="36dp"
                     android:text="查询"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:backgroundTint="#2563EB"
                     android:textColor="@android:color/white"
+                    android:includeFontPadding="false"
                     android:stateListAnimator="@null"/>
             </LinearLayout>
 
@@ -118,19 +119,31 @@
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp">
 
-                <TextView android:layout_width="30dp" android:layout_height="match_parent"
-                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="50dp" android:layout_height="match_parent"
-                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="80dp" android:layout_height="match_parent"
-                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                <TextView android:id="@+id/thUnstartSeq"
+                    android:layout_width="30dp" android:layout_height="match_parent"
+                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thUnstartGroup"
+                    android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thUnstartTasksn"
+                    android:layout_width="80dp" android:layout_height="match_parent"
+                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thUnstartStation"
+                    android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="50dp" android:layout_height="match_parent"
-                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="60dp" android:layout_height="match_parent"
-                    android:text="日期" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thUnstartMajor"
+                    android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thUnstartDate"
+                    android:layout_width="60dp" android:layout_height="match_parent"
+                    android:text="日期" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
 
             <!-- 未巡检列表 -->
@@ -229,11 +242,12 @@
                 <Button
                     android:id="@+id/btnQueryZhilianXunjian"
                     android:layout_width="80dp"
-                    android:layout_height="30dp"
+                    android:layout_height="36dp"
                     android:text="查询"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:backgroundTint="#2563EB"
                     android:textColor="@android:color/white"
+                    android:includeFontPadding="false"
                     android:stateListAnimator="@null"/>
             </LinearLayout>
 
@@ -246,19 +260,31 @@
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp">
 
-                <TextView android:layout_width="30dp" android:layout_height="match_parent"
-                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="50dp" android:layout_height="match_parent"
-                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="80dp" android:layout_height="match_parent"
-                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                <TextView android:id="@+id/thZhilianSeq"
+                    android:layout_width="30dp" android:layout_height="match_parent"
+                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thZhilianGroup"
+                    android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thZhilianTasksn"
+                    android:layout_width="80dp" android:layout_height="match_parent"
+                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thZhilianStation"
+                    android:layout_width="0dp" android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="50dp" android:layout_height="match_parent"
-                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
-                <TextView android:layout_width="100dp" android:layout_height="match_parent"
-                    android:text="创建时间" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thZhilianMajor"
+                    android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
+                <TextView android:id="@+id/thZhilianCreatetime"
+                    android:layout_width="100dp" android:layout_height="match_parent"
+                    android:text="创建时间" android:textSize="9sp" android:gravity="center" android:textColor="#374151"
+                    android:clickable="true" android:focusable="true"/>
             </LinearLayout>
 
             <!-- 智联巡检列表 -->
@@ -335,12 +361,13 @@
                     <Button
                         android:id="@+id/btnQueryQuality"
                         android:layout_width="72dp"
-                        android:layout_height="30dp"
+                        android:layout_height="36dp"
                         android:text="查询"
-                        android:textSize="11sp"
+                        android:textSize="13sp"
                         android:backgroundTint="#2563EB"
                         android:textColor="@android:color/white"
                         android:layout_marginStart="8dp"
+                        android:includeFontPadding="false"
                         android:stateListAnimator="@null"/>
                 </LinearLayout>
 
@@ -362,7 +389,7 @@
 
                     <Spinner
                         android:id="@+id/spinnerQualityYear"
-                        android:layout_width="60dp"
+                        android:layout_width="80dp"
                         android:layout_height="32dp"
                         android:background="@drawable/bg_edittext"
                         android:paddingStart="8dp"
@@ -379,7 +406,7 @@
 
                     <Spinner
                         android:id="@+id/spinnerQualityMonth"
-                        android:layout_width="50dp"
+                        android:layout_width="60dp"
                         android:layout_height="32dp"
                         android:background="@drawable/bg_edittext"
                         android:paddingStart="8dp"
@@ -496,21 +523,35 @@
                         android:background="#E5E7EB"
                         android:paddingStart="4dp"
                         android:paddingEnd="4dp">
-                        <TextView android:layout_width="30dp" android:layout_height="match_parent"
-                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
-                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        <TextView android:id="@+id/thTaskSeq"
+                            android:layout_width="30dp" android:layout_height="match_parent"
+                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskGroup"
+                            android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskStation"
+                            android:layout_width="0dp" android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="40dp" android:layout_height="match_parent"
-                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="56dp" android:layout_height="match_parent"
-                            android:text="进度" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="90dp" android:layout_height="match_parent"
-                            android:text="开始时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="90dp" android:layout_height="match_parent"
-                            android:text="结束时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskMajor"
+                            android:layout_width="40dp" android:layout_height="match_parent"
+                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskProgress"
+                            android:layout_width="56dp" android:layout_height="match_parent"
+                            android:text="进度" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskStart"
+                            android:layout_width="90dp" android:layout_height="match_parent"
+                            android:text="开始时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thTaskEnd"
+                            android:layout_width="90dp" android:layout_height="match_parent"
+                            android:text="结束时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
                     </LinearLayout>
 
                     <ScrollView
@@ -538,25 +579,41 @@
                         android:background="#E5E7EB"
                         android:paddingStart="4dp"
                         android:paddingEnd="4dp">
-                        <TextView android:layout_width="30dp" android:layout_height="match_parent"
-                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
-                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        <TextView android:id="@+id/thDetailSeq"
+                            android:layout_width="30dp" android:layout_height="match_parent"
+                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailGroup"
+                            android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailStation"
+                            android:layout_width="0dp" android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
-                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailMajor"
+                            android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailProject"
+                            android:layout_width="0dp" android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="巡检项目" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
-                            android:text="结果" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="32dp" android:layout_height="match_parent"
-                            android:text="质检" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
-                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:text="巡检项目" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailResult"
+                            android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="结果" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailPass"
+                            android:layout_width="32dp" android:layout_height="match_parent"
+                            android:text="质检" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
+                        <TextView android:id="@+id/thDetailReason"
+                            android:layout_width="0dp" android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:text="质检问题" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                            android:text="质检问题" android:textSize="8sp" android:gravity="center" android:textColor="#374151"
+                            android:clickable="true" android:focusable="true"/>
                     </LinearLayout>
 
                     <ScrollView

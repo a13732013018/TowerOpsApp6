@@ -32,6 +32,8 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -58,11 +60,15 @@ public class XunjianFragment extends Fragment {
     private TextView tvUnstartCount;
     private Button btnQueryUnstart;
     private LinearLayout llUnstartList, llUnstartStat;
+    // 未巡检表头
+    private TextView thUnstartSeq, thUnstartGroup, thUnstartTasksn, thUnstartStation, thUnstartMajor, thUnstartDate;
 
     // Panel 1: 智联巡检
     private TextView tvZhilianXunjianCount;
     private Button btnQueryZhilianXunjian;
     private LinearLayout llZhilianXunjianList;
+    // 智联巡检表头
+    private TextView thZhilianSeq, thZhilianGroup, thZhilianTasksn, thZhilianStation, thZhilianMajor, thZhilianCreatetime;
 
     // Panel 2: APP 质检
     private Spinner spinnerPlanYear, spinnerArea, spinnerQualityYear, spinnerQualityMonth;
@@ -73,6 +79,37 @@ public class XunjianFragment extends Fragment {
     private TextView tabQualityTask, tabQualityDetail, tabQualityReport;
     private ViewFlipper viewFlipperQuality;
     private LinearLayout llQualityTaskList, llQualityDetailList, llQualityReport;
+    // APP质检表头
+    private TextView thTaskSeq, thTaskGroup, thTaskStation, thTaskMajor, thTaskProgress, thTaskStart, thTaskEnd;
+    private TextView thDetailSeq, thDetailGroup, thDetailStation, thDetailMajor, thDetailProject, thDetailResult, thDetailPass, thDetailReason;
+
+    // ===================== 数据缓存（用于排序）=====================
+
+    /** 未巡检行缓存 */
+    private static class UnstartRow {
+        int    seq; String group, tasksn, deviceid, stationname, applymajor, date;
+    }
+    /** 智联巡检行缓存 */
+    private static class ZhilianRow {
+        int    seq; String group, tasksn, deviceid, stationname, applymajor, createtime;
+    }
+    /** APP质检任务行缓存 */
+    private static class QualityTaskRow {
+        int    seq; String group, tasksn, deviceid, stationcode, stationname, remark,
+               applymajor, mainplanname, progress, starttime, endtime, pollingperiod,
+               inspecttime, taskuser;
+    }
+
+    private final List<UnstartRow>              unstartRows     = new ArrayList<>();
+    private final List<ZhilianRow>              zhilianRows     = new ArrayList<>();
+    private final List<QualityTaskRow>          qualityTaskRows = new ArrayList<>();
+    private final List<XunjianApi.AppQualityDetail> qualityDetailRows = new ArrayList<>();
+
+    // 排序状态（每个面板独立：sortCol=列索引，sortAsc=升序/降序）
+    private int  unstartSortCol   = -1; private boolean unstartSortAsc   = true;
+    private int  zhilianSortCol   = -1; private boolean zhilianSortAsc   = true;
+    private int  taskSortCol      = -1; private boolean taskSortAsc      = true;
+    private int  detailSortCol    = -1; private boolean detailSortAsc    = true;
 
     // ===================== 状态 =====================
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -172,11 +209,23 @@ public class XunjianFragment extends Fragment {
         btnQueryUnstart = v.findViewById(R.id.btnQueryUnstart);
         llUnstartList   = v.findViewById(R.id.llUnstartList);
         llUnstartStat   = v.findViewById(R.id.llUnstartStat);
+        thUnstartSeq     = v.findViewById(R.id.thUnstartSeq);
+        thUnstartGroup   = v.findViewById(R.id.thUnstartGroup);
+        thUnstartTasksn  = v.findViewById(R.id.thUnstartTasksn);
+        thUnstartStation = v.findViewById(R.id.thUnstartStation);
+        thUnstartMajor   = v.findViewById(R.id.thUnstartMajor);
+        thUnstartDate    = v.findViewById(R.id.thUnstartDate);
 
         // Panel 1
         tvZhilianXunjianCount  = v.findViewById(R.id.tvZhilianXunjianCount);
         btnQueryZhilianXunjian = v.findViewById(R.id.btnQueryZhilianXunjian);
         llZhilianXunjianList   = v.findViewById(R.id.llZhilianXunjianList);
+        thZhilianSeq        = v.findViewById(R.id.thZhilianSeq);
+        thZhilianGroup      = v.findViewById(R.id.thZhilianGroup);
+        thZhilianTasksn     = v.findViewById(R.id.thZhilianTasksn);
+        thZhilianStation    = v.findViewById(R.id.thZhilianStation);
+        thZhilianMajor      = v.findViewById(R.id.thZhilianMajor);
+        thZhilianCreatetime = v.findViewById(R.id.thZhilianCreatetime);
 
         // Panel 2
         spinnerPlanYear    = v.findViewById(R.id.spinnerPlanYear);
@@ -197,6 +246,23 @@ public class XunjianFragment extends Fragment {
         llQualityTaskList   = v.findViewById(R.id.llQualityTaskList);
         llQualityDetailList = v.findViewById(R.id.llQualityDetailList);
         llQualityReport     = v.findViewById(R.id.llQualityReport);
+
+        thTaskSeq      = v.findViewById(R.id.thTaskSeq);
+        thTaskGroup    = v.findViewById(R.id.thTaskGroup);
+        thTaskStation  = v.findViewById(R.id.thTaskStation);
+        thTaskMajor    = v.findViewById(R.id.thTaskMajor);
+        thTaskProgress = v.findViewById(R.id.thTaskProgress);
+        thTaskStart    = v.findViewById(R.id.thTaskStart);
+        thTaskEnd      = v.findViewById(R.id.thTaskEnd);
+
+        thDetailSeq     = v.findViewById(R.id.thDetailSeq);
+        thDetailGroup   = v.findViewById(R.id.thDetailGroup);
+        thDetailStation = v.findViewById(R.id.thDetailStation);
+        thDetailMajor   = v.findViewById(R.id.thDetailMajor);
+        thDetailProject = v.findViewById(R.id.thDetailProject);
+        thDetailResult  = v.findViewById(R.id.thDetailResult);
+        thDetailPass    = v.findViewById(R.id.thDetailPass);
+        thDetailReason  = v.findViewById(R.id.thDetailReason);
     }
 
     // ===================== Tab 切换 =====================
@@ -213,6 +279,92 @@ public class XunjianFragment extends Fragment {
         tabQualityTask.setOnClickListener(v -> selectQualityTab(0));
         tabQualityDetail.setOnClickListener(v -> selectQualityTab(1));
         tabQualityReport.setOnClickListener(v -> selectQualityTab(2));
+
+        // 未巡检表头排序（列索引 0=序 1=分组 2=工单号 3=站点 4=专业 5=日期）
+        View.OnClickListener unstartHeaderClick = v -> {
+            int col = 0;
+            if (v == thUnstartSeq)     col = 0;
+            else if (v == thUnstartGroup)   col = 1;
+            else if (v == thUnstartTasksn)  col = 2;
+            else if (v == thUnstartStation) col = 3;
+            else if (v == thUnstartMajor)   col = 4;
+            else if (v == thUnstartDate)    col = 5;
+            if (unstartSortCol == col) unstartSortAsc = !unstartSortAsc;
+            else { unstartSortCol = col; unstartSortAsc = true; }
+            sortAndRenderUnstart();
+        };
+        thUnstartSeq.setOnClickListener(unstartHeaderClick);
+        thUnstartGroup.setOnClickListener(unstartHeaderClick);
+        thUnstartTasksn.setOnClickListener(unstartHeaderClick);
+        thUnstartStation.setOnClickListener(unstartHeaderClick);
+        thUnstartMajor.setOnClickListener(unstartHeaderClick);
+        thUnstartDate.setOnClickListener(unstartHeaderClick);
+
+        // 智联巡检表头排序（列索引 0=序 1=分组 2=工单号 3=站点 4=专业 5=创建时间）
+        View.OnClickListener zhilianHeaderClick = v -> {
+            int col = 0;
+            if (v == thZhilianSeq)         col = 0;
+            else if (v == thZhilianGroup)       col = 1;
+            else if (v == thZhilianTasksn)      col = 2;
+            else if (v == thZhilianStation)     col = 3;
+            else if (v == thZhilianMajor)       col = 4;
+            else if (v == thZhilianCreatetime)  col = 5;
+            if (zhilianSortCol == col) zhilianSortAsc = !zhilianSortAsc;
+            else { zhilianSortCol = col; zhilianSortAsc = true; }
+            sortAndRenderZhilian();
+        };
+        thZhilianSeq.setOnClickListener(zhilianHeaderClick);
+        thZhilianGroup.setOnClickListener(zhilianHeaderClick);
+        thZhilianTasksn.setOnClickListener(zhilianHeaderClick);
+        thZhilianStation.setOnClickListener(zhilianHeaderClick);
+        thZhilianMajor.setOnClickListener(zhilianHeaderClick);
+        thZhilianCreatetime.setOnClickListener(zhilianHeaderClick);
+
+        // APP质检任务表头排序（列索引 0=序 1=分组 2=站点 3=专业 4=进度 5=开始 6=结束）
+        View.OnClickListener taskHeaderClick = v -> {
+            int col = 0;
+            if (v == thTaskSeq)       col = 0;
+            else if (v == thTaskGroup)    col = 1;
+            else if (v == thTaskStation)  col = 2;
+            else if (v == thTaskMajor)    col = 3;
+            else if (v == thTaskProgress) col = 4;
+            else if (v == thTaskStart)    col = 5;
+            else if (v == thTaskEnd)      col = 6;
+            if (taskSortCol == col) taskSortAsc = !taskSortAsc;
+            else { taskSortCol = col; taskSortAsc = true; }
+            sortAndRenderQualityTask();
+        };
+        thTaskSeq.setOnClickListener(taskHeaderClick);
+        thTaskGroup.setOnClickListener(taskHeaderClick);
+        thTaskStation.setOnClickListener(taskHeaderClick);
+        thTaskMajor.setOnClickListener(taskHeaderClick);
+        thTaskProgress.setOnClickListener(taskHeaderClick);
+        thTaskStart.setOnClickListener(taskHeaderClick);
+        thTaskEnd.setOnClickListener(taskHeaderClick);
+
+        // 质检详情表头排序（列索引 0=序 1=分组 2=站点 3=专业 4=巡检项目 5=结果 6=质检 7=质检问题）
+        View.OnClickListener detailHeaderClick = v -> {
+            int col = 0;
+            if (v == thDetailSeq)      col = 0;
+            else if (v == thDetailGroup)   col = 1;
+            else if (v == thDetailStation) col = 2;
+            else if (v == thDetailMajor)   col = 3;
+            else if (v == thDetailProject) col = 4;
+            else if (v == thDetailResult)  col = 5;
+            else if (v == thDetailPass)    col = 6;
+            else if (v == thDetailReason)  col = 7;
+            if (detailSortCol == col) detailSortAsc = !detailSortAsc;
+            else { detailSortCol = col; detailSortAsc = true; }
+            sortAndRenderQualityDetail();
+        };
+        thDetailSeq.setOnClickListener(detailHeaderClick);
+        thDetailGroup.setOnClickListener(detailHeaderClick);
+        thDetailStation.setOnClickListener(detailHeaderClick);
+        thDetailMajor.setOnClickListener(detailHeaderClick);
+        thDetailProject.setOnClickListener(detailHeaderClick);
+        thDetailResult.setOnClickListener(detailHeaderClick);
+        thDetailPass.setOnClickListener(detailHeaderClick);
+        thDetailReason.setOnClickListener(detailHeaderClick);
     }
 
     private void selectMainTab(int idx) {
@@ -292,6 +444,9 @@ public class XunjianFragment extends Fragment {
         btnQueryUnstart.setText("查询中...");
         llUnstartList.removeAllViews();
         llUnstartStat.removeAllViews();
+        unstartRows.clear();
+        unstartSortCol = -1; unstartSortAsc = true;
+        updateUnstartHeaders();
 
         new Thread(() -> {
             String json = XunjianApi.getUnstartList();
@@ -345,10 +500,16 @@ public class XunjianFragment extends Fragment {
                     matrix[groupIdx][majorIdx]++;
                 }
 
-                // 添加列表行
-                addUnstartRow(i + 1, groupName, tasksn, deviceid, stationname, applymajor, date);
+                // 缓存数据
+                UnstartRow r = new UnstartRow();
+                r.seq = i + 1; r.group = groupName; r.tasksn = tasksn;
+                r.deviceid = deviceid; r.stationname = stationname;
+                r.applymajor = applymajor; r.date = date;
+                unstartRows.add(r);
             }
 
+            // 渲染列表（默认顺序）
+            sortAndRenderUnstart();
             // 渲染统计
             renderUnstartStat(matrix, groupNames);
 
@@ -358,22 +519,6 @@ public class XunjianFragment extends Fragment {
         }
     }
 
-    private void addUnstartRow(int seq, String groupName, String tasksn,
-                                String deviceid, String stationname, String applymajor, String date) {
-        LinearLayout row = new LinearLayout(getContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(4, 3, 4, 3);
-        row.setBackgroundColor(seq % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
-
-        addCell(row, 30,  String.valueOf(seq), 8, Gravity.CENTER);
-        addCell(row, 50,  groupName, 8, Gravity.CENTER);
-        addCell(row, 80,  tasksn, 8, Gravity.CENTER);
-        addCellWeight(row, 1, stationname, 8, Gravity.START);
-        addCell(row, 50,  applymajor, 8, Gravity.CENTER);
-        addCell(row, 60,  date != null && date.length() > 10 ? date.substring(0, 10) : date, 8, Gravity.CENTER);
-
-        llUnstartList.addView(row);
-    }
 
     private void renderUnstartStat(int[][] matrix, String[] groupNames) {
         String[] majorHeaders = {"机房", "机柜", "拉远", "铁塔", "室分"};
@@ -431,6 +576,9 @@ public class XunjianFragment extends Fragment {
         btnQueryZhilianXunjian.setEnabled(false);
         btnQueryZhilianXunjian.setText("查询中...");
         llZhilianXunjianList.removeAllViews();
+        zhilianRows.clear();
+        zhilianSortCol = -1; zhilianSortAsc = true;
+        updateZhilianHeaders();
 
         new Thread(() -> {
             String json = XunjianApi.getZhilianXunjianList();
@@ -466,18 +614,14 @@ public class XunjianFragment extends Fragment {
                 String mainPlanName= XunjianApi.cleanNull(item.optString("mainPlanName"));
 
                 String groupName = matchGroup(stationName);
-                addZhilianXunjianRow(i + 1, groupName, tasksn, deviceid, stationName, applymajor, createtime);
+                ZhilianRow r = new ZhilianRow();
+                r.seq = i + 1; r.group = groupName; r.tasksn = tasksn;
+                r.deviceid = deviceid; r.stationname = stationName;
+                r.applymajor = applymajor; r.createtime = createtime;
+                zhilianRows.add(r);
             }
 
-            // 滚动到底部
-            if (total > 0) {
-                llZhilianXunjianList.post(() -> {
-                    View parent = (View) llZhilianXunjianList.getParent();
-                    if (parent instanceof android.widget.ScrollView) {
-                        ((android.widget.ScrollView) parent).fullScroll(View.FOCUS_DOWN);
-                    }
-                });
-            }
+            sortAndRenderZhilian();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -485,23 +629,6 @@ public class XunjianFragment extends Fragment {
         }
     }
 
-    private void addZhilianXunjianRow(int seq, String groupName, String tasksn,
-                                       String deviceid, String stationName,
-                                       String applymajor, String createtime) {
-        LinearLayout row = new LinearLayout(getContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(4, 3, 4, 3);
-        row.setBackgroundColor(seq % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
-
-        addCell(row, 30,  String.valueOf(seq), 8, Gravity.CENTER);
-        addCell(row, 50,  groupName, 8, Gravity.CENTER);
-        addCell(row, 80,  tasksn, 8, Gravity.CENTER);
-        addCellWeight(row, 1, stationName, 8, Gravity.START);
-        addCell(row, 50,  applymajor, 8, Gravity.CENTER);
-        addCell(row, 100, createtime, 8, Gravity.CENTER);
-
-        llZhilianXunjianList.addView(row);
-    }
 
     // =========================================================
     // === Panel 2: APP 巡检质检 ===
@@ -536,6 +663,10 @@ public class XunjianFragment extends Fragment {
         llQualityReport.removeAllViews();
         progressQuality.setProgress(0);
         tvQualityProgress.setText("0%");
+        qualityTaskRows.clear();
+        qualityDetailRows.clear();
+        taskSortCol = -1; taskSortAsc = true; updateTaskHeaders();
+        detailSortCol = -1; detailSortAsc = true; updateDetailHeaders();
 
         // 重置统计
         resetStats();
@@ -603,16 +734,6 @@ public class XunjianFragment extends Fragment {
         while (System.currentTimeMillis() < deadline) {
             synchronized (qualityLock) {
                 if (qualityFinished >= qualityTotal) break;
-            }
-            // 更新进度
-            int fin, tot;
-            synchronized (qualityLock) { fin = qualityFinished; tot = qualityTotal; }
-            if (tot > 0) {
-                int pct = (int)((float) fin / tot * 100);
-                mainHandler.post(() -> {
-                    progressQuality.setProgress(pct);
-                    tvQualityProgress.setText(pct + "%");
-                });
             }
             try { Thread.sleep(200); } catch (InterruptedException ie) { break; }
         }
@@ -746,7 +867,7 @@ public class XunjianFragment extends Fragment {
                 pkg.stationcode, fStationname, fRemark, fApply, fPlanName, fProgress,
                 fStart, fEnd, fPoll, pkg.inspecttime, fTaskuser));
 
-        // 质检逻辑（按月/今日）
+        // 质检逻辑（按月/今日/默认全部）
         boolean needQuality = false;
         if (!pkg.starttime.isEmpty()) {
             try {
@@ -760,6 +881,7 @@ public class XunjianFragment extends Fragment {
                     int taskDay   = cal.get(Calendar.DAY_OF_MONTH);
                     int curDay    = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
+                    // 两者都未勾选：不执行质检
                     if (qualityByMonth && taskMonth == qualityMonth && taskYear == qualityYear) {
                         needQuality = true;
                     }
@@ -1044,55 +1166,251 @@ public class XunjianFragment extends Fragment {
                                     String applymajor, String mainplanname, String progress,
                                     String starttime, String endtime, String pollingperiod,
                                     String inspecttime, String taskuser) {
-        LinearLayout row = new LinearLayout(getContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(4, 2, 4, 2);
-        row.setBackgroundColor(seq % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
-
-        addCell(row, 30,  String.valueOf(seq), 8, Gravity.CENTER);
-        addCell(row, 44,  groupName, 8, Gravity.CENTER);
-        addCellWeight(row, 1, stationname, 8, Gravity.START);
-        addCell(row, 40,  applymajor, 8, Gravity.CENTER);
-        addCell(row, 56,  progress, 8, Gravity.CENTER);
-        addCell(row, 90,  starttime != null && starttime.length() > 16 ? starttime.substring(0, 16) : starttime, 8, Gravity.CENTER);
-        addCell(row, 90,  endtime != null && endtime.length() > 16 ? endtime.substring(0, 16) : endtime, 8, Gravity.CENTER);
-
-        llQualityTaskList.addView(row);
+        QualityTaskRow r = new QualityTaskRow();
+        r.seq = seq; r.group = groupName; r.tasksn = tasksn; r.deviceid = deviceid;
+        r.stationcode = stationcode; r.stationname = stationname; r.remark = remark;
+        r.applymajor = applymajor; r.mainplanname = mainplanname; r.progress = progress;
+        r.starttime = starttime; r.endtime = endtime; r.pollingperiod = pollingperiod;
+        r.inspecttime = inspecttime; r.taskuser = taskuser;
+        qualityTaskRows.add(r);
+        sortAndRenderQualityTask();
     }
 
     private void addQualityDetailRow(XunjianApi.AppQualityDetail d) {
-        int seq;
-        try { seq = Integer.parseInt(d.seq); } catch (Exception e) { seq = 1; }
+        qualityDetailRows.add(d);
+        sortAndRenderQualityDetail();
+    }
 
+    // ===================== 排序渲染 =====================
+
+    /** 排序比较：空串排末尾 */
+    private int strCmp(String a, String b, boolean asc) {
+        boolean ea = (a == null || a.isEmpty()), eb = (b == null || b.isEmpty());
+        if (ea && eb) return 0;
+        if (ea) return 1;
+        if (eb) return -1;
+        int c = a.compareTo(b);
+        return asc ? c : -c;
+    }
+
+    // --- 未巡检 ---
+    private void sortAndRenderUnstart() {
+        if (unstartSortCol >= 0) {
+            final int col = unstartSortCol; final boolean asc = unstartSortAsc;
+            Collections.sort(unstartRows, (a, b) -> {
+                switch (col) {
+                    case 0: return asc ? Integer.compare(a.seq, b.seq) : Integer.compare(b.seq, a.seq);
+                    case 1: return strCmp(a.group, b.group, asc);
+                    case 2: return strCmp(a.tasksn, b.tasksn, asc);
+                    case 3: return strCmp(a.stationname, b.stationname, asc);
+                    case 4: return strCmp(a.applymajor, b.applymajor, asc);
+                    case 5: return strCmp(a.date, b.date, asc);
+                    default: return 0;
+                }
+            });
+        }
+        updateUnstartHeaders();
+        llUnstartList.removeAllViews();
+        for (int i = 0; i < unstartRows.size(); i++) {
+            UnstartRow r = unstartRows.get(i);
+            renderUnstartRow(i + 1, r);
+        }
+    }
+
+    private void renderUnstartRow(int rowIdx, UnstartRow r) {
+        LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(4, 3, 4, 3);
+        row.setBackgroundColor(rowIdx % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
+        addCell(row, 30,  String.valueOf(r.seq), 8, Gravity.CENTER);
+        addCell(row, 50,  r.group, 8, Gravity.CENTER);
+        addCell(row, 80,  r.tasksn, 8, Gravity.CENTER);
+        addCellWeight(row, 1, r.stationname, 8, Gravity.START);
+        addCell(row, 50,  r.applymajor, 8, Gravity.CENTER);
+        String d = r.date;
+        addCell(row, 60,  d != null && d.length() > 10 ? d.substring(0, 10) : d, 8, Gravity.CENTER);
+        llUnstartList.addView(row);
+    }
+
+    private void updateUnstartHeaders() {
+        String[] labels = {"序","分组","工单号","站点名","专业","日期"};
+        TextView[] ths = {thUnstartSeq, thUnstartGroup, thUnstartTasksn, thUnstartStation, thUnstartMajor, thUnstartDate};
+        for (int i = 0; i < ths.length; i++) {
+            String suffix = (unstartSortCol == i) ? (unstartSortAsc ? "▲" : "▼") : "";
+            ths[i].setText(labels[i] + suffix);
+            ths[i].setTextColor(unstartSortCol == i ? Color.parseColor("#2563EB") : Color.parseColor("#374151"));
+        }
+    }
+
+    // --- 智联巡检 ---
+    private void sortAndRenderZhilian() {
+        if (zhilianSortCol >= 0) {
+            final int col = zhilianSortCol; final boolean asc = zhilianSortAsc;
+            Collections.sort(zhilianRows, (a, b) -> {
+                switch (col) {
+                    case 0: return asc ? Integer.compare(a.seq, b.seq) : Integer.compare(b.seq, a.seq);
+                    case 1: return strCmp(a.group, b.group, asc);
+                    case 2: return strCmp(a.tasksn, b.tasksn, asc);
+                    case 3: return strCmp(a.stationname, b.stationname, asc);
+                    case 4: return strCmp(a.applymajor, b.applymajor, asc);
+                    case 5: return strCmp(a.createtime, b.createtime, asc);
+                    default: return 0;
+                }
+            });
+        }
+        updateZhilianHeaders();
+        llZhilianXunjianList.removeAllViews();
+        for (int i = 0; i < zhilianRows.size(); i++) {
+            ZhilianRow r = zhilianRows.get(i);
+            renderZhilianRow(i + 1, r);
+        }
+    }
+
+    private void renderZhilianRow(int rowIdx, ZhilianRow r) {
+        LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(4, 3, 4, 3);
+        row.setBackgroundColor(rowIdx % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
+        addCell(row, 30,  String.valueOf(r.seq), 8, Gravity.CENTER);
+        addCell(row, 50,  r.group, 8, Gravity.CENTER);
+        addCell(row, 80,  r.tasksn, 8, Gravity.CENTER);
+        addCellWeight(row, 1, r.stationname, 8, Gravity.START);
+        addCell(row, 50,  r.applymajor, 8, Gravity.CENTER);
+        addCell(row, 100, r.createtime, 8, Gravity.CENTER);
+        llZhilianXunjianList.addView(row);
+    }
+
+    private void updateZhilianHeaders() {
+        String[] labels = {"序","分组","工单号","站点名","专业","创建时间"};
+        TextView[] ths = {thZhilianSeq, thZhilianGroup, thZhilianTasksn, thZhilianStation, thZhilianMajor, thZhilianCreatetime};
+        for (int i = 0; i < ths.length; i++) {
+            String suffix = (zhilianSortCol == i) ? (zhilianSortAsc ? "▲" : "▼") : "";
+            ths[i].setText(labels[i] + suffix);
+            ths[i].setTextColor(zhilianSortCol == i ? Color.parseColor("#2563EB") : Color.parseColor("#374151"));
+        }
+    }
+
+    // --- APP质检任务 ---
+    private void sortAndRenderQualityTask() {
+        if (taskSortCol >= 0) {
+            final int col = taskSortCol; final boolean asc = taskSortAsc;
+            Collections.sort(qualityTaskRows, (a, b) -> {
+                switch (col) {
+                    case 0: return asc ? Integer.compare(a.seq, b.seq) : Integer.compare(b.seq, a.seq);
+                    case 1: return strCmp(a.group, b.group, asc);
+                    case 2: return strCmp(a.stationname, b.stationname, asc);
+                    case 3: return strCmp(a.applymajor, b.applymajor, asc);
+                    case 4: return strCmp(a.progress, b.progress, asc);
+                    case 5: return strCmp(a.starttime, b.starttime, asc);
+                    case 6: return strCmp(a.endtime, b.endtime, asc);
+                    default: return 0;
+                }
+            });
+        }
+        updateTaskHeaders();
+        llQualityTaskList.removeAllViews();
+        for (int i = 0; i < qualityTaskRows.size(); i++) {
+            QualityTaskRow r = qualityTaskRows.get(i);
+            renderQualityTaskRow(i + 1, r);
+        }
+    }
+
+    private void renderQualityTaskRow(int rowIdx, QualityTaskRow r) {
         LinearLayout row = new LinearLayout(getContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setPadding(4, 2, 4, 2);
+        row.setBackgroundColor(rowIdx % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE);
+        addCell(row, 30,  String.valueOf(r.seq), 8, Gravity.CENTER);
+        addCell(row, 44,  r.group, 8, Gravity.CENTER);
+        addCellWeight(row, 1, r.stationname, 8, Gravity.START);
+        addCell(row, 40,  r.applymajor, 8, Gravity.CENTER);
+        addCell(row, 56,  r.progress, 8, Gravity.CENTER);
+        String st = r.starttime; addCell(row, 90, st != null && st.length() > 16 ? st.substring(0, 16) : st, 8, Gravity.CENTER);
+        String et = r.endtime;   addCell(row, 90, et != null && et.length() > 16 ? et.substring(0, 16) : et, 8, Gravity.CENTER);
+        llQualityTaskList.addView(row);
+    }
 
+    private void updateTaskHeaders() {
+        String[] labels = {"序","分组","站点","专业","进度","开始时间","结束时间"};
+        TextView[] ths = {thTaskSeq, thTaskGroup, thTaskStation, thTaskMajor, thTaskProgress, thTaskStart, thTaskEnd};
+        for (int i = 0; i < ths.length; i++) {
+            String suffix = (taskSortCol == i) ? (taskSortAsc ? "▲" : "▼") : "";
+            ths[i].setText(labels[i] + suffix);
+            ths[i].setTextColor(taskSortCol == i ? Color.parseColor("#2563EB") : Color.parseColor("#374151"));
+        }
+    }
+
+    // --- 质检详情 ---
+    private void sortAndRenderQualityDetail() {
+        if (detailSortCol >= 0) {
+            final int col = detailSortCol; final boolean asc = detailSortAsc;
+            Collections.sort(qualityDetailRows, (a, b) -> {
+                switch (col) {
+                    case 0: { int ai=0, bi=0; try{ai=Integer.parseInt(a.seq);}catch(Exception e){} try{bi=Integer.parseInt(b.seq);}catch(Exception e){} return asc?Integer.compare(ai,bi):Integer.compare(bi,ai); }
+                    case 1: return strCmp(a.groupName, b.groupName, asc);
+                    case 2: return strCmp(a.sitename, b.sitename, asc);
+                    case 3: return strCmp(a.applymajor, b.applymajor, asc);
+                    case 4: return strCmp(a.projectname, b.projectname, asc);
+                    case 5: return strCmp(a.actualfill, b.actualfill, asc);
+                    case 6: return strCmp(a.qualityPass, b.qualityPass, asc);
+                    case 7: return strCmp(a.qualityReason, b.qualityReason, asc);
+                    default: return 0;
+                }
+            });
+        }
+        updateDetailHeaders();
+        llQualityDetailList.removeAllViews();
+        for (int i = 0; i < qualityDetailRows.size(); i++) {
+            renderQualityDetailRow(i + 1, qualityDetailRows.get(i));
+        }
+    }
+
+    private void renderQualityDetailRow(int rowIdx, XunjianApi.AppQualityDetail d) {
+        LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(4, 2, 4, 2);
         boolean fail = "否".equals(d.qualityPass);
-        row.setBackgroundColor(fail ? Color.parseColor("#FEF2F2") : (seq % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE));
-
+        row.setBackgroundColor(fail ? Color.parseColor("#FEF2F2") : (rowIdx % 2 == 0 ? Color.parseColor("#F9FAFB") : Color.WHITE));
         addCell(row, 30,  d.seq, 8, Gravity.CENTER);
         addCell(row, 44,  d.groupName, 8, Gravity.CENTER);
         addCellWeight(row, 1, d.sitename, 8, Gravity.START);
         addCell(row, 44,  d.applymajor, 8, Gravity.CENTER);
         addCellWeight(row, 1, d.projectname, 8, Gravity.START);
         addCell(row, 44,  d.actualfill, 8, Gravity.CENTER);
-
         TextView tvPass = addCell(row, 32, d.qualityPass, 8, Gravity.CENTER);
         if (fail) tvPass.setTextColor(Color.parseColor("#EF4444"));
-
         addCellWeight(row, 1, d.qualityReason, 8, Gravity.START)
                 .setTextColor(fail ? Color.parseColor("#DC2626") : Color.parseColor("#374151"));
-
         llQualityDetailList.addView(row);
+    }
+
+    private void updateDetailHeaders() {
+        String[] labels = {"序","分组","站点","专业","巡检项目","结果","质检","质检问题"};
+        TextView[] ths = {thDetailSeq, thDetailGroup, thDetailStation, thDetailMajor, thDetailProject, thDetailResult, thDetailPass, thDetailReason};
+        for (int i = 0; i < ths.length; i++) {
+            String suffix = (detailSortCol == i) ? (detailSortAsc ? "▲" : "▼") : "";
+            ths[i].setText(labels[i] + suffix);
+            ths[i].setTextColor(detailSortCol == i ? Color.parseColor("#2563EB") : Color.parseColor("#374151"));
+        }
     }
 
     // ===================== 原子完成计数 =====================
 
     private void finishOne() {
+        int fin, tot;
         synchronized (qualityLock) {
             qualityRunning--;
             qualityFinished++;
+            fin = qualityFinished;
+            tot = qualityTotal;
+        }
+        // 每完成一个任务立即更新进度条（在子线程里post到主线程）
+        if (tot > 0) {
+            final int pct = (int)((float) fin / tot * 100);
+            mainHandler.post(() -> {
+                if (progressQuality != null) progressQuality.setProgress(pct);
+                if (tvQualityProgress != null) tvQualityProgress.setText(pct + "%");
+            });
         }
     }
 
