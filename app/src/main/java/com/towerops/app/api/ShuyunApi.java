@@ -2440,7 +2440,7 @@ public class ShuyunApi {
                 + "&endTime1=&endTime2=&area_code=330300&cityArea=" + cityArea;
         String headers = buildCountyApiHeader(pcToken, pcToken);
         try {
-            String result = HttpUtil.get(url, headers);
+            String result = HttpUtil.get(url, headers, null);
             return result != null ? result : "";
         } catch (Exception e) {
             e.printStackTrace();
