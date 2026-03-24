@@ -863,6 +863,7 @@ public class XunjianFragment extends Fragment {
                 fStart, fEnd, fPoll, pkg.inspecttime, fTaskuser);
 
         // 质检逻辑（按月/今日/默认全部）
+        boolean needQuality = false;
         if (!pkg.starttime.isEmpty()) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
