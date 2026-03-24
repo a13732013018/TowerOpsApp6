@@ -2310,4 +2310,90 @@ public class ShuyunApi {
 
         return result;
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  指标查询 API（对应易语言 6 个子程序）
+    //  统一使用 PC_BASE + buildCountyApiHeader，POST JSON
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * 电子化覆盖率  /api/report/report/dataTable/2022010601
+     * 字段: DATA_DATE, AREA_NAME, SITE_ALL_COUNT, SITE_COVER_COUNT, ELE_COVER_RATE
+     */
+    public static String queryEleCoverRate(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2022010601";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * FSU离线率  /api/report/report/dataTable/xxx（占位，接口号参考其他已知接口）
+     * 字段: DATA_DATE, AREA_NAME 等（按实际返回解析）
+     */
+    public static String queryFsuOfflineRate(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2022010401";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * 故障工单处理合格率  
+     */
+    public static String queryFaultOrderQuality(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2022011201";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * 疑似退服  
+     */
+    public static String querySuspectedOutOfService(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2022010501";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * 超频告警整治有效性  
+     */
+    public static String queryAlarmEffectiveness(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2022010801";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * 资产一致性  /api/report/report/dataTable/14
+     * 字段: AREA_NAME, SWITCH_SON/FATHER/RATE, AIR_xxx, QS_BATTERY_xxx,
+     *       PT_BATTERY_xxx, ZN_BATTERY_xxx, BATTERY_RATE, PROPERTY_RATE, DATA_DATE
+     */
+    public static String queryAssetConsistency(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/14";
+        String body = "{\"lat_type\":\"3\",\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /**
+     * PUE有效率  /api/report/report/dataTable/2021122401
+     * 字段: DATA_DATE, LAT_NAME, SITE_ALL, YX_SITE, DB_SITE, YX_RATE, DB_RATE,
+     *       NH_RATE_1~4
+     */
+    public static String queryPueRate(String pcToken, String startTime) {
+        String url = PC_BASE + "/api/report/report/dataTable/2021122401";
+        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        return postMetrics(url, body, pcToken);
+    }
+
+    /** 通用指标查询POST（JSON body，PC协议头） */
+    private static String postMetrics(String url, String jsonBody, String pcToken) {
+        String headers = buildCountyJsonHeader(pcToken, pcToken);
+        try {
+            String result = HttpUtil.post(url, jsonBody, headers, null);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 }
