@@ -208,17 +208,44 @@ public class MetricsFragment extends Fragment {
         }
         try {
             JSONObject root = new JSONObject(jsonStr);
+
+            // 兼容两种结构：data 直接是 Array，或 data.rows 是 Array
             JSONArray data = root.optJSONArray("data");
+            if (data == null) {
+                JSONObject dataObj = root.optJSONObject("data");
+                if (dataObj != null) data = dataObj.optJSONArray("rows");
+            }
+            // 再尝试顶层 rows
+            if (data == null) data = root.optJSONArray("rows");
+
             if (data == null || data.length() == 0) {
-                setStatus("无数据（" + TAB_NAMES[tabIdx] + "）");
+                // 打印原始返回供排查
+                String raw = jsonStr.length() > 300 ? jsonStr.substring(0, 300) + "..." : jsonStr;
+                android.util.Log.w("MetricsFragment", "[" + TAB_NAMES[tabIdx] + "] raw: " + raw);
+                setStatus("无数据（" + TAB_NAMES[tabIdx] + "）\n返回：" + raw);
                 return;
             }
 
-            if (true) {  // 统一走固定表头+buildCells
-                String[] headers = HEADERS[tabIdx];
-                // 绘制表头
-                addRow(llHeader, headers, true, tabIdx);
-                // 绘制数据行
+            // 打印第一条原始字段到Logcat，方便确认字段名
+            JSONObject firstRow = data.getJSONObject(0);
+            android.util.Log.d("MetricsFragment", "[" + TAB_NAMES[tabIdx] + "] keys: " + firstRow.toString());
+
+            // 先尝试固定字段渲染
+            String[] cells0 = buildCells(tabIdx, firstRow, 1);
+            boolean allEmpty = true;
+            for (int c = 1; c < cells0.length; c++) {  // 跳过序号列
+                if (!cells0[c].isEmpty()) { allEmpty = false; break; }
+            }
+
+            if (allEmpty) {
+                // 固定字段全空 → 动态渲染，同时显示原始key提示
+                android.util.Log.w("MetricsFragment", "[" + TAB_NAMES[tabIdx] + "] fixed fields all empty, fallback to dynamic");
+                renderDynamic(tabIdx, data);
+                setStatus(TAB_NAMES[tabIdx] + " · " + data.length() + " 条（动态渲染，请确认字段）");
+            } else {
+                // 固定字段有数据 → 正常渲染
+                String[] hdrs = HEADERS[tabIdx];
+                addRow(llHeader, hdrs, true, tabIdx);
                 for (int i = 0; i < data.length(); i++) {
                     JSONObject row = data.getJSONObject(i);
                     String[] cells = buildCells(tabIdx, row, i + 1);
@@ -228,11 +255,12 @@ public class MetricsFragment extends Fragment {
                     addRow(rowView, cells, false, tabIdx);
                     llRows.addView(rowView);
                 }
+                setStatus(TAB_NAMES[tabIdx] + " · 共 " + data.length() + " 条");
             }
-            setStatus(TAB_NAMES[tabIdx] + " · 共 " + data.length() + " 条");
 
         } catch (Exception e) {
             setStatus("解析失败：" + e.getMessage());
+            android.util.Log.e("MetricsFragment", "parse error", e);
         }
     }
 

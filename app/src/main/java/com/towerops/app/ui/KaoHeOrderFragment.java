@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +66,6 @@ public class KaoHeOrderFragment extends Fragment {
     private Spinner spinnerCounty;
     private CheckBox cbFilter10, cbFilter18, cbFilter17;
     private CheckBox cbFilter13, cbFilter14, cbFilter15, cbFilter16, cbFilter22;
-    private LinearLayout llFilterDetail;
     private Button btnQuery;
     private TextView tvStatus;
     private RecyclerView rvOrders;
@@ -75,6 +73,7 @@ public class KaoHeOrderFragment extends Fragment {
 
     private int selectedCountyIndex = 0;
     private volatile boolean isQuerying = false;
+    private boolean updatingFilter18 = false; // 防止联动循环
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -105,7 +104,6 @@ public class KaoHeOrderFragment extends Fragment {
         cbFilter15      = view.findViewById(R.id.cbKHFilter15);
         cbFilter16      = view.findViewById(R.id.cbKHFilter16);
         cbFilter22      = view.findViewById(R.id.cbKHFilter22);
-        llFilterDetail  = view.findViewById(R.id.llKHFilterDetail);
         btnQuery        = view.findViewById(R.id.btnKHQuery);
         tvStatus        = view.findViewById(R.id.tvKHStatus);
         rvOrders        = view.findViewById(R.id.rvKaoHeOrders);
@@ -131,10 +129,33 @@ public class KaoHeOrderFragment extends Fragment {
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        // 选择框18联动：选中时隐藏细分选项，取消时展开
+        // cb18：全不显示特殊类型（快捷键）
+        // 勾选 → 13/14/15/16/22 全取消；取消 → 13/14/15/16/22 全勾选
         cbFilter18.setOnCheckedChangeListener((btn, checked) -> {
-            llFilterDetail.setVisibility(checked ? View.GONE : View.VISIBLE);
+            if (updatingFilter18) return;
+            updatingFilter18 = true;
+            cbFilter13.setChecked(!checked);
+            cbFilter14.setChecked(!checked);
+            cbFilter15.setChecked(!checked);
+            cbFilter16.setChecked(!checked);
+            cbFilter22.setChecked(!checked);
+            updatingFilter18 = false;
         });
+
+        // 当13/14/15/16/22任一改变时，同步cb18状态（全不显示时=true）
+        android.widget.CompoundButton.OnCheckedChangeListener subListener = (btn, checked) -> {
+            if (updatingFilter18) return;
+            boolean allHidden = !cbFilter13.isChecked() && !cbFilter14.isChecked()
+                    && !cbFilter15.isChecked() && !cbFilter16.isChecked() && !cbFilter22.isChecked();
+            updatingFilter18 = true;
+            cbFilter18.setChecked(allHidden);
+            updatingFilter18 = false;
+        };
+        cbFilter13.setOnCheckedChangeListener(subListener);
+        cbFilter14.setOnCheckedChangeListener(subListener);
+        cbFilter15.setOnCheckedChangeListener(subListener);
+        cbFilter16.setOnCheckedChangeListener(subListener);
+        cbFilter22.setOnCheckedChangeListener(subListener);
 
         btnQuery.setOnClickListener(v -> startQuery());
     }
@@ -156,14 +177,20 @@ public class KaoHeOrderFragment extends Fragment {
         String cityArea = CITY_AREA_CODES[selectedCountyIndex];
 
         // 读取过滤状态
+        // f10：过滤自动审核环节（勾选=过滤掉）
+        // f17：过滤杂单（勾选=过滤掉）
+        // f13~f16, f22：是否显示该类型（勾选=显示=不过滤，取消=不显示=过滤掉）
         boolean f10 = cbFilter10.isChecked();
-        boolean f18 = cbFilter18.isChecked();
-        boolean f13 = cbFilter13.isChecked();
-        boolean f14 = cbFilter14.isChecked();
-        boolean f15 = cbFilter15.isChecked();
-        boolean f16 = cbFilter16.isChecked();
         boolean f17 = cbFilter17.isChecked();
-        boolean f22 = cbFilter22.isChecked();
+        boolean f13 = cbFilter13.isChecked();   // true=显示验收遗留
+        boolean f14 = cbFilter14.isChecked();   // true=显示退服稽核
+        boolean f15 = cbFilter15.isChecked();   // true=显示信号异常整治
+        boolean f16 = cbFilter16.isChecked();   // true=显示储能光伏验收
+        boolean f22 = cbFilter22.isChecked();   // true=显示智联/高铁业务
+
+        // 传给API：filter18=false（不启用总开关），细分选项直接控制各类型
+        // 但API里 filter18=true 时会忽略细分，所以这里传 false 让细分生效
+        boolean f18 = false;
 
         isQuerying = true;
         btnQuery.setEnabled(true);

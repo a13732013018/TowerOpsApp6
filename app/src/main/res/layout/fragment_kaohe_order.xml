@@ -61,96 +61,164 @@
 
             </LinearLayout>
 
-            <!-- 第二行：过滤开关（对应易语言8个选择框） -->
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="4dp"
+                android:background="#DDEAFF"/>
+
+            <!-- 过滤选项标题 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="显示工单类型（勾选=显示）"
+                android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- ── 第一组：环节过滤 ── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="6dp">
+                android:layout_marginBottom="2dp">
 
-                <!-- 选择框10：过滤自动审核/省监控等环节 -->
+                <!-- cb10：过滤掉自动审核/省监控/EOMS等（勾选=过滤掉这些环节） -->
                 <CheckBox
                     android:id="@+id/cbKHFilter10"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="过滤自动审核"
+                    android:layout_weight="1"
+                    android:text="过滤自动审核环节"
                     android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="6dp"/>
+                    android:checked="true"/>
 
-                <!-- 选择框18：过滤全部特殊工单类型 -->
-                <CheckBox
-                    android:id="@+id/cbKHFilter18"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="过滤特殊类型"
-                    android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="6dp"/>
+            </LinearLayout>
 
-                <!-- 选择框17：过滤杂单 -->
+            <!-- ── 第二组：杂单过滤 ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="2dp">
+
+                <!-- cb17：过滤杂单（省内任务派单/超频/电流波动/通用任务/退服隐患/蓄电池/直放站等） -->
                 <CheckBox
                     android:id="@+id/cbKHFilter17"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="过滤杂单"
+                    android:layout_weight="1"
+                    android:text="过滤杂单（超频/任务派单等）"
                     android:textSize="10sp"
                     android:checked="false"/>
 
             </LinearLayout>
 
-            <!-- 第三行：细分过滤（当选择框18=false时生效） -->
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="4dp"
+                android:background="#DDEAFF"/>
+
+            <!-- 特殊工单类型标题 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="特殊工单类型（取消勾选=不显示该类型）"
+                android:textSize="10sp"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- ── 第三组：特殊工单各类型 ── -->
+            <!-- 第一行 -->
             <LinearLayout
-                android:id="@+id/llKHFilterDetail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="4dp"
-                android:visibility="gone">
+                android:layout_marginBottom="2dp">
 
+                <!-- cb13：验收工程遗留派单流程(新) -->
                 <CheckBox
                     android:id="@+id/cbKHFilter13"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="验收遗留"
-                    android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="4dp"/>
-
-                <CheckBox
-                    android:id="@+id/cbKHFilter14"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="退服稽核"
-                    android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="4dp"/>
-
-                <CheckBox
-                    android:id="@+id/cbKHFilter15"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="信号异常"
-                    android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="4dp"/>
-
-                <CheckBox
-                    android:id="@+id/cbKHFilter16"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="储能光伏"
-                    android:textSize="10sp"
-                    android:checked="true"
-                    android:layout_marginEnd="4dp"/>
-
-                <CheckBox
-                    android:id="@+id/cbKHFilter22"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="智联业务"
+                    android:layout_weight="1"
+                    android:text="验收工程遗留"
                     android:textSize="10sp"
                     android:checked="true"/>
+
+                <!-- cb14：退服基站稽核工单 -->
+                <CheckBox
+                    android:id="@+id/cbKHFilter14"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="退服基站稽核"
+                    android:textSize="10sp"
+                    android:checked="true"/>
+
+            </LinearLayout>
+
+            <!-- 第二行 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="2dp">
+
+                <!-- cb15：设备信号不准确异常整治 -->
+                <CheckBox
+                    android:id="@+id/cbKHFilter15"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="信号异常整治"
+                    android:textSize="10sp"
+                    android:checked="true"/>
+
+                <!-- cb16：储能光伏验收流程 -->
+                <CheckBox
+                    android:id="@+id/cbKHFilter16"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="储能光伏验收"
+                    android:textSize="10sp"
+                    android:checked="true"/>
+
+            </LinearLayout>
+
+            <!-- 第三行 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- cb22：智联业务（故障处理/地市派单/综合派单/高铁监控） -->
+                <CheckBox
+                    android:id="@+id/cbKHFilter22"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="智联/高铁业务"
+                    android:textSize="10sp"
+                    android:checked="true"/>
+
+                <!-- cb18：全选/全不选特殊类型（快捷键） -->
+                <CheckBox
+                    android:id="@+id/cbKHFilter18"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="全不显示特殊类型"
+                    android:textSize="10sp"
+                    android:checked="false"/>
 
             </LinearLayout>
 
