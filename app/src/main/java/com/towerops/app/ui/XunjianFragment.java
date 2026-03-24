@@ -817,7 +817,7 @@ public class XunjianFragment extends Fragment {
                     detail.actualfill   = XunjianApi.cleanNull(d.optString("actualfill"));
                     detail.ishidden     = XunjianApi.cleanNull(d.optString("ishidden"));
                     detail.remark       = XunjianApi.cleanNull(d.optString("remark"));
-                    detail.detail_endtime = XunjianApi.cleanNull(d.optString("endtime"));
+                    detail.endtime      = XunjianApi.cleanNull(d.optString("endtime"));
                     detail.imagecount   = imagecount;
                     detail.range_site   = rangeStr;
                     detail.starttime    = starttime;
@@ -1021,7 +1021,7 @@ public class XunjianFragment extends Fragment {
             row.setBackgroundColor(i % 2 == 0 ? Color.parseColor("#EFF6FF") : Color.WHITE);
             if (i == groupCount) row.setBackgroundColor(Color.parseColor("#DBEAFE"));
 
-            addCell(row, 50, name, 9, Gravity.CENTER).setTextStyle(android.graphics.Typeface.BOLD);
+            addCell(row, 50, name, 9, Gravity.CENTER).setTypeface(null, android.graphics.Typeface.BOLD);
             addCellWeight(row, 1, member, 8, Gravity.START);
             addCell(row, 44, roomText, 8, Gravity.CENTER);
             addCell(row, 44, cabText, 8, Gravity.CENTER);
@@ -1029,7 +1029,7 @@ public class XunjianFragment extends Fragment {
             addCell(row, 44, towerText, 8, Gravity.CENTER);
             addCell(row, 36, String.valueOf(todayMachine), 9, Gravity.CENTER).setTextColor(Color.parseColor("#2563EB"));
             addCell(row, 36, String.valueOf(todayTower), 9, Gravity.CENTER).setTextColor(Color.parseColor("#D97706"));
-            addCell(row, 36, String.valueOf(grandTotal), 9, Gravity.CENTER).setTextStyle(android.graphics.Typeface.BOLD);
+            addCell(row, 36, String.valueOf(grandTotal), 9, Gravity.CENTER).setTypeface(null, android.graphics.Typeface.BOLD);
             addCell(row, 44, roomPct, 8, Gravity.CENTER);
             addCell(row, 44, towerPct, 8, Gravity.CENTER);
 
