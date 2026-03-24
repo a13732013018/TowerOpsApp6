@@ -143,14 +143,18 @@ public class MetricsFragment extends Fragment {
             Toast.makeText(requireContext(), "请输入查询日期", Toast.LENGTH_SHORT).show();
             return;
         }
-        String pcToken = Session.get().shuyunPcToken;
+        Session s = Session.get();
+        String pcToken = s.shuyunPcToken;
         if (pcToken == null || pcToken.isEmpty()) {
             Toast.makeText(requireContext(), "请先登录数运账号", Toast.LENGTH_SHORT).show();
             return;
         }
+        // cookieToken：优先用 shuyunPcTokenCookie，为空时 fallback 到 pcToken
+        String cookieToken = (s.shuyunPcTokenCookie != null && !s.shuyunPcTokenCookie.isEmpty())
+                ? s.shuyunPcTokenCookie : pcToken;
         setStatus("查询中...");
         executor.execute(() -> {
-            String json = fetchByTab(currentTab, pcToken, date);
+            String json = fetchByTab(currentTab, pcToken, cookieToken, date);
             mainHandler.post(() -> renderTable(currentTab, json));
         });
     }
@@ -162,16 +166,19 @@ public class MetricsFragment extends Fragment {
             Toast.makeText(requireContext(), "请输入查询日期", Toast.LENGTH_SHORT).show();
             return;
         }
-        String pcToken = Session.get().shuyunPcToken;
+        Session s = Session.get();
+        String pcToken = s.shuyunPcToken;
         if (pcToken == null || pcToken.isEmpty()) {
             Toast.makeText(requireContext(), "请先登录数运账号", Toast.LENGTH_SHORT).show();
             return;
         }
+        String cookieToken = (s.shuyunPcTokenCookie != null && !s.shuyunPcTokenCookie.isEmpty())
+                ? s.shuyunPcTokenCookie : pcToken;
         setStatus("正在查询全部指标...");
         for (int i = 0; i < TAB_NAMES.length; i++) {
             final int tabIdx = i;
             executor.execute(() -> {
-                String json = fetchByTab(tabIdx, pcToken, date);
+                String json = fetchByTab(tabIdx, pcToken, cookieToken, date);
                 mainHandler.post(() -> {
                     // 只渲染当前展示的Tab
                     if (tabIdx == currentTab) renderTable(tabIdx, json);
@@ -182,16 +189,16 @@ public class MetricsFragment extends Fragment {
     }
 
     // ─── 根据Tab索引调用对应API ────────────────────────────────────
-    private String fetchByTab(int tabIdx, String pcToken, String date) {
+    private String fetchByTab(int tabIdx, String pcToken, String cookieToken, String date) {
         try {
             switch (tabIdx) {
-                case 0: return ShuyunApi.queryEleCoverRate(pcToken, date);
-                case 1: return ShuyunApi.queryAssetConsistency(pcToken, date);
-                case 2: return ShuyunApi.queryPueRate(pcToken, date);
-                case 3: return ShuyunApi.queryFsuOfflineRate(pcToken, date);
-                case 4: return ShuyunApi.queryFaultOrderQuality(pcToken, date);
-                case 5: return ShuyunApi.querySuspectedOutOfService(pcToken, date);
-                case 6: return ShuyunApi.queryAlarmEffectiveness(pcToken, date);
+                case 0: return ShuyunApi.queryEleCoverRate(pcToken, cookieToken, date);
+                case 1: return ShuyunApi.queryAssetConsistency(pcToken, cookieToken, date);
+                case 2: return ShuyunApi.queryPueRate(pcToken, cookieToken, date);
+                case 3: return ShuyunApi.queryFsuOfflineRate(pcToken, cookieToken, date);
+                case 4: return ShuyunApi.queryFaultOrderQuality(pcToken, cookieToken, date);
+                case 5: return ShuyunApi.querySuspectedOutOfService(pcToken, cookieToken, date);
+                case 6: return ShuyunApi.queryAlarmEffectiveness(pcToken, cookieToken, date);
                 default: return "";
             }
         } catch (Exception e) {

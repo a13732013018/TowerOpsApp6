@@ -173,34 +173,31 @@ public class KaoHeOrderFragment extends Fragment {
             Toast.makeText(getContext(), "请先登录数运PC端", Toast.LENGTH_SHORT).show();
             return;
         }
+        // cookieToken：优先用 shuyunPcTokenCookie，为空时 fallback 到 pcToken
+        String cookieToken = (s.shuyunPcTokenCookie != null && !s.shuyunPcTokenCookie.isEmpty())
+                ? s.shuyunPcTokenCookie : pcToken;
 
         String cityArea = CITY_AREA_CODES[selectedCountyIndex];
 
         // 读取过滤状态
-        // f10：过滤自动审核环节（勾选=过滤掉）
-        // f17：过滤杂单（勾选=过滤掉）
-        // f13~f16, f22：是否显示该类型（勾选=显示=不过滤，取消=不显示=过滤掉）
         boolean f10 = cbFilter10.isChecked();
         boolean f17 = cbFilter17.isChecked();
-        boolean f13 = cbFilter13.isChecked();   // true=显示验收遗留
-        boolean f14 = cbFilter14.isChecked();   // true=显示退服稽核
-        boolean f15 = cbFilter15.isChecked();   // true=显示信号异常整治
-        boolean f16 = cbFilter16.isChecked();   // true=显示储能光伏验收
-        boolean f22 = cbFilter22.isChecked();   // true=显示智联/高铁业务
-
-        // 传给API：filter18=false（不启用总开关），细分选项直接控制各类型
-        // 但API里 filter18=true 时会忽略细分，所以这里传 false 让细分生效
+        boolean f13 = cbFilter13.isChecked();
+        boolean f14 = cbFilter14.isChecked();
+        boolean f15 = cbFilter15.isChecked();
+        boolean f16 = cbFilter16.isChecked();
+        boolean f22 = cbFilter22.isChecked();
         boolean f18 = false;
 
         isQuerying = true;
-        btnQuery.setEnabled(true);
+        btnQuery.setEnabled(false);  // 查询中禁用按钮
         btnQuery.setText("查询中...");
         adapter.setData(new ArrayList<>());
         tvStatus.setText("查询中...");
 
         executor.execute(() -> {
             try {
-                String json = ShuyunApi.getKaoHeOrderList(pcToken, cityArea);
+                String json = ShuyunApi.getKaoHeOrderList(pcToken, cookieToken, cityArea);
                 List<ShuyunApi.KaoHeOrderInfo> list = ShuyunApi.parseKaoHeOrderList(
                         json, f10, f18, f13, f14, f15, f16, f17, f22,
                         STATION_GROUP_RULES);

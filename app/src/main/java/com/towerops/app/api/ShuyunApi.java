@@ -2320,46 +2320,46 @@ public class ShuyunApi {
      * 电子化覆盖率  /api/report/report/dataTable/2022010601
      * 字段: DATA_DATE, AREA_NAME, SITE_ALL_COUNT, SITE_COVER_COUNT, ELE_COVER_RATE
      */
-    public static String queryEleCoverRate(String pcToken, String startTime) {
+    public static String queryEleCoverRate(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2022010601";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
      * FSU离线率  /api/report/report/dataTable/2022010400
      */
-    public static String queryFsuOfflineRate(String pcToken, String startTime) {
+    public static String queryFsuOfflineRate(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2022010400";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
      * 故障工单处理合格率  /api/report/report/dataTable/4
      */
-    public static String queryFaultOrderQuality(String pcToken, String startTime) {
+    public static String queryFaultOrderQuality(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/4";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
      * 疑似退服  /api/report/report/dataTable/2021120920
      */
-    public static String querySuspectedOutOfService(String pcToken, String startTime) {
+    public static String querySuspectedOutOfService(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2021120920";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
      * 超频告警整治有效性  /api/report/report/dataTable/2022010602
      */
-    public static String queryAlarmEffectiveness(String pcToken, String startTime) {
+    public static String queryAlarmEffectiveness(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2022010602";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
@@ -2367,10 +2367,10 @@ public class ShuyunApi {
      * 字段: AREA_NAME, SWITCH_SON/FATHER/RATE, AIR_xxx, QS_BATTERY_xxx,
      *       PT_BATTERY_xxx, ZN_BATTERY_xxx, BATTERY_RATE, PROPERTY_RATE, DATA_DATE
      */
-    public static String queryAssetConsistency(String pcToken, String startTime) {
+    public static String queryAssetConsistency(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/14";
         String body = "{\"lat_type\":\"3\",\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
@@ -2378,15 +2378,17 @@ public class ShuyunApi {
      * 字段: DATA_DATE, LAT_NAME, SITE_ALL, YX_SITE, DB_SITE, YX_RATE, DB_RATE,
      *       NH_RATE_1~4
      */
-    public static String queryPueRate(String pcToken, String startTime) {
+    public static String queryPueRate(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2021122401";
         String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
-        return postMetrics(url, body, pcToken);
+        return postMetrics(url, body, pcToken, cookieToken);
     }
 
-    /** 通用指标查询POST（JSON body，PC协议头） */
-    private static String postMetrics(String url, String jsonBody, String pcToken) {
-        String headers = buildCountyJsonHeader(pcToken, pcToken);
+    /** 通用指标查询POST（JSON body，双token PC协议头） */
+    private static String postMetrics(String url, String jsonBody, String pcToken, String cookieToken) {
+        // cookieToken 为空时 fallback 到 pcToken
+        String cToken = (cookieToken != null && !cookieToken.isEmpty()) ? cookieToken : pcToken;
+        String headers = buildCountyJsonHeader(pcToken, cToken);
         try {
             String result = HttpUtil.post(url, jsonBody, headers, null);
             return result != null ? result : "";
@@ -2426,10 +2428,12 @@ public class ShuyunApi {
 
     /**
      * 查询省内考核工单列表
-     * @param pcToken     PC登录Token
+     * @param pcToken     PC登录Token（Authorization头）
+     * @param cookieToken Cookie中的 towerNumber-Token（来自 Set-Cookie）
      * @param cityArea    行政区划代码（如 330326）
      */
-    public static String getKaoHeOrderList(String pcToken, String cityArea) {
+    public static String getKaoHeOrderList(String pcToken, String cookieToken, String cityArea) {
+        String cToken = (cookieToken != null && !cookieToken.isEmpty()) ? cookieToken : pcToken;
         String flowIds = "1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1131,1137,1143,1124,1160,1024,1220";
         String url = PC_BASE + "/api/flowable/flowable/task/listToOrder"
                 + "?page=1&limit=10000"
@@ -2438,7 +2442,7 @@ public class ShuyunApi {
                 + "&stationName=&stationCode=&sortType=&group_id=&xmlx="
                 + "&startTime1=2016-02-10+00:00:00&startTime2=2030-03-30+00:00:00"
                 + "&endTime1=&endTime2=&area_code=330300&cityArea=" + cityArea;
-        String headers = buildCountyApiHeader(pcToken, pcToken);
+        String headers = buildCountyApiHeader(pcToken, cToken);
         try {
             String result = HttpUtil.get(url, headers, null);
             return result != null ? result : "";
