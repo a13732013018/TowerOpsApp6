@@ -375,12 +375,19 @@ public class XunjianFragment extends Fragment {
         currentMainTab = idx;
         viewFlipper.setDisplayedChild(idx);
 
-        int normalBg = Color.parseColor("#12122a");
-        int activeBg = Color.parseColor("#2563EB");
+        // 浅色主题：激活=蓝色底白字，非激活=透明底深灰字
+        int activeBg     = Color.parseColor("#2563EB");
+        int normalBg     = Color.TRANSPARENT;
+        int activeText   = Color.WHITE;
+        int normalText   = Color.parseColor("#374151");
 
         tabUnstart.setBackgroundColor(idx == 0 ? activeBg : normalBg);
         tabZhilian.setBackgroundColor(idx == 1 ? activeBg : normalBg);
         tabQuality.setBackgroundColor(idx == 2 ? activeBg : normalBg);
+
+        tabUnstart.setTextColor(idx == 0 ? activeText : normalText);
+        tabZhilian.setTextColor(idx == 1 ? activeText : normalText);
+        tabQuality.setTextColor(idx == 2 ? activeText : normalText);
     }
 
     private void selectQualityTab(int idx) {
@@ -698,11 +705,11 @@ public class XunjianFragment extends Fragment {
             return;
         }
 
-        // 步骤3：并发处理（固定50线程池，一次性全量提交，不阻塞等待）
+        // 步骤3：并发处理（20线程池，平衡并发速度与系统压力）
         if (qualityExecutor != null && !qualityExecutor.isShutdown()) {
             qualityExecutor.shutdownNow();
         }
-        qualityExecutor = Executors.newFixedThreadPool(50);
+        qualityExecutor = Executors.newFixedThreadPool(20);
 
         for (int i = 0; i < qualityTotal; i++) {
             if (!isQualityRunning) break;
@@ -719,10 +726,8 @@ public class XunjianFragment extends Fragment {
             try { Thread.sleep(100); } catch (InterruptedException ie) { break; }
         }
 
-        // 完成：强制最终渲染一次（清除pending防止重复）
+        // 完成：在主线程一次性渲染全部结果（运行期间列表完全不更新，只有这里才刷新UI）
         mainHandler.post(() -> {
-            taskRenderPending.set(false);
-            detailRenderPending.set(false);
             progressQuality.setProgress(100);
             tvQualityProgress.setText("100%");
             isQualityRunning = false;
@@ -1162,13 +1167,13 @@ public class XunjianFragment extends Fragment {
         r.applymajor = applymajor; r.mainplanname = mainplanname; r.progress = progress;
         r.starttime = starttime; r.endtime = endtime; r.pollingperiod = pollingperiod;
         r.inspecttime = inspecttime; r.taskuser = taskuser;
+        // 只写缓存，不触发任何UI操作（运行期间完全不碰主线程列表）
         synchronized (qualityTaskRows) { qualityTaskRows.add(r); }
-        scheduleRenderTask();
     }
 
     private void addQualityDetailRow(XunjianApi.AppQualityDetail d) {
+        // 只写缓存，不触发任何UI操作（运行期间完全不碰主线程列表）
         synchronized (qualityDetailRows) { qualityDetailRows.add(d); }
-        scheduleRenderDetail();
     }
 
     /**
@@ -1423,13 +1428,17 @@ public class XunjianFragment extends Fragment {
             fin = qualityFinished;
             tot = qualityTotal;
         }
-        // 每完成一个任务立即更新进度条（在子线程里post到主线程）
+        // 进度条节流：每5%更新一次，避免每完成一个任务就post主线程（几百个任务=几百次post=卡顿）
         if (tot > 0) {
             final int pct = (int)((float) fin / tot * 100);
-            mainHandler.post(() -> {
-                if (progressQuality != null) progressQuality.setProgress(pct);
-                if (tvQualityProgress != null) tvQualityProgress.setText(pct + "%");
-            });
+            final int prevPct = (int)((float)(fin - 1) / tot * 100);
+            // 只有跨越5%整数倍，或是最后一个时才更新
+            if (pct / 5 != prevPct / 5 || fin == tot) {
+                mainHandler.post(() -> {
+                    if (progressQuality != null) progressQuality.setProgress(pct);
+                    if (tvQualityProgress != null) tvQualityProgress.setText(pct + "%");
+                });
+            }
         }
     }
 
