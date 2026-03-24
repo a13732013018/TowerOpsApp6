@@ -72,7 +72,7 @@ public class XunjianFragment extends Fragment {
 
     // Panel 2: APP 质检
     private Spinner spinnerPlanYear, spinnerQualityYear, spinnerQualityMonth;
-    private CheckBox cbQualityByMonth, cbQualityToday;
+    private CheckBox cbQualityByMonth, cbQualityToday, cbShowAll;
     private Button btnQueryQuality;
     private ProgressBar progressQuality;
     private TextView tvQualityProgress;
@@ -115,6 +115,11 @@ public class XunjianFragment extends Fragment {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private int currentMainTab = 0;
     private int currentQualityTab = 0;
+
+    // UI批量渲染节流：避免高频刷新卡主线程
+    private final java.util.concurrent.atomic.AtomicBoolean taskRenderPending   = new java.util.concurrent.atomic.AtomicBoolean(false);
+    private final java.util.concurrent.atomic.AtomicBoolean detailRenderPending = new java.util.concurrent.atomic.AtomicBoolean(false);
+    private static final long RENDER_DELAY_MS = 400; // 每400ms最多全量刷新一次
 
     // APP 质检并发控制
     private final Object qualityLock = new Object();
@@ -232,6 +237,7 @@ public class XunjianFragment extends Fragment {
         spinnerQualityMonth= v.findViewById(R.id.spinnerQualityMonth);
         cbQualityByMonth   = v.findViewById(R.id.cbQualityByMonth);
         cbQualityToday     = v.findViewById(R.id.cbQualityToday);
+        cbShowAll          = v.findViewById(R.id.cbShowAll);
         btnQueryQuality    = v.findViewById(R.id.btnQueryQuality);
         progressQuality    = v.findViewById(R.id.progressQuality);
         tvQualityProgress  = v.findViewById(R.id.tvQualityProgress);
@@ -514,26 +520,26 @@ public class XunjianFragment extends Fragment {
 
         LinearLayout row = new LinearLayout(getContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(4, 4, 4, 4);
-        row.setBackgroundColor(Color.parseColor("#0D1117"));
+        row.setPadding(4, 6, 4, 6);
+        row.setBackgroundColor(Color.WHITE);
 
-        // 专业颜色：有数量用黄色高亮，无则灰色
+        // 专业颜色（浅色背景适配）：有数量高亮深色，无则浅灰
         int[] colors = {
-            Color.parseColor("#FCD34D"), // 机房
-            Color.parseColor("#FCD34D"), // 机柜
-            Color.parseColor("#FCD34D"), // 拉远
-            Color.parseColor("#F87171"), // 铁塔（橙红）
-            Color.parseColor("#FCD34D"), // 室分
-            Color.parseColor("#6B7280"), // 其他
+            Color.parseColor("#2563EB"), // 机房 - 蓝
+            Color.parseColor("#2563EB"), // 机柜 - 蓝
+            Color.parseColor("#0891B2"), // 拉远 - 青
+            Color.parseColor("#DC2626"), // 铁塔 - 红
+            Color.parseColor("#7C3AED"), // 室分 - 紫
+            Color.parseColor("#9CA3AF"), // 其他 - 灰
         };
         for (int m = 0; m < 6; m++) {
             int val = majorCount[m];
-            TextView tv = addCellWeight(row, 1, String.valueOf(val), 10, Gravity.CENTER);
-            tv.setTextColor(val > 0 ? colors[m] : Color.parseColor("#4B5563"));
+            TextView tv = addCellWeight(row, 1, String.valueOf(val), 12, Gravity.CENTER);
+            tv.setTextColor(val > 0 ? colors[m] : Color.parseColor("#D1D5DB"));
             if (val > 0) tv.setTypeface(null, android.graphics.Typeface.BOLD);
         }
-        TextView tvTotal = addCell(row, 40, String.valueOf(grandTotal), 10, Gravity.CENTER);
-        tvTotal.setTextColor(Color.parseColor("#34D399"));
+        TextView tvTotal = addCell(row, 40, String.valueOf(grandTotal), 12, Gravity.CENTER);
+        tvTotal.setTextColor(Color.parseColor("#059669"));
         tvTotal.setTypeface(null, android.graphics.Typeface.BOLD);
 
         llUnstartStat.addView(row);
@@ -624,6 +630,7 @@ public class XunjianFragment extends Fragment {
         currentPlanName = "全部".equals(planYearStr) ? "2026" : planYearStr;
         qualityByMonth  = cbQualityByMonth.isChecked();
         qualityTodayOnly= cbQualityToday.isChecked();
+        final boolean showAll = cbShowAll.isChecked(); // 全显：不过滤今日
         try {
             qualityYear = Integer.parseInt((String) spinnerQualityYear.getSelectedItem());
         } catch (Exception e) { qualityYear = Calendar.getInstance().get(Calendar.YEAR); }
@@ -637,8 +644,10 @@ public class XunjianFragment extends Fragment {
         llQualityReport.removeAllViews();
         progressQuality.setProgress(0);
         tvQualityProgress.setText("0%");
-        qualityTaskRows.clear();
-        qualityDetailRows.clear();
+        synchronized (qualityTaskRows)   { qualityTaskRows.clear(); }
+        synchronized (qualityDetailRows) { qualityDetailRows.clear(); }
+        taskRenderPending.set(false);
+        detailRenderPending.set(false);
         taskSortCol = -1; taskSortAsc = true; updateTaskHeaders();
         detailSortCol = -1; detailSortAsc = true; updateDetailHeaders();
 
@@ -648,10 +657,10 @@ public class XunjianFragment extends Fragment {
         isQualityRunning = true;
         btnQueryQuality.setEnabled(false);
 
-        new Thread(this::runQualityQuery).start();
+        new Thread(() -> runQualityQuery(showAll)).start();
     }
 
-    private void runQualityQuery() {
+    private void runQualityQuery(boolean showAll) {
         // 步骤1：获取主计划列表
         String planJson = XunjianApi.getPlanList(currentPlanName);
         if (planJson == null || planJson.isEmpty()) {
@@ -668,7 +677,7 @@ public class XunjianFragment extends Fragment {
             taskPool.clear();
         }
         try {
-            buildTaskPool(planJson);
+            buildTaskPool(planJson, showAll);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -689,7 +698,7 @@ public class XunjianFragment extends Fragment {
             return;
         }
 
-        // 步骤3：并发处理（最多50并发，含超时防死等待）
+        // 步骤3：并发处理（固定50线程池，一次性全量提交，不阻塞等待）
         if (qualityExecutor != null && !qualityExecutor.isShutdown()) {
             qualityExecutor.shutdownNow();
         }
@@ -698,35 +707,39 @@ public class XunjianFragment extends Fragment {
         for (int i = 0; i < qualityTotal; i++) {
             if (!isQualityRunning) break;
             final int idx = i;
-            // 错峰发包
-            try { Thread.sleep((long)(Math.random() * 200 + 50)); } catch (InterruptedException ie) { break; }
             qualityExecutor.submit(() -> processOneTask(idx));
         }
 
-        // 等待所有任务完成（超时 180 秒）
+        // 等待所有任务完成（超时 180 秒，每100ms检查一次，不阻塞主线程）
         long deadline = System.currentTimeMillis() + 180_000L;
         while (System.currentTimeMillis() < deadline) {
             synchronized (qualityLock) {
                 if (qualityFinished >= qualityTotal) break;
             }
-            try { Thread.sleep(200); } catch (InterruptedException ie) { break; }
+            try { Thread.sleep(100); } catch (InterruptedException ie) { break; }
         }
 
-        // 完成
+        // 完成：强制最终渲染一次（清除pending防止重复）
         mainHandler.post(() -> {
+            taskRenderPending.set(false);
+            detailRenderPending.set(false);
             progressQuality.setProgress(100);
             tvQualityProgress.setText("100%");
             isQualityRunning = false;
             btnQueryQuality.setEnabled(true);
+            sortAndRenderQualityTask();
+            sortAndRenderQualityDetail();
             renderQualityReport();
         });
     }
 
     /** 解析计划列表 JSON，为每个任务建立 TaskPackage 并放入 taskPool */
-    private void buildTaskPool(String planJson) throws Exception {
+    private void buildTaskPool(String planJson, boolean showAll) throws Exception {
         JSONObject root = new JSONObject(planJson);
         JSONArray planList = root.optJSONArray("planList");
         if (planList == null) return;
+
+        String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
         for (int i = 0; i < planList.length(); i++) {
             JSONObject plan = planList.getJSONObject(i);
@@ -762,10 +775,11 @@ public class XunjianFragment extends Fragment {
                 pkg.taskid       = XunjianApi.cleanNull(t.optString("taskid"));
                 pkg.taskuserid   = XunjianApi.cleanNull(t.optString("taskuserid"));
 
-                // ② 只加入今日巡检的站点（starttime 或 endtime 包含今日日期）
-                String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-                boolean isTodayTask = pkg.starttime.startsWith(todayDate) || pkg.endtime.startsWith(todayDate);
-                if (!isTodayTask) continue;
+                // ② 全显=true时显示全部；全显=false只显示今日
+                if (!showAll) {
+                    boolean isTodayTask = pkg.starttime.startsWith(todayDate) || pkg.endtime.startsWith(todayDate);
+                    if (!isTodayTask) continue;
+                }
 
                 synchronized (taskPool) { taskPool.add(pkg); }
             }
@@ -843,12 +857,12 @@ public class XunjianFragment extends Fragment {
         final String fTaskuser   = pkg.taskuser;
         final int    fSeq        = idx + 1;
 
-        mainHandler.post(() -> addQualityTaskRow(fSeq, fGroupName, fTasksn, fDeviceid,
+        // 直接在子线程写入缓存+触发节流渲染（不通过mainHandler避免积压）
+        addQualityTaskRow(fSeq, fGroupName, fTasksn, fDeviceid,
                 pkg.stationcode, fStationname, fRemark, fApply, fPlanName, fProgress,
-                fStart, fEnd, fPoll, pkg.inspecttime, fTaskuser));
+                fStart, fEnd, fPoll, pkg.inspecttime, fTaskuser);
 
         // 质检逻辑（按月/今日/默认全部）
-        boolean needQuality = false;
         if (!pkg.starttime.isEmpty()) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -928,7 +942,9 @@ public class XunjianFragment extends Fragment {
                     // 质检判断
                     checkQualityRules(detail);
 
-                    mainHandler.post(() -> addQualityDetailRow(detail));
+                    // 直接加入缓存（线程安全），由节流调度统一刷新UI
+                    synchronized (qualityDetailRows) { qualityDetailRows.add(detail); }
+                    scheduleRenderDetail();
                 }
             }
         } catch (Exception e) {
@@ -1145,13 +1161,35 @@ public class XunjianFragment extends Fragment {
         r.applymajor = applymajor; r.mainplanname = mainplanname; r.progress = progress;
         r.starttime = starttime; r.endtime = endtime; r.pollingperiod = pollingperiod;
         r.inspecttime = inspecttime; r.taskuser = taskuser;
-        qualityTaskRows.add(r);
-        sortAndRenderQualityTask();
+        synchronized (qualityTaskRows) { qualityTaskRows.add(r); }
+        scheduleRenderTask();
     }
 
     private void addQualityDetailRow(XunjianApi.AppQualityDetail d) {
-        qualityDetailRows.add(d);
-        sortAndRenderQualityDetail();
+        synchronized (qualityDetailRows) { qualityDetailRows.add(d); }
+        scheduleRenderDetail();
+    }
+
+    /**
+     * 节流渲染：使用 AtomicBoolean CAS，保证同一时刻只有一个 postDelayed 在等待。
+     * 400ms 后一次性刷新，主线程最多每 400ms 做一次全量重绘。
+     */
+    private void scheduleRenderTask() {
+        if (taskRenderPending.compareAndSet(false, true)) {
+            mainHandler.postDelayed(() -> {
+                taskRenderPending.set(false);
+                sortAndRenderQualityTask();
+            }, RENDER_DELAY_MS);
+        }
+    }
+
+    private void scheduleRenderDetail() {
+        if (detailRenderPending.compareAndSet(false, true)) {
+            mainHandler.postDelayed(() -> {
+                detailRenderPending.set(false);
+                sortAndRenderQualityDetail();
+            }, RENDER_DELAY_MS);
+        }
     }
 
     // ===================== 排序渲染 =====================
@@ -1265,9 +1303,13 @@ public class XunjianFragment extends Fragment {
 
     // --- APP质检任务 ---
     private void sortAndRenderQualityTask() {
+        List<QualityTaskRow> snapshot;
+        synchronized (qualityTaskRows) {
+            snapshot = new ArrayList<>(qualityTaskRows);
+        }
         if (taskSortCol >= 0) {
             final int col = taskSortCol; final boolean asc = taskSortAsc;
-            Collections.sort(qualityTaskRows, (a, b) -> {
+            Collections.sort(snapshot, (a, b) -> {
                 switch (col) {
                     case 0: return asc ? Integer.compare(a.seq, b.seq) : Integer.compare(b.seq, a.seq);
                     case 1: return strCmp(a.group, b.group, asc);
@@ -1282,9 +1324,8 @@ public class XunjianFragment extends Fragment {
         }
         updateTaskHeaders();
         llQualityTaskList.removeAllViews();
-        for (int i = 0; i < qualityTaskRows.size(); i++) {
-            QualityTaskRow r = qualityTaskRows.get(i);
-            renderQualityTaskRow(i + 1, r);
+        for (int i = 0; i < snapshot.size(); i++) {
+            renderQualityTaskRow(i + 1, snapshot.get(i));
         }
     }
 
@@ -1315,9 +1356,13 @@ public class XunjianFragment extends Fragment {
 
     // --- 质检详情 ---
     private void sortAndRenderQualityDetail() {
+        List<XunjianApi.AppQualityDetail> snapshot;
+        synchronized (qualityDetailRows) {
+            snapshot = new ArrayList<>(qualityDetailRows);
+        }
         if (detailSortCol >= 0) {
             final int col = detailSortCol; final boolean asc = detailSortAsc;
-            Collections.sort(qualityDetailRows, (a, b) -> {
+            Collections.sort(snapshot, (a, b) -> {
                 switch (col) {
                     case 0: { int ai=0, bi=0; try{ai=Integer.parseInt(a.seq);}catch(Exception e){} try{bi=Integer.parseInt(b.seq);}catch(Exception e){} return asc?Integer.compare(ai,bi):Integer.compare(bi,ai); }
                     case 1: return strCmp(a.groupName, b.groupName, asc);
@@ -1333,8 +1378,8 @@ public class XunjianFragment extends Fragment {
         }
         updateDetailHeaders();
         llQualityDetailList.removeAllViews();
-        for (int i = 0; i < qualityDetailRows.size(); i++) {
-            renderQualityDetailRow(i + 1, qualityDetailRows.get(i));
+        for (int i = 0; i < snapshot.size(); i++) {
+            renderQualityDetailRow(i + 1, snapshot.get(i));
         }
     }
 

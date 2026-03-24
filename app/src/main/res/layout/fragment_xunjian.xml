@@ -163,7 +163,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#1F2937"
+                android:background="#F8FAFC"
                 android:padding="4dp">
 
                 <TextView
@@ -171,7 +171,7 @@
                     android:layout_height="wrap_content"
                     android:text="专业统计"
                     android:textSize="11sp"
-                    android:textColor="#9CA3AF"
+                    android:textColor="#6B7280"
                     android:paddingBottom="4dp"/>
 
                 <!-- 统计表头：专业+数量 -->
@@ -179,27 +179,27 @@
                     android:layout_width="match_parent"
                     android:layout_height="20dp"
                     android:orientation="horizontal"
-                    android:background="#111827">
+                    android:background="#E5E7EB">
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="机房及配套" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="机房" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="机柜及配套" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="机柜" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="RRU拉远" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="拉远" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="铁塔" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="铁塔" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="室内分布" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="室分" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="0dp" android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="其他" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="其他" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                     <TextView android:layout_width="40dp" android:layout_height="match_parent"
-                        android:text="合计" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                        android:text="合计" android:textSize="9sp" android:textColor="#374151" android:gravity="center"/>
                 </LinearLayout>
 
                 <!-- 统计数据容器 -->
@@ -394,6 +394,15 @@
                         android:background="@drawable/bg_edittext"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp"/>
+
+                    <CheckBox
+                        android:id="@+id/cbShowAll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="全显"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="4dp"
+                        android:checked="true"/>
 
                     <CheckBox
                         android:id="@+id/cbQualityByMonth"
