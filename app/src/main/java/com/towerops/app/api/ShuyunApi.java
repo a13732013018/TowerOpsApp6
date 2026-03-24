@@ -2328,6 +2328,7 @@ public class ShuyunApi {
 
     /**
      * FSU离线率  /api/report/report/dataTable/2022010400
+     * 字段: CITY_NAME, AVG_OFFLINE_RATE, JW_SITE, PD_COUNT, CP_SITE, DATA_DATE
      */
     public static String queryFsuOfflineRate(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2022010400";
@@ -2337,24 +2338,33 @@ public class ShuyunApi {
 
     /**
      * 故障工单处理合格率  /api/report/report/dataTable/4
+     * 字段: AREA_NAME, ORDER_COUNT, GZORDER_NUM, OUT_TIME_ORDER, GZORDER_OUTTIME_NUM,
+     *       RECEIVE_RATE, HANDLE_INTIME_RATE, SHEET_CHECK_RATE, SHEET_MAKE_RATE, DATA_DATE
+     * 注意：body 需要 cityId="3" 和 siteLevel="全量"
      */
     public static String queryFaultOrderQuality(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/4";
-        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        String body = "{\"cityId\":\"3\",\"areaCode\":\"330300\",\"startTime\":\"" + startTime
+                + "\",\"siteLevel\":\"全量\"}";
         return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
      * 疑似退服  /api/report/report/dataTable/2021120920
+     * 字段: CITY_NAME, DATA_DATE, YSTF_SITE, YT_SITE, YSTF_RATE
+     * 注意：body 需要 siteLevel="全量"
      */
     public static String querySuspectedOutOfService(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2021120920";
-        String body = "{\"startTime\":\"" + startTime + "\",\"areaCode\":\"330300\",\"region_type\":\"3\"}";
+        String body = "{\"region_type\":\"3\",\"areaCode\":\"330300\",\"startTime\":\"" + startTime
+                + "\",\"siteLevel\":\"全量\"}";
         return postMetrics(url, body, pcToken, cookieToken);
     }
 
     /**
-     * 超频告警整治有效性  /api/report/report/dataTable/2022010602
+     * 超频告警整治有效性（实为"故障工单统计"）  /api/report/report/dataTable/2022010602
+     * 字段: AREA_NAME, DATA_DATE, SHEET_NUM, SHEET_NEW, SHEET_YL,
+     *       SHEET_CS_RATE, SHEET_WX, SHEET_CS, SHEET_CL_RATE
      */
     public static String queryAlarmEffectiveness(String pcToken, String cookieToken, String startTime) {
         String url = PC_BASE + "/api/report/report/dataTable/2022010602";

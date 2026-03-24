@@ -60,26 +60,26 @@ public class MetricsFragment extends Fragment {
     // 表格列宽（dp），各Tab不同
     // 0:电子化覆盖率  1:资产一致性  2:PUE有效率  3:FSU  4:故障工单  5:疑似退服  6:超频告警
     private static final String[][] HEADERS = {
-        // 电子化覆盖率
+        // 0: 电子化覆盖率
         {"序号", "区县", "站址总数", "覆盖数", "覆盖率(%)", "日期"},
-        // 资产一致性
+        // 1: 资产一致性
         {"地市", "开关-分子", "开关-分母", "开关-一致性",
          "空调-分子", "空调-分母", "空调-一致性",
          "铅酸-分子", "铅酸-分母", "铅酸-一致性",
          "普通锂-分子", "普通锂-分母", "普通锂-一致性",
          "智能锂-分子", "智能锂-分母", "智能锂-一致性",
          "蓄电池一致性", "总资产一致性", "日期"},
-        // PUE有效率
+        // 2: PUE有效率
         {"序号", "区县", "纳管站址", "有效站址", "有效率(%)", "达标站址", "达标率(%)",
          "I级", "II级", "III级", "IIII级", "日期"},
-        // FSU离线率
-        {"序号", "区县", "FSU离线率", "交维数", "派单总数", "当天超10次", "统计时间"},
-        // 故障工单合格率
-        {"序号", "区县", "统计时间", "总数", "本月新派发工单数", "遗留工单", "处理及时率", "无效工单数量", "超时工单数量", "工单处理率"},
-        // 疑似退服
-        {"序号", "区县", "统计时间", "疑似退服数", "一脱告警数", "疑似退服占比"},
-        // 超频告警整治有效性
-        {"序号", "区县", "总工单数", "故障工单数", "接单超时数", "回单超时数", "接单及时率", "回单及时率", "质检合格率", "处理合格率", "统计时间"},
+        // 3: FSU离线率  ← 对照易语言: CITY_NAME/AVG_OFFLINE_RATE/JW_SITE/PD_COUNT/CP_SITE/DATA_DATE
+        {"序号", "区县", "FSU离线率", "交维站址数", "派单总数", "当天超10次", "统计时间"},
+        // 4: 故障工单合格率  ← 对照易语言: AREA_NAME/ORDER_COUNT/GZORDER_NUM/OUT_TIME_ORDER/GZORDER_OUTTIME_NUM/RECEIVE_RATE/HANDLE_INTIME_RATE/SHEET_CHECK_RATE/SHEET_MAKE_RATE/DATA_DATE
+        {"序号", "区县", "总工单数", "故障工单数", "接单超时", "回单超时", "接单及时率", "回单及时率", "质检合格率", "工单合格率", "统计时间"},
+        // 5: 疑似退服  ← 对照易语言: CITY_NAME/DATA_DATE/YSTF_SITE/YT_SITE/YSTF_RATE
+        {"序号", "区县", "统计时间", "疑似退服次数", "一级低压脱离次数", "疑似退服率"},
+        // 6: 超频告警整治（实为故障工单统计）  ← 对照易语言: AREA_NAME/DATA_DATE/SHEET_NUM/SHEET_NEW/SHEET_YL/SHEET_CS_RATE/SHEET_WX/SHEET_CS/SHEET_CL_RATE
+        {"序号", "区县", "统计时间", "总工单数", "本月新派发", "遗留工单", "处理及时率", "无效工单", "超时工单", "处理有效率"},
     };
 
     private static final int[] COL_WIDTH_DP = {70, 80, 70, 80, 80, 70, 90};
@@ -410,64 +410,66 @@ public class MetricsFragment extends Fragment {
                     row.optString("DATA_DATE", "")
                 };
             case 3: // FSU离线率
-                // 序号 区县 FSU离线率 交维数 派单总数 当天超10次 统计时间
+                // 易语言字段: CITY_NAME, AVG_OFFLINE_RATE, JW_SITE, PD_COUNT, CP_SITE, DATA_DATE
                 return new String[]{
                     String.valueOf(seq),
-                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
-                    row.optString("FSU_OFFLINE_RATE", row.optString("RATE", "")),
-                    row.optString("JW_COUNT",  row.optString("JIAOWEI_COUNT", "")),
-                    row.optString("ORDER_TOTAL", row.optString("TOTAL_COUNT", "")),
-                    row.optString("DAY10_COUNT", row.optString("OVER10_COUNT", "")),
-                    row.optString("DATA_DATE",  row.optString("MONTH", ""))
+                    row.optString("CITY_NAME", row.optString("AREA_NAME", "")),
+                    row.optString("AVG_OFFLINE_RATE", ""),
+                    row.optString("JW_SITE", ""),
+                    row.optString("PD_COUNT", ""),
+                    row.optString("CP_SITE", ""),
+                    row.optString("DATA_DATE", "")
                 };
             case 4: // 故障工单合格率
-                // 序号 区县 统计时间 总数 本月新派发工单数 遗留工单 处理及时率 无效工单数量 超时工单数量 工单处理率
+                // 易语言字段: AREA_NAME, ORDER_COUNT, GZORDER_NUM, OUT_TIME_ORDER,
+                //             GZORDER_OUTTIME_NUM, RECEIVE_RATE, HANDLE_INTIME_RATE,
+                //             SHEET_CHECK_RATE, SHEET_MAKE_RATE, DATA_DATE
                 return new String[]{
                     String.valueOf(seq),
-                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
-                    row.optString("DATA_DATE", row.optString("MONTH", "")),
-                    row.optString("TOTAL",     row.optString("TOTAL_COUNT", "")),
-                    row.optString("NEW_ORDER_COUNT",     row.optString("派发工单数", "")),
-                    row.optString("LEAVE_ORDER_COUNT",   row.optString("REMAIN_COUNT", "")),
-                    row.optString("PROCESS_RATE",        row.optString("HANDLE_RATE", "")),
-                    row.optString("INVALID_ORDER_COUNT", row.optString("INVALID_COUNT", "")),
-                    row.optString("TIMEOUT_ORDER_COUNT", row.optString("OVER_TIME_COUNT", "")),
-                    row.optString("ORDER_PROCESS_RATE",  row.optString("FINISH_RATE", ""))
+                    row.optString("AREA_NAME", row.optString("CITY_NAME", "")),
+                    row.optString("ORDER_COUNT", ""),
+                    row.optString("GZORDER_NUM", ""),
+                    row.optString("OUT_TIME_ORDER", ""),
+                    row.optString("GZORDER_OUTTIME_NUM", ""),
+                    row.optString("RECEIVE_RATE", ""),
+                    row.optString("HANDLE_INTIME_RATE", ""),
+                    row.optString("SHEET_CHECK_RATE", ""),
+                    row.optString("SHEET_MAKE_RATE", ""),
+                    row.optString("DATA_DATE", "")
                 };
             case 5: // 疑似退服
-                // 序号 区县 统计时间 疑似退服数 一脱告警数 疑似退服占比
+                // 易语言字段: CITY_NAME, DATA_DATE, YSTF_SITE, YT_SITE, YSTF_RATE
                 return new String[]{
                     String.valueOf(seq),
-                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
-                    row.optString("DATA_DATE", row.optString("MONTH", "")),
-                    row.optString("TUIFU_COUNT",   row.optString("QUIT_COUNT", "")),
-                    row.optString("ALARM_COUNT",   row.optString("ONE_DROP_COUNT", "")),
-                    row.optString("TUIFU_RATE",    row.optString("QUIT_RATE", ""))
+                    row.optString("CITY_NAME", row.optString("AREA_NAME", "")),
+                    row.optString("DATA_DATE", ""),
+                    row.optString("YSTF_SITE", ""),
+                    row.optString("YT_SITE", ""),
+                    row.optString("YSTF_RATE", "")
                 };
-            case 6: // 超频告警整治有效性
-                // 序号 区县 总工单数 故障工单数 接单超时数 回单超时数 接单及时率 回单及时率 质检合格率 处理合格率 统计时间
+            case 6: // 超频告警整治（实为故障工单统计）
+                // 易语言字段: AREA_NAME, DATA_DATE, SHEET_NUM, SHEET_NEW, SHEET_YL,
+                //             SHEET_CS_RATE, SHEET_WX, SHEET_CS, SHEET_CL_RATE
                 return new String[]{
                     String.valueOf(seq),
-                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
-                    row.optString("TOTAL_ORDER",       row.optString("ORDER_TOTAL", "")),
-                    row.optString("FAULT_ORDER",       row.optString("FAULT_COUNT", "")),
-                    row.optString("RECEIVE_OVER_TIME", row.optString("JIEDAN_TIMEOUT", "")),
-                    row.optString("REPLY_OVER_TIME",   row.optString("HUIDAN_TIMEOUT", "")),
-                    row.optString("RECEIVE_RATE",      row.optString("JIEDAN_RATE", "")),
-                    row.optString("REPLY_RATE",        row.optString("HUIDAN_RATE", "")),
-                    row.optString("QUALITY_RATE",      row.optString("ZJ_RATE", "")),
-                    row.optString("HANDLE_RATE",       row.optString("PASS_RATE", "")),
-                    row.optString("DATA_DATE",         row.optString("MONTH", ""))
+                    row.optString("AREA_NAME", row.optString("CITY_NAME", "")),
+                    row.optString("DATA_DATE", ""),
+                    row.optString("SHEET_NUM", ""),
+                    row.optString("SHEET_NEW", ""),
+                    row.optString("SHEET_YL", ""),
+                    row.optString("SHEET_CS_RATE", ""),
+                    row.optString("SHEET_WX", ""),
+                    row.optString("SHEET_CS", ""),
+                    row.optString("SHEET_CL_RATE", "")
                 };
             default:
                 try {
-                    String area = row.optString("AREA_NAME", row.optString("LAT_NAME", String.valueOf(seq)));
-                    // 把所有值拼在一起
+                    String area = row.optString("AREA_NAME", row.optString("CITY_NAME", String.valueOf(seq)));
                     StringBuilder sb = new StringBuilder();
                     java.util.Iterator<String> keys = row.keys();
                     while (keys.hasNext()) {
                         String k = keys.next();
-                        if (!k.equals("AREA_NAME") && !k.equals("LAT_NAME")) {
+                        if (!k.equals("AREA_NAME") && !k.equals("CITY_NAME")) {
                             sb.append(k).append(":").append(row.optString(k)).append("  ");
                         }
                     }
