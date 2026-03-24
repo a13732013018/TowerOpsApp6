@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class ShuyunSubPagerAdapter extends FragmentStateAdapter {
 
-    private static final int TAB_COUNT = 4;  // 数运监控|数运审核|省内待办|考核工单
+    private static final int TAB_COUNT = 4;  // 数运监控|数运审核|省内待办|任务工单
     private final List<Fragment> fragments = new ArrayList<>();
 
     public ShuyunSubPagerAdapter(@NonNull FragmentActivity fragmentActivity) {

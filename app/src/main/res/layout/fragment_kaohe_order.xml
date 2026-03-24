@@ -27,7 +27,7 @@
             android:paddingTop="5dp"
             android:paddingBottom="3dp">
 
-            <!-- 第一行：区县选择 + 查询按钮 + 排序按钮 -->
+            <!-- 第一行：区县选择 + 查询按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
                 <Spinner
                     android:id="@+id/spinnerKHCounty"
                     android:layout_width="0dp"
-                    android:layout_height="28dp"
+                    android:layout_height="30dp"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
@@ -53,17 +53,19 @@
 
                 <Button
                     android:id="@+id/btnKHQuery"
-                    android:layout_width="56dp"
-                    android:layout_height="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="查询"
-                    android:textSize="11sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_inverse"
                     android:background="@drawable/bg_button_primary_gradient"
                     android:stateListAnimator="@null"
                     android:letterSpacing="0"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"/>
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"/>
 
             </LinearLayout>
 
@@ -75,14 +77,13 @@
                 android:layout_marginBottom="2dp"
                 android:background="#DDEAFF"/>
 
-            <!-- 过滤+排序 同一行 -->
+            <!-- 过滤行：过滤选项 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- 过滤标题 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -92,7 +93,6 @@
                     android:textStyle="bold"
                     android:layout_marginEnd="2dp"/>
 
-                <!-- cb10 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter10"
                     android:layout_width="0dp"
@@ -105,7 +105,6 @@
                     android:paddingBottom="1dp"
                     android:checked="true"/>
 
-                <!-- cb17 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter17"
                     android:layout_width="0dp"
@@ -118,40 +117,11 @@
                     android:paddingBottom="1dp"
                     android:checked="false"/>
 
-                <!-- 排序标题 -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="排序:"
-                    android:textSize="9sp"
-                    android:textColor="@color/text_secondary"
-                    android:textStyle="bold"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="2dp"/>
-
-                <!-- 排序字段选择 -->
-                <Spinner
-                    android:id="@+id/spinnerKHSortField"
+                <!-- 占位 -->
+                <View
                     android:layout_width="0dp"
-                    android:layout_height="26dp"
-                    android:layout_weight="1.2"
-                    android:background="@drawable/bg_input_white"/>
-
-                <!-- 正反序切换按钮 -->
-                <Button
-                    android:id="@+id/btnKHSortDir"
-                    android:layout_width="28dp"
-                    android:layout_height="26dp"
-                    android:text="↑"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_inverse"
-                    android:background="@drawable/bg_button_primary_gradient"
-                    android:stateListAnimator="@null"
-                    android:letterSpacing="0"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="0dp"
-                    android:layout_marginStart="2dp"/>
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"/>
 
             </LinearLayout>
 
@@ -163,7 +133,7 @@
                 android:layout_marginBottom="2dp"
                 android:background="#DDEAFF"/>
 
-            <!-- 特殊工单类型：全部挤在2行 -->
+            <!-- 类型行：特殊工单类型 CheckBox -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -239,12 +209,13 @@
                     android:paddingBottom="1dp"
                     android:checked="true"/>
 
+                <!-- 全不选 → 考核工单 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter18"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="全不选"
+                    android:text="考核工单"
                     android:textSize="9sp"
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
@@ -268,6 +239,107 @@
         android:text="选择区县后点击查询"
         android:textColor="@color/text_secondary"
         android:textSize="10sp"/>
+
+    <!-- ====== 排序表头行（点击列名排序） ====== -->
+    <LinearLayout
+        android:id="@+id/llKHSortHeader"
+        android:layout_width="match_parent"
+        android:layout_height="28dp"
+        android:orientation="horizontal"
+        android:background="#EEF2FF"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp">
+
+        <!-- 序号占位 -->
+        <TextView
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            android:text="#"
+            android:textSize="9sp"
+            android:textColor="#888888"
+            android:gravity="center"
+            android:includeFontPadding="false"/>
+
+        <!-- 站名 -->
+        <TextView
+            android:id="@+id/tvKHSortStation"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2.2"
+            android:text="站名 ↕"
+            android:textSize="9sp"
+            android:textColor="#2563EB"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DDEAFF"/>
+
+        <!-- 工单类型 -->
+        <TextView
+            android:id="@+id/tvKHSortFlowName"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:text="工单类型 ↕"
+            android:textSize="9sp"
+            android:textColor="#2563EB"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DDEAFF"/>
+
+        <!-- 要求完成 -->
+        <TextView
+            android:id="@+id/tvKHSortReqTime"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2.5"
+            android:text="要求完成 ↕"
+            android:textSize="9sp"
+            android:textColor="#2563EB"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DDEAFF"/>
+
+        <!-- 接单人 -->
+        <TextView
+            android:id="@+id/tvKHSortAccestaff"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.3"
+            android:text="接单人 ↕"
+            android:textSize="9sp"
+            android:textColor="#2563EB"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+    </LinearLayout>
 
     <!-- ====== 列表 ====== -->
     <androidx.recyclerview.widget.RecyclerView
