@@ -384,15 +384,19 @@ public class MetricsFragment extends Fragment {
                 String[] cells = {e.area, e.metricType, e.metricValue, rankStr};
                 LinearLayout rowView = new LinearLayout(requireContext());
                 rowView.setOrientation(LinearLayout.HORIZONTAL);
-                // 前3名金/银/铜，后3名淡红
+
+                boolean isPingyang = e.area != null && e.area.contains("平阳");
+
+                // 平阳县高亮（浅橙/暖黄）优先，否则按名次/交替色
                 int bgColor;
-                if (e.rank == 1)      bgColor = Color.parseColor("#FFF7E0"); // 金
-                else if (e.rank == 2) bgColor = Color.parseColor("#F5F5F5"); // 银
-                else if (e.rank == 3) bgColor = Color.parseColor("#FFF0E0"); // 铜
+                if (isPingyang)           bgColor = Color.parseColor("#FFF3CD"); // 平阳专属高亮
+                else if (e.rank == 1)     bgColor = Color.parseColor("#FFF7E0"); // 金
+                else if (e.rank == 2)     bgColor = Color.parseColor("#F5F5F5"); // 银
+                else if (e.rank == 3)     bgColor = Color.parseColor("#FFF0E0"); // 铜
                 else if (rowIdx % 2 == 0) bgColor = Color.parseColor("#FFFFFF");
-                else bgColor = Color.parseColor("#F0F4FF");
+                else                      bgColor = Color.parseColor("#F0F4FF");
                 rowView.setBackgroundColor(bgColor);
-                addRankRow(rowView, cells, false);
+                addRankRow(rowView, cells, false, isPingyang);
                 llRows.addView(rowView);
                 rowIdx++;
             }
@@ -483,7 +487,12 @@ public class MetricsFragment extends Fragment {
     }
 
     // ─── 排名Tab专用的行添加方法（4列固定宽度） ────────────────────
+    // isPingyang=true 时区县列加粗+橙色，其余列也加粗以突出
     private void addRankRow(LinearLayout parent, String[] cells, boolean isHeader) {
+        addRankRow(parent, cells, isHeader, false);
+    }
+
+    private void addRankRow(LinearLayout parent, String[] cells, boolean isHeader, boolean isPingyang) {
         float density = getResources().getDisplayMetrics().density;
         // 列宽：区县80 | 指标类型90 | 指标情况80 | 排名60
         int[] colWidthDp = {80, 90, 80, 60};
@@ -493,22 +502,39 @@ public class MetricsFragment extends Fragment {
             TextView tv = new TextView(requireContext());
             tv.setLayoutParams(new LinearLayout.LayoutParams(w, ViewGroup.LayoutParams.MATCH_PARENT));
             tv.setText(cells[c]);
-            tv.setTextSize(isHeader ? 9.5f : 9f);
-            tv.setTextColor(isHeader ? Color.parseColor("#2563EB") : Color.parseColor("#1a1a2e"));
-            tv.setTypeface(null, isHeader ? Typeface.BOLD : Typeface.NORMAL);
+            tv.setTextSize(isHeader ? 9.5f : (isPingyang ? 9.5f : 9f));
             tv.setGravity(Gravity.CENTER);
             tv.setPadding(2, 5, 2, 5);
             tv.setSingleLine(false);
             tv.setMaxLines(2);
             tv.setIncludeFontPadding(false);
-            if (isHeader) tv.setBackgroundColor(Color.parseColor("#EEF2FF"));
+            if (isHeader) {
+                tv.setTextColor(Color.parseColor("#2563EB"));
+                tv.setTypeface(null, Typeface.BOLD);
+                tv.setBackgroundColor(Color.parseColor("#EEF2FF"));
+            } else if (isPingyang) {
+                // 平阳县：全行加粗，区县列橙色，其他列深橙
+                if (c == 0) {
+                    tv.setTextColor(Color.parseColor("#E65100")); // 深橙色区县名
+                    tv.setTypeface(null, Typeface.BOLD);
+                } else {
+                    tv.setTextColor(Color.parseColor("#5D3200")); // 深棕色其他列
+                    tv.setTypeface(null, Typeface.BOLD);
+                }
+            } else {
+                tv.setTextColor(Color.parseColor("#1a1a2e"));
+                tv.setTypeface(null, Typeface.NORMAL);
+            }
 
-            // 排名列：第1/2/3名特殊颜色
+            // 排名列：第1/2/3名特殊颜色（平阳县时也生效，用更鲜明颜色）
             if (!isHeader && c == 3) {
                 String rankText = cells[c];
-                if (rankText.contains("第 1 名")) tv.setTextColor(Color.parseColor("#D4A017"));
-                else if (rankText.contains("第 2 名")) tv.setTextColor(Color.parseColor("#808080"));
-                else if (rankText.contains("第 3 名")) tv.setTextColor(Color.parseColor("#B87333"));
+                if (rankText.contains("第 1 名"))
+                    tv.setTextColor(isPingyang ? Color.parseColor("#FF8F00") : Color.parseColor("#D4A017"));
+                else if (rankText.contains("第 2 名"))
+                    tv.setTextColor(isPingyang ? Color.parseColor("#616161") : Color.parseColor("#808080"));
+                else if (rankText.contains("第 3 名"))
+                    tv.setTextColor(isPingyang ? Color.parseColor("#A0522D") : Color.parseColor("#B87333"));
             }
 
             if (c < cells.length - 1) {

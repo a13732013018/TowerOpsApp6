@@ -10,8 +10,11 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        app:cardCornerRadius="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="2dp"
+        app:cardCornerRadius="7dp"
         app:cardElevation="2dp"
         app:cardBackgroundColor="@color/background_secondary">
 
@@ -19,9 +22,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="3dp">
 
-            <!-- 第一行：区县选择 + 查询按钮 -->
+            <!-- 第一行：区县选择 + 查询按钮 + 排序按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -33,31 +39,31 @@
                     android:layout_height="wrap_content"
                     android:text="区县"
                     android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"/>
 
                 <Spinner
                     android:id="@+id/spinnerKHCounty"
                     android:layout_width="0dp"
-                    android:layout_height="32dp"
+                    android:layout_height="28dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
                     android:background="@drawable/bg_input_white"/>
 
                 <Button
                     android:id="@+id/btnKHQuery"
-                    android:layout_width="68dp"
-                    android:layout_height="36dp"
+                    android:layout_width="56dp"
+                    android:layout_height="30dp"
                     android:text="查询"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_inverse"
                     android:background="@drawable/bg_button_primary_gradient"
                     android:stateListAnimator="@null"
                     android:letterSpacing="0"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"/>
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"/>
 
             </LinearLayout>
 
@@ -65,55 +71,87 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="4dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="2dp"
                 android:background="#DDEAFF"/>
 
-            <!-- 过滤选项标题 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="显示工单类型（勾选=显示）"
-                android:textSize="10sp"
-                android:textColor="@color/text_secondary"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
-
-            <!-- ── 第一组：环节过滤 ── -->
+            <!-- 过滤+排序 同一行 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="2dp">
+                android:gravity="center_vertical">
 
-                <!-- cb10：过滤掉自动审核/省监控/EOMS等（勾选=过滤掉这些环节） -->
+                <!-- 过滤标题 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="过滤:"
+                    android:textSize="9sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="2dp"/>
+
+                <!-- cb10 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter10"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="过滤自动审核环节"
-                    android:textSize="10sp"
+                    android:text="自动审核"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
                     android:checked="true"/>
 
-            </LinearLayout>
-
-            <!-- ── 第二组：杂单过滤 ── -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="2dp">
-
-                <!-- cb17：过滤杂单（省内任务派单/超频/电流波动/通用任务/退服隐患/蓄电池/直放站等） -->
+                <!-- cb17 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter17"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="过滤杂单（超频/任务派单等）"
-                    android:textSize="10sp"
+                    android:text="杂单"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
                     android:checked="false"/>
+
+                <!-- 排序标题 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="排序:"
+                    android:textSize="9sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="2dp"/>
+
+                <!-- 排序字段选择 -->
+                <Spinner
+                    android:id="@+id/spinnerKHSortField"
+                    android:layout_width="0dp"
+                    android:layout_height="26dp"
+                    android:layout_weight="1.2"
+                    android:background="@drawable/bg_input_white"/>
+
+                <!-- 正反序切换按钮 -->
+                <Button
+                    android:id="@+id/btnKHSortDir"
+                    android:layout_width="28dp"
+                    android:layout_height="26dp"
+                    android:text="↑"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_button_primary_gradient"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
+                    android:layout_marginStart="2dp"/>
 
             </LinearLayout>
 
@@ -122,102 +160,95 @@
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
                 android:layout_marginTop="2dp"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="2dp"
                 android:background="#DDEAFF"/>
 
-            <!-- 特殊工单类型标题 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="特殊工单类型（取消勾选=不显示该类型）"
-                android:textSize="10sp"
-                android:textColor="@color/text_secondary"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp"/>
-
-            <!-- ── 第三组：特殊工单各类型 ── -->
-            <!-- 第一行 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="2dp">
-
-                <!-- cb13：验收工程遗留派单流程(新) -->
-                <CheckBox
-                    android:id="@+id/cbKHFilter13"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="验收工程遗留"
-                    android:textSize="10sp"
-                    android:checked="true"/>
-
-                <!-- cb14：退服基站稽核工单 -->
-                <CheckBox
-                    android:id="@+id/cbKHFilter14"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="退服基站稽核"
-                    android:textSize="10sp"
-                    android:checked="true"/>
-
-            </LinearLayout>
-
-            <!-- 第二行 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="2dp">
-
-                <!-- cb15：设备信号不准确异常整治 -->
-                <CheckBox
-                    android:id="@+id/cbKHFilter15"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="信号异常整治"
-                    android:textSize="10sp"
-                    android:checked="true"/>
-
-                <!-- cb16：储能光伏验收流程 -->
-                <CheckBox
-                    android:id="@+id/cbKHFilter16"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="储能光伏验收"
-                    android:textSize="10sp"
-                    android:checked="true"/>
-
-            </LinearLayout>
-
-            <!-- 第三行 -->
+            <!-- 特殊工单类型：全部挤在2行 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- cb22：智联业务（故障处理/地市派单/综合派单/高铁监控） -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="类型:"
+                    android:textSize="9sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center_vertical"/>
+
+                <CheckBox
+                    android:id="@+id/cbKHFilter13"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="验收遗留"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
+                    android:checked="true"/>
+
+                <CheckBox
+                    android:id="@+id/cbKHFilter14"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="退服稽核"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
+                    android:checked="true"/>
+
+                <CheckBox
+                    android:id="@+id/cbKHFilter15"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="信号整治"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
+                    android:checked="true"/>
+
+                <CheckBox
+                    android:id="@+id/cbKHFilter16"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="储能验收"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
+                    android:checked="true"/>
+
                 <CheckBox
                     android:id="@+id/cbKHFilter22"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="智联/高铁业务"
-                    android:textSize="10sp"
+                    android:text="智联/高铁"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
                     android:checked="true"/>
 
-                <!-- cb18：全选/全不选特殊类型（快捷键） -->
                 <CheckBox
                     android:id="@+id/cbKHFilter18"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="全不显示特殊类型"
-                    android:textSize="10sp"
+                    android:text="全不选"
+                    android:textSize="9sp"
+                    android:minHeight="0dp"
+                    android:paddingTop="1dp"
+                    android:paddingBottom="1dp"
                     android:checked="false"/>
 
             </LinearLayout>

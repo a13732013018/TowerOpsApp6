@@ -24,6 +24,7 @@ import com.towerops.app.api.ShuyunApi;
 import com.towerops.app.model.Session;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,12 +65,22 @@ public class KaoHeOrderFragment extends Fragment {
 
     // ── UI ──────────────────────────────────────────────────────────
     private Spinner spinnerCounty;
+    private Spinner spinnerSortField;
+    private Button btnSortDir;
     private CheckBox cbFilter10, cbFilter18, cbFilter17;
     private CheckBox cbFilter13, cbFilter14, cbFilter15, cbFilter16, cbFilter22;
     private Button btnQuery;
     private TextView tvStatus;
     private RecyclerView rvOrders;
     private KaoHeOrderAdapter adapter;
+
+    // ── 排序状态 ─────────────────────────────────────────────────────
+    // 0=站名 1=工单类型 2=要求完成 3=接单人
+    private boolean sortAscending = true;  // true=正序 false=反序
+    private int sortFieldIndex = 0;        // 0=站名 1=工单类型 2=要求完成 3=接单人
+
+    // 当前已加载的完整列表（用于重新排序，无需重复请求）
+    private List<ShuyunApi.KaoHeOrderInfo> currentFullList = new ArrayList<>();
 
     private int selectedCountyIndex = 0;
     private volatile boolean isQuerying = false;
@@ -96,6 +107,8 @@ public class KaoHeOrderFragment extends Fragment {
 
     private void initViews(View view) {
         spinnerCounty   = view.findViewById(R.id.spinnerKHCounty);
+        spinnerSortField = view.findViewById(R.id.spinnerKHSortField);
+        btnSortDir      = view.findViewById(R.id.btnKHSortDir);
         cbFilter10      = view.findViewById(R.id.cbKHFilter10);
         cbFilter18      = view.findViewById(R.id.cbKHFilter18);
         cbFilter17      = view.findViewById(R.id.cbKHFilter17);
@@ -118,6 +131,13 @@ public class KaoHeOrderFragment extends Fragment {
                 android.R.layout.simple_spinner_item, CITY_AREA_NAMES);
         countyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCounty.setAdapter(countyAdapter);
+
+        // 排序字段：站名/工单类型/要求完成/接单人
+        String[] sortFields = {"站名", "工单类型", "要求完成", "接单人"};
+        ArrayAdapter<String> sortAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, sortFields);
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSortField.setAdapter(sortAdapter);
     }
 
     private void setupListeners() {
@@ -127,6 +147,23 @@ public class KaoHeOrderFragment extends Fragment {
                 selectedCountyIndex = position;
             }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        // 排序字段切换 → 立即对当前列表重排
+        spinnerSortField.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
+                sortFieldIndex = position;
+                applySortAndRefresh();
+            }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        // 正反序切换按钮
+        btnSortDir.setOnClickListener(v -> {
+            sortAscending = !sortAscending;
+            btnSortDir.setText(sortAscending ? "↑" : "↓");
+            applySortAndRefresh();
         });
 
         // cb18：全不显示特殊类型（快捷键）
@@ -158,6 +195,42 @@ public class KaoHeOrderFragment extends Fragment {
         cbFilter22.setOnCheckedChangeListener(subListener);
 
         btnQuery.setOnClickListener(v -> startQuery());
+    }
+
+    // ── 对 currentFullList 排序后刷新列表 ───────────────────────────
+    private void applySortAndRefresh() {
+        if (currentFullList == null || currentFullList.isEmpty()) return;
+        List<ShuyunApi.KaoHeOrderInfo> sorted = new ArrayList<>(currentFullList);
+        Collections.sort(sorted, (a, b) -> {
+            String va, vb;
+            switch (sortFieldIndex) {
+                case 0: // 站名
+                    va = a.stationName != null ? a.stationName : "";
+                    vb = b.stationName != null ? b.stationName : "";
+                    break;
+                case 1: // 工单类型
+                    va = a.flowName != null ? a.flowName : "";
+                    vb = b.flowName != null ? b.flowName : "";
+                    break;
+                case 2: // 要求完成时间
+                    va = a.reqCompTime != null ? a.reqCompTime : "";
+                    vb = b.reqCompTime != null ? b.reqCompTime : "";
+                    break;
+                case 3: // 接单人
+                    va = a.accestaff != null ? a.accestaff : "";
+                    vb = b.accestaff != null ? b.accestaff : "";
+                    break;
+                default:
+                    va = ""; vb = "";
+            }
+            int cmp = va.compareTo(vb);
+            return sortAscending ? cmp : -cmp;
+        });
+        // 重新设置序号
+        for (int i = 0; i < sorted.size(); i++) {
+            sorted.get(i).index = String.valueOf(i + 1);
+        }
+        adapter.setData(sorted);
     }
 
     // ── 查询 ─────────────────────────────────────────────────────────
@@ -192,6 +265,7 @@ public class KaoHeOrderFragment extends Fragment {
         isQuerying = true;
         btnQuery.setEnabled(false);  // 查询中禁用按钮
         btnQuery.setText("查询中...");
+        currentFullList = new ArrayList<>();
         adapter.setData(new ArrayList<>());
         tvStatus.setText("查询中...");
 
@@ -205,7 +279,8 @@ public class KaoHeOrderFragment extends Fragment {
                         STATION_GROUP_RULES);
 
                 mainHandler.post(() -> {
-                    adapter.setData(list);
+                    currentFullList = new ArrayList<>(list); // 保存原始列表备排序
+                    applySortAndRefresh(); // 按当前排序规则展示
                     tvStatus.setText("查询完成，共 " + list.size() + " 条考核工单"
                             + (selectedCountyIndex > 0 ? " · " + CITY_AREA_NAMES[selectedCountyIndex] : ""));
                     btnQuery.setEnabled(true);
