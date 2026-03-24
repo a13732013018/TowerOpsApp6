@@ -168,6 +168,20 @@
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btnRandomPlan"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="随机上站"
+                android:textSize="11sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#F59E0B"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:stateListAnimator="@null" />
         </LinearLayout>
 
         <!-- 排序按钮（5个按钮：站名、完成时间、工单类型、数量、接单人） -->

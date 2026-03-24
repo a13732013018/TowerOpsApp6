@@ -135,6 +135,7 @@ public class ProvinceInnerOrderFragment extends Fragment {
     private Spinner spinnerCounty;      // 区县选择器
     private Button btnQuery;
     private Button btnToSignQuery;      // 待签查询按钮
+    private Button btnRandomPlan;       // 随机上站按钮
     private TextView tvStatus;
     
     // 搜索和排序
@@ -166,6 +167,11 @@ public class ProvinceInnerOrderFragment extends Fragment {
     // 待签工单模式标志（true=待签工单，false=我的待办）
     private boolean isToSignMode = false;
     
+    // ── 随机上站已派站点记录（防重复，跨次派发不重复同一站点）─────────────
+    private final java.util.Set<String> randomPlanDispatchedStations = new java.util.HashSet<>();
+    // 是否正在执行随机上站派发
+    private volatile boolean isRandomPlanning = false;
+
     // ── 原始数据缓存 ─────────────────────────────────────────────────
     private List<ShuyunApi.ProvinceInnerTaskInfo> originalData = new ArrayList<>();
     private Map<String, Integer> stationOrderCount = new HashMap<>(); // 站点工单数量统计
@@ -214,6 +220,8 @@ public class ProvinceInnerOrderFragment extends Fragment {
         
         // 待签查询按钮
         btnToSignQuery = view.findViewById(R.id.btnToSignQuery);
+        // 随机上站按钮
+        btnRandomPlan = view.findViewById(R.id.btnRandomPlan);
 
         adapter = new ProvinceInnerOrderAdapter();
         rvOrders.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -652,6 +660,9 @@ public class ProvinceInnerOrderFragment extends Fragment {
         
         // 待签查询按钮
         btnToSignQuery.setOnClickListener(v -> startToSignQuery());
+        
+        // 随机上站按钮
+        btnRandomPlan.setOnClickListener(v -> showRandomPlanDialog());
         
         // 搜索按钮
         btnSearch.setOnClickListener(v -> searchAndLocate());
@@ -1099,8 +1110,259 @@ public class ProvinceInnerOrderFragment extends Fragment {
         return "";
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // 随机上站功能
+    // 逻辑：从当前"我的待办"工单列表中随机选取不重复的站点，
+    //       用户确认派几个，然后排队派发计划上站（极致安全，随机延迟）
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * 显示随机上站确认对话框
+     * 计算可用站点数（排除已派发过的），提示用户输入数量
+     */
+    private void showRandomPlanDialog() {
+        if (isRandomPlanning) {
+            Toast.makeText(requireContext(), "正在派发中，请等待...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 必须先有数据（我的待办）
+        if (originalData == null || originalData.isEmpty()) {
+            Toast.makeText(requireContext(), "请先查询"我的待办"工单", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 收集所有唯一站点，排除已经派过的
+        java.util.LinkedHashMap<String, ShuyunApi.ProvinceInnerTaskInfo> availableStations =
+                new java.util.LinkedHashMap<>();
+        for (ShuyunApi.ProvinceInnerTaskInfo item : originalData) {
+            String station = item.station_name;
+            if (station == null || station.isEmpty()) continue;
+            if (randomPlanDispatchedStations.contains(station)) continue;
+            if (!availableStations.containsKey(station)) {
+                availableStations.put(station, item);
+            }
+        }
+
+        if (availableStations.isEmpty()) {
+            // 所有站点都已派过，提示用户是否重置
+            new AlertDialog.Builder(requireContext())
+                .setTitle("随机上站")
+                .setMessage("当前所有站点均已派发过计划上站。\n是否重置记录，重新开始？")
+                .setPositiveButton("重置并继续", (d, w) -> {
+                    randomPlanDispatchedStations.clear();
+                    showRandomPlanDialog(); // 重新打开
+                })
+                .setNegativeButton("取消", null)
+                .show();
+            return;
+        }
+
+        int maxCount = availableStations.size();
+        int alreadyCount = randomPlanDispatchedStations.size();
+
+        // 创建输入框布局
+        LinearLayout layout = new LinearLayout(requireContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(48, 24, 48, 8);
+
+        TextView tvInfo = new TextView(requireContext());
+        tvInfo.setText("可派站点共 " + maxCount + " 个"
+                + (alreadyCount > 0 ? "（已派过 " + alreadyCount + " 个，自动排除）" : "")
+                + "\n请输入本次要派发的数量：");
+        tvInfo.setTextSize(13f);
+        tvInfo.setPadding(0, 0, 0, 16);
+        layout.addView(tvInfo);
+
+        EditText etCount = new EditText(requireContext());
+        etCount.setHint("数量（1-" + maxCount + "）");
+        etCount.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etCount.setText("5");
+        etCount.selectAll();
+        layout.addView(etCount);
+
+        // 上站日期输入
+        TextView tvDateLabel = new TextView(requireContext());
+        tvDateLabel.setText("上站日期：");
+        tvDateLabel.setTextSize(13f);
+        tvDateLabel.setPadding(0, 16, 0, 4);
+        layout.addView(tvDateLabel);
+
+        EditText etDate = new EditText(requireContext());
+        etDate.setHint("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date tomorrow = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L);
+        etDate.setText(sdf.format(tomorrow));
+        layout.addView(etDate);
+
+        new AlertDialog.Builder(requireContext())
+            .setTitle("随机计划上站")
+            .setView(layout)
+            .setPositiveButton("确认派发", (dialog, which) -> {
+                String countStr = etCount.getText().toString().trim();
+                String dateStr  = etDate.getText().toString().trim();
+                if (countStr.isEmpty() || dateStr.isEmpty()) {
+                    Toast.makeText(requireContext(), "请填写完整信息", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int count;
+                try {
+                    count = Integer.parseInt(countStr);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(requireContext(), "数量格式错误", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (count <= 0 || count > maxCount) {
+                    Toast.makeText(requireContext(), "数量超出范围（1-" + maxCount + "）", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // 随机选取 count 个站点
+                List<ShuyunApi.ProvinceInnerTaskInfo> candidates =
+                        new ArrayList<>(availableStations.values());
+                Collections.shuffle(candidates, new Random());
+                List<ShuyunApi.ProvinceInnerTaskInfo> selected = candidates.subList(0, count);
+
+                // 二次确认
+                StringBuilder stationList = new StringBuilder();
+                for (int i = 0; i < selected.size(); i++) {
+                    stationList.append(i + 1).append(". ").append(selected.get(i).station_name).append("\n");
+                }
+                showRandomPlanConfirmDialog(new ArrayList<>(selected), dateStr, stationList.toString());
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    /**
+     * 二次确认：展示将要派发的站点列表，确认后开始排队派发
+     */
+    private void showRandomPlanConfirmDialog(List<ShuyunApi.ProvinceInnerTaskInfo> selected,
+                                              String upSiteDate, String stationListText) {
+        String msg = "即将对以下 " + selected.size() + " 个站点派发计划上站（" + upSiteDate + "）：\n\n"
+                + stationListText
+                + "\n⚠️ 将排队依次派发，随机间隔 8-20 秒，请勿重复操作。";
+
+        new AlertDialog.Builder(requireContext())
+            .setTitle("确认随机上站")
+            .setMessage(msg)
+            .setPositiveButton("开始派发", (d, w) -> startRandomPlanDispatch(selected, upSiteDate))
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    /**
+     * 开始排队派发随机计划上站
+     * 安全策略：
+     *  - 单线程串行执行，不并发
+     *  - 每次派发前随机延迟 8-20 秒（仿生极致安全）
+     *  - 记录已派站点，下次调用时自动排除
+     */
+    private void startRandomPlanDispatch(List<ShuyunApi.ProvinceInnerTaskInfo> stations,
+                                          String upSiteDate) {
+        Session s = Session.get();
+        final String pcToken     = s.shuyunPcToken;
+        String cookie = s.shuyunPcTokenCookie;
+        if (cookie == null || cookie.isEmpty()) cookie = pcToken;
+        final String finalCookie = cookie;
+
+        if (pcToken == null || pcToken.isEmpty()) {
+            Toast.makeText(requireContext(), "请先登录数运PC端", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        isRandomPlanning = true;
+        btnRandomPlan.setEnabled(false);
+        btnRandomPlan.setText("派发中...");
+        tvStatus.setText("随机上站：准备派发 " + stations.size() + " 个站点...");
+
+        final String cityArea = CITY_AREA_CODES[selectedCountyIndex];
+        final Random random = new Random();
+
+        // 单线程串行
+        new Thread(() -> {
+            int successCount = 0;
+            int failCount    = 0;
+
+            for (int i = 0; i < stations.size(); i++) {
+                if (!isAdded()) break; // Fragment已销毁则停止
+
+                ShuyunApi.ProvinceInnerTaskInfo item = stations.get(i);
+                final int index = i + 1;
+                final int total = stations.size();
+                final String stationName = item.station_name != null ? item.station_name : "";
+                final String stationCode = item.station_code != null ? item.station_code : "";
+
+                // ── 派发前随机延迟 8-20 秒 ──
+                int delaySec = 8 + random.nextInt(13); // [8, 20]
+                final int finalDelaySec = delaySec;
+                mainHandler.post(() ->
+                    tvStatus.setText("[" + index + "/" + total + "] 等待 "
+                            + finalDelaySec + "s → " + stationName));
+                try {
+                    Thread.sleep(delaySec * 1000L);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                if (!isAdded()) break;
+
+                // ── 匹配小组 ──
+                String[] groupInfo = matchPlanGroup(stationName);
+                String groupId   = groupInfo[0];
+                String groupName = groupInfo[1];
+
+                mainHandler.post(() ->
+                    tvStatus.setText("[" + index + "/" + total + "] 派发中 → " + stationName));
+
+                try {
+                    String result = ShuyunApi.saveSitePlan(pcToken, finalCookie,
+                            cityArea, groupId, groupName,
+                            stationCode, stationName, upSiteDate);
+
+                    boolean ok = result.contains("\"status\":200")
+                            || result.contains("\"code\":200")
+                            || result.contains("\"code\":1");
+
+                    if (ok) {
+                        successCount++;
+                        // 记录已派站点（防下次重复）
+                        randomPlanDispatchedStations.add(stationName);
+                        final int sc = successCount;
+                        final int fc = failCount;
+                        mainHandler.post(() ->
+                            tvStatus.setText("[" + index + "/" + total + "] ✓ " + stationName
+                                    + "  (成功" + sc + "/失败" + fc + ")"));
+                    } else {
+                        failCount++;
+                        final int sc = successCount;
+                        final int fc = failCount;
+                        mainHandler.post(() ->
+                            tvStatus.setText("[" + index + "/" + total + "] ✗ " + stationName
+                                    + "  (成功" + sc + "/失败" + fc + ")"));
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                }
+
+                // 最后一条不用再等
+            }
+
+            final int finalSuccess = successCount;
+            final int finalFail    = failCount;
+            mainHandler.post(() -> {
+                isRandomPlanning = false;
+                btnRandomPlan.setEnabled(true);
+                btnRandomPlan.setText("随机上站");
+                tvStatus.setText("随机上站完成：成功 " + finalSuccess + " 个，失败 " + finalFail + " 个"
+                        + "（累计已派 " + randomPlanDispatchedStations.size() + " 个站点）");
+                Toast.makeText(requireContext(),
+                        "随机上站完成：✓" + finalSuccess + " ✗" + finalFail, Toast.LENGTH_LONG).show();
+            });
+        }).start();
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        isRandomPlanning = false; // 停止标志
     }
 }
