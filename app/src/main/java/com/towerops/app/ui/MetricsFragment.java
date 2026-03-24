@@ -72,14 +72,14 @@ public class MetricsFragment extends Fragment {
         // PUE有效率
         {"序号", "区县", "纳管站址", "有效站址", "有效率(%)", "达标站址", "达标率(%)",
          "I级", "II级", "III级", "IIII级", "日期"},
-        // FSU离线率（动态列，由接口响应决定）
-        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
+        // FSU离线率
+        {"序号", "区县", "FSU离线率", "交维数", "派单总数", "当天超10次", "统计时间"},
         // 故障工单合格率
-        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
+        {"序号", "区县", "统计时间", "总数", "本月新派发工单数", "遗留工单", "处理及时率", "无效工单数量", "超时工单数量", "工单处理率"},
         // 疑似退服
-        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
+        {"序号", "区县", "统计时间", "疑似退服数", "一脱告警数", "疑似退服占比"},
         // 超频告警整治有效性
-        {"序号", "区县/地市", "字段1", "字段2", "字段3", "字段4", "字段5"},
+        {"序号", "区县", "总工单数", "故障工单数", "接单超时数", "回单超时数", "接单及时率", "回单及时率", "质检合格率", "处理合格率", "统计时间"},
     };
 
     private static final int[] COL_WIDTH_DP = {70, 80, 70, 80, 80, 70, 90};
@@ -214,10 +214,7 @@ public class MetricsFragment extends Fragment {
                 return;
             }
 
-            if (tabIdx >= 3) {
-                // FSU/故障/疑似/超频：动态读取第一行所有 key 作为表头
-                renderDynamic(tabIdx, data);
-            } else {
+            if (true) {  // 统一走固定表头+buildCells
                 String[] headers = HEADERS[tabIdx];
                 // 绘制表头
                 addRow(llHeader, headers, true, tabIdx);
@@ -239,6 +236,66 @@ public class MetricsFragment extends Fragment {
         }
     }
 
+    /** 常见英文字段名 → 中文映射 */
+    private static java.util.Map<String, String> buildKeyMap() {
+        java.util.Map<String, String> m = new java.util.LinkedHashMap<>();
+        // 通用
+        m.put("AREA_NAME",        "区县");
+        m.put("LAT_NAME",         "区县");
+        m.put("DISTRICT_NAME",    "区县");
+        m.put("REGION_NAME",      "区县");
+        m.put("DATA_DATE",        "日期");
+        m.put("MONTH",            "月份");
+        // FSU离线率
+        m.put("FSU_TOTAL",        "FSU总数");
+        m.put("FSU_OFFLINE",      "离线数");
+        m.put("FSU_OFFLINE_RATE", "离线率(%)");
+        m.put("ONLINE_RATE",      "在线率(%)");
+        m.put("OFFLINE_COUNT",    "离线数量");
+        m.put("TOTAL_COUNT",      "总数量");
+        m.put("RATE",             "比率(%)");
+        m.put("ONLINE_COUNT",     "在线数量");
+        // 故障工单合格率
+        m.put("ORDER_TOTAL",      "工单总数");
+        m.put("PASS_COUNT",       "合格数");
+        m.put("PASS_RATE",        "合格率(%)");
+        m.put("FAIL_COUNT",       "不合格数");
+        m.put("FAIL_RATE",        "不合格率(%)");
+        m.put("ORDER_COUNT",      "工单数");
+        m.put("QUALIFIED_COUNT",  "合格数");
+        m.put("QUALIFIED_RATE",   "合格率(%)");
+        m.put("UNQUALIFIED_COUNT","不合格数");
+        m.put("FINISH_COUNT",     "完成数");
+        m.put("FINISH_RATE",      "完成率(%)");
+        // 疑似退服
+        m.put("SITE_COUNT",       "站址总数");
+        m.put("TUIFU_COUNT",      "疑似退服数");
+        m.put("TUIFU_RATE",       "疑似退服率(%)");
+        m.put("SITE_NAME",        "站点名称");
+        m.put("ALARM_COUNT",      "告警次数");
+        m.put("PROCESS_COUNT",    "处理数");
+        // 超频告警整治
+        m.put("ALARM_TOTAL",      "告警总数");
+        m.put("EFFECTIVE_COUNT",  "有效整治数");
+        m.put("EFFECTIVE_RATE",   "整治有效率(%)");
+        m.put("INVALID_COUNT",    "无效数");
+        m.put("HANDLE_COUNT",     "处理数");
+        m.put("HANDLE_RATE",      "处理率(%)");
+        // 兜底缩写
+        m.put("CNT",   "数量");
+        m.put("NUM",   "数量");
+        m.put("TOTAL", "总数");
+        m.put("COUNT", "数量");
+        return m;
+    }
+    private static final java.util.Map<String, String> KEY_ZH = buildKeyMap();
+
+    /** 英文key转中文，找不到则保留原key */
+    private static String keyZh(String key) {
+        String zh = KEY_ZH.get(key.toUpperCase(Locale.US));
+        return zh != null ? zh : key;
+    }
+
     /** 动态列渲染：用第一行的 JSON key 作为表头，按 key 顺序展示每行数据 */
     private void renderDynamic(int tabIdx, JSONArray data) throws Exception {
         JSONObject firstRow = data.getJSONObject(0);
@@ -257,10 +314,10 @@ public class MetricsFragment extends Fragment {
             if (!keys.contains(k)) keys.add(k);
         }
 
-        // 表头：序号 + 所有key
+        // 表头：序号 + 所有key（转中文）
         String[] headerArr = new String[keys.size() + 1];
         headerArr[0] = "序号";
-        for (int i = 0; i < keys.size(); i++) headerArr[i + 1] = keys.get(i);
+        for (int i = 0; i < keys.size(); i++) headerArr[i + 1] = keyZh(keys.get(i));
         addRow(llHeader, headerArr, true, tabIdx);
 
         // 数据行
@@ -317,7 +374,57 @@ public class MetricsFragment extends Fragment {
                     row.optString("NH_RATE_4", ""),
                     row.optString("DATA_DATE", "")
                 };
-            default: // FSU/故障/疑似/超频 - 通用兜底，显示全部键值
+            case 3: // FSU离线率
+                // 序号 区县 FSU离线率 交维数 派单总数 当天超10次 统计时间
+                return new String[]{
+                    String.valueOf(seq),
+                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
+                    row.optString("FSU_OFFLINE_RATE", row.optString("RATE", "")),
+                    row.optString("JW_COUNT",  row.optString("JIAOWEI_COUNT", "")),
+                    row.optString("ORDER_TOTAL", row.optString("TOTAL_COUNT", "")),
+                    row.optString("DAY10_COUNT", row.optString("OVER10_COUNT", "")),
+                    row.optString("DATA_DATE",  row.optString("MONTH", ""))
+                };
+            case 4: // 故障工单合格率
+                // 序号 区县 统计时间 总数 本月新派发工单数 遗留工单 处理及时率 无效工单数量 超时工单数量 工单处理率
+                return new String[]{
+                    String.valueOf(seq),
+                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
+                    row.optString("DATA_DATE", row.optString("MONTH", "")),
+                    row.optString("TOTAL",     row.optString("TOTAL_COUNT", "")),
+                    row.optString("NEW_ORDER_COUNT",     row.optString("派发工单数", "")),
+                    row.optString("LEAVE_ORDER_COUNT",   row.optString("REMAIN_COUNT", "")),
+                    row.optString("PROCESS_RATE",        row.optString("HANDLE_RATE", "")),
+                    row.optString("INVALID_ORDER_COUNT", row.optString("INVALID_COUNT", "")),
+                    row.optString("TIMEOUT_ORDER_COUNT", row.optString("OVER_TIME_COUNT", "")),
+                    row.optString("ORDER_PROCESS_RATE",  row.optString("FINISH_RATE", ""))
+                };
+            case 5: // 疑似退服
+                // 序号 区县 统计时间 疑似退服数 一脱告警数 疑似退服占比
+                return new String[]{
+                    String.valueOf(seq),
+                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
+                    row.optString("DATA_DATE", row.optString("MONTH", "")),
+                    row.optString("TUIFU_COUNT",   row.optString("QUIT_COUNT", "")),
+                    row.optString("ALARM_COUNT",   row.optString("ONE_DROP_COUNT", "")),
+                    row.optString("TUIFU_RATE",    row.optString("QUIT_RATE", ""))
+                };
+            case 6: // 超频告警整治有效性
+                // 序号 区县 总工单数 故障工单数 接单超时数 回单超时数 接单及时率 回单及时率 质检合格率 处理合格率 统计时间
+                return new String[]{
+                    String.valueOf(seq),
+                    row.optString("AREA_NAME", row.optString("LAT_NAME", "")),
+                    row.optString("TOTAL_ORDER",       row.optString("ORDER_TOTAL", "")),
+                    row.optString("FAULT_ORDER",       row.optString("FAULT_COUNT", "")),
+                    row.optString("RECEIVE_OVER_TIME", row.optString("JIEDAN_TIMEOUT", "")),
+                    row.optString("REPLY_OVER_TIME",   row.optString("HUIDAN_TIMEOUT", "")),
+                    row.optString("RECEIVE_RATE",      row.optString("JIEDAN_RATE", "")),
+                    row.optString("REPLY_RATE",        row.optString("HUIDAN_RATE", "")),
+                    row.optString("QUALITY_RATE",      row.optString("ZJ_RATE", "")),
+                    row.optString("HANDLE_RATE",       row.optString("PASS_RATE", "")),
+                    row.optString("DATA_DATE",         row.optString("MONTH", ""))
+                };
+            default:
                 try {
                     String area = row.optString("AREA_NAME", row.optString("LAT_NAME", String.valueOf(seq)));
                     // 把所有值拼在一起

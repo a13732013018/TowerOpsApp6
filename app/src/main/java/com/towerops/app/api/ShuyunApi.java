@@ -2395,4 +2395,178 @@ public class ShuyunApi {
             return "";
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  考核工单 API
+    //  对应易语言 子程序_省内考核工单查询
+    //  接口：/api/flowable/flowable/task/listToOrder
+    //  flowId=1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,
+    //         1131,1137,1143,1124,1160,1024,1220
+    // ═══════════════════════════════════════════════════════════════
+
+    /** 考核工单数据模型 */
+    public static class KaoHeOrderInfo {
+        public String index;          // 序号
+        public String orderCityName;  // 地市
+        public String orderNum;       // 工单号
+        public String stationCode;    // 站点编码
+        public String flowName;       // 工单类型（易：临_工单类型）
+        public String dataName;       // 任务类型（易：临_任务类型）
+        public String groupName;      // 分组（匹配结果）
+        public String stationName;    // 站点名称
+        public String workTime;       // 工时
+        public String createTime;     // 创建时间
+        public String reqCompTime;    // 要求完成时间
+        public String shsjTime;       // 实核时间
+        public String jobName;        // 当前环节
+        public String accestaff;      // 接单人
+        public String remark;         // 备注
+        public String alarmCreateTime;// 告警创建时间
+    }
+
+    /**
+     * 查询省内考核工单列表
+     * @param pcToken     PC登录Token
+     * @param cityArea    行政区划代码（如 330326）
+     */
+    public static String getKaoHeOrderList(String pcToken, String cityArea) {
+        String flowIds = "1027,1028,1033,1038,1040,1048,1072,1118,1122,1127,1131,1137,1143,1124,1160,1024,1220";
+        String url = PC_BASE + "/api/flowable/flowable/task/listToOrder"
+                + "?page=1&limit=10000"
+                + "&flowId=" + flowIds
+                + "&orderType=&jobId=&orderStatusFlag=R,N&user_id=12376"
+                + "&stationName=&stationCode=&sortType=&group_id=&xmlx="
+                + "&startTime1=2016-02-10+00:00:00&startTime2=2030-03-30+00:00:00"
+                + "&endTime1=&endTime2=&area_code=330300&cityArea=" + cityArea;
+        String headers = buildCountyApiHeader(pcToken, pcToken);
+        try {
+            String result = HttpUtil.get(url, headers);
+            return result != null ? result : "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     * 解析考核工单列表，并在本地进行过滤
+     *
+     * @param jsonStr       接口返回的JSON
+     * @param filter10      true=过滤掉特定环节（自动审核/省监控审核/移动EOMS处理等）
+     * @param filter18      true=过滤掉特定工单类型（验收遗留/退服稽核/智联业务/高铁监控等）
+     * @param filterSelect13 选框13：验收工程遗留派单流程(新)  false=排除
+     * @param filterSelect14 选框14：退服基站稽核工单          false=排除
+     * @param filterSelect15 选框15：设备信号不准确异常整治     false=排除
+     * @param filterSelect16 选框16：储能光伏验收流程          false=排除
+     * @param filterSelect17 选框17：省内任务派单/超频等杂单   true=过滤掉
+     * @param filterSelect22 选框22：智联业务相关              false=排除
+     * @param stationGroupRules 分组常量数组{{关键词, 分组名},...}
+     */
+    public static java.util.List<KaoHeOrderInfo> parseKaoHeOrderList(
+            String jsonStr,
+            boolean filter10, boolean filter18,
+            boolean filterSelect13, boolean filterSelect14,
+            boolean filterSelect15, boolean filterSelect16,
+            boolean filterSelect17, boolean filterSelect22,
+            String[][] stationGroupRules) {
+
+        java.util.List<KaoHeOrderInfo> result = new java.util.ArrayList<>();
+        if (jsonStr == null || jsonStr.isEmpty()) return result;
+
+        try {
+            org.json.JSONObject root = new org.json.JSONObject(jsonStr);
+            org.json.JSONObject data = root.optJSONObject("data");
+            if (data == null) return result;
+            org.json.JSONArray rows = data.optJSONArray("rows");
+            if (rows == null) return result;
+
+            int seq = 0;
+            for (int i = 0; i < rows.length(); i++) {
+                org.json.JSONObject obj = rows.getJSONObject(i);
+
+                String jobName   = obj.optString("job_name", "");
+                String flowName  = obj.optString("flow_name", "");
+                String dataName  = obj.optString("data_name", "");
+                String stationName = obj.optString("station_name", "");
+
+                boolean shouldInsert = true;
+
+                // ── 对应易语言 选择框10 ──
+                if (filter10) {
+                    if (jobName.equals("自动审核") || jobName.equals("省监控审核")
+                            || jobName.equals("移动EOMS处理") || jobName.equals("移动侧审核")
+                            || jobName.equals("系统判断是否恢复模块数") || jobName.equals("铁塔省监控")) {
+                        shouldInsert = false;
+                    }
+                }
+
+                // ── 对应易语言 选择框18 ──
+                if (filter18) {
+                    if (flowName.equals("验收工程遗留派单流程(新)") || flowName.equals("退服基站稽核工单")
+                            || dataName.equals("设备信号不准确异常整治") || dataName.equals("储能光伏验收流程")
+                            || flowName.equals("智联业务故障处理流程") || flowName.equals("智联业务地市派单")
+                            || flowName.equals("智联业务综合派单流程") || flowName.equals("高铁监控故障工单流程")) {
+                        shouldInsert = false;
+                    }
+                }
+
+                // ── 对应选18=假时的分项过滤 ──
+                if (!filter18) {
+                    if (!filterSelect13 && flowName.equals("验收工程遗留派单流程(新)")) shouldInsert = false;
+                    if (!filterSelect14 && flowName.equals("退服基站稽核工单"))         shouldInsert = false;
+                    if (!filterSelect15 && dataName.equals("设备信号不准确异常整治"))    shouldInsert = false;
+                    if (!filterSelect16 && dataName.equals("储能光伏验收流程"))          shouldInsert = false;
+                    if (!filterSelect22 && (flowName.equals("智联业务故障处理流程")
+                            || flowName.equals("智联业务地市派单")
+                            || flowName.equals("智联业务综合派单流程")
+                            || flowName.equals("高铁监控故障工单流程")))                shouldInsert = false;
+                    if (filterSelect17) {
+                        if (flowName.equals("一般省内任务派单流程") && !dataName.equals("设备信号不准确异常整治"))
+                            shouldInsert = false;
+                        if (flowName.equals("超频告警整治工单") || flowName.equals("电流波动派单流程")
+                                || flowName.equals("通用任务工单（铁塔）") || flowName.equals("退服隐患整治工单")
+                                || flowName.equals("蓄电池整治流程") || flowName.equals("整流模块异常减少派单流程")
+                                || flowName.equals("直放站故障处理流程"))
+                            shouldInsert = false;
+                    }
+                }
+
+                if (!shouldInsert) continue;
+
+                KaoHeOrderInfo info = new KaoHeOrderInfo();
+                seq++;
+                info.index          = String.valueOf(seq);
+                info.orderCityName  = obj.optString("order_city_name", "");
+                info.orderNum       = obj.optString("order_num", "");
+                info.stationCode    = obj.optString("station_code", "");
+                info.flowName       = flowName;
+                info.dataName       = dataName;
+                info.stationName    = stationName;
+                info.workTime       = obj.optString("work_Time", "");
+                info.createTime     = obj.optString("create_time", "");
+                info.reqCompTime    = obj.optString("req_comp_time", "");
+                info.shsjTime       = obj.optString("shsj_time", "");
+                info.jobName        = jobName;
+                info.accestaff      = obj.optString("accestaff", "");
+                info.remark         = obj.optString("remark", "");
+                info.alarmCreateTime = obj.optString("alarm_create_time", "");
+
+                // 分组匹配（对应易语言分组常量数组）
+                info.groupName = "";
+                if (stationGroupRules != null) {
+                    for (String[] rule : stationGroupRules) {
+                        if (stationName.contains(rule[0])) {
+                            info.groupName = rule[1];
+                            break;
+                        }
+                    }
+                }
+
+                result.add(info);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }
