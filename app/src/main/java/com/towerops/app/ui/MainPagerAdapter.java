@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class MainPagerAdapter extends FragmentStateAdapter {
 
-    private static final int TAB_COUNT = 5;  // 工单/停电/智联/数运/指标查询
+    private static final int TAB_COUNT = 6;  // 工单/停电/智联/巡检/数运/指标查询
     private final List<Fragment> fragments = new ArrayList<>();
 
     public MainPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
@@ -35,9 +35,12 @@ public class MainPagerAdapter extends FragmentStateAdapter {
                 fragment = new ZhilianFragment();  // 智联工单
                 break;
             case 3:
-                fragment = new ShuyunFragment();   // 数运工单
+                fragment = new XunjianFragment();  // 巡检工单
                 break;
             case 4:
+                fragment = new ShuyunFragment();   // 数运工单
+                break;
+            case 5:
                 fragment = new MetricsFragment();  // 指标查询
                 break;
             default:

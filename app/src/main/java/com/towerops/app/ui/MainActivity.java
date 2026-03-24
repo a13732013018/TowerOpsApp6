@@ -402,8 +402,8 @@ public class MainActivity extends AppCompatActivity {
         // ===== 设置ViewPager2 =====
         pagerAdapter = new MainPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
-        // 设置 offscreenPageLimit 确保四个 Fragment 都保持活跃状态
-        viewPager.setOffscreenPageLimit(4);
+        // 设置 offscreenPageLimit 确保五个 Fragment 都保持活跃状态
+        viewPager.setOffscreenPageLimit(5);
 
         // 连接TabLayout和ViewPager2，实现滑动切换
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
@@ -411,8 +411,9 @@ public class MainActivity extends AppCompatActivity {
                 case 0: tab.setText("工单监控"); break;
                 case 1: tab.setText("停电监控"); break;
                 case 2: tab.setText("智联工单"); break;
-                case 3: tab.setText("数运工单"); break;
-                case 4: tab.setText("指标查询"); break;
+                case 3: tab.setText("巡检工单"); break;
+                case 4: tab.setText("数运工单"); break;
+                case 5: tab.setText("指标查询"); break;
             }
         }).attach();
     }

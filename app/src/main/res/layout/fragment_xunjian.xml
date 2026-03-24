@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F7FA">
+
+    <!-- ===== 顶部子Tab栏 ===== -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="#12122a"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/tabBarXunjian"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tabXunjianUnstart"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="未巡检"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center"
+                android:background="@drawable/bg_tag_inactive"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/tabXunjianZhilian"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="智联巡检"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center"
+                android:background="@drawable/bg_tag_inactive"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/tabXunjianQuality"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="APP质检"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:gravity="center"
+                android:background="@drawable/bg_tag_inactive"
+                android:clickable="true"
+                android:focusable="true"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- ===== 内容区（ViewFlipper切换三个面板）===== -->
+    <ViewFlipper
+        android:id="@+id/viewFlipperXunjian"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- ============================================================ -->
+        <!-- Panel 0: 未巡检工单                                          -->
+        <!-- ============================================================ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 操作栏 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:background="#FFFFFF"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvUnstartCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="未巡检: 0 条"
+                    android:textSize="13sp"
+                    android:textColor="#333333"
+                    android:textStyle="bold"/>
+
+                <Button
+                    android:id="@+id/btnQueryUnstart"
+                    android:layout_width="80dp"
+                    android:layout_height="30dp"
+                    android:text="查询"
+                    android:textSize="12sp"
+                    android:backgroundTint="#2563EB"
+                    android:textColor="@android:color/white"
+                    android:stateListAnimator="@null"/>
+            </LinearLayout>
+
+            <!-- 未巡检列表表头 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:orientation="horizontal"
+                android:background="#E5E7EB"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <TextView android:layout_width="30dp" android:layout_height="match_parent"
+                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="80dp" android:layout_height="match_parent"
+                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="60dp" android:layout_height="match_parent"
+                    android:text="日期" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+            </LinearLayout>
+
+            <!-- 未巡检列表 -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+                <LinearLayout
+                    android:id="@+id/llUnstartList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+            </ScrollView>
+
+            <!-- 统计报表 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#1F2937"
+                android:padding="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="分组统计"
+                    android:textSize="11sp"
+                    android:textColor="#9CA3AF"
+                    android:paddingBottom="4dp"/>
+
+                <!-- 统计表头 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:orientation="horizontal"
+                    android:background="#111827">
+                    <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                        android:text="分组" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="机房" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="机柜" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="拉远" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="铁塔" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="室分" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                    <TextView android:layout_width="40dp" android:layout_height="match_parent"
+                        android:text="合计" android:textSize="9sp" android:textColor="#9CA3AF" android:gravity="center"/>
+                </LinearLayout>
+
+                <!-- 统计数据容器 -->
+                <LinearLayout
+                    android:id="@+id/llUnstartStat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- ============================================================ -->
+        <!-- Panel 1: 智联巡检未开始                                      -->
+        <!-- ============================================================ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 操作栏 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:background="#FFFFFF"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvZhilianXunjianCount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="智联巡检: 0 条"
+                    android:textSize="13sp"
+                    android:textColor="#333333"
+                    android:textStyle="bold"/>
+
+                <Button
+                    android:id="@+id/btnQueryZhilianXunjian"
+                    android:layout_width="80dp"
+                    android:layout_height="30dp"
+                    android:text="查询"
+                    android:textSize="12sp"
+                    android:backgroundTint="#2563EB"
+                    android:textColor="@android:color/white"
+                    android:stateListAnimator="@null"/>
+            </LinearLayout>
+
+            <!-- 智联巡检列表表头 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:orientation="horizontal"
+                android:background="#E5E7EB"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <TextView android:layout_width="30dp" android:layout_height="match_parent"
+                    android:text="序" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="分组" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="80dp" android:layout_height="match_parent"
+                    android:text="工单号" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="站点名" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                    android:text="专业" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+                <TextView android:layout_width="100dp" android:layout_height="match_parent"
+                    android:text="创建时间" android:textSize="9sp" android:gravity="center" android:textColor="#374151"/>
+            </LinearLayout>
+
+            <!-- 智联巡检列表 -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <LinearLayout
+                    android:id="@+id/llZhilianXunjianList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+            </ScrollView>
+
+        </LinearLayout>
+
+        <!-- ============================================================ -->
+        <!-- Panel 2: APP巡检质检                                         -->
+        <!-- ============================================================ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 查询控制栏 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFFFFF"
+                android:padding="8dp">
+
+                <!-- 第一行：计划名+区域+查询按钮 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="计划:"
+                        android:textSize="12sp"
+                        android:textColor="#374151"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerPlanYear"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edittext"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="区域:"
+                        android:textSize="12sp"
+                        android:textColor="#374151"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerArea"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edittext"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnQueryQuality"
+                        android:layout_width="72dp"
+                        android:layout_height="30dp"
+                        android:text="查询"
+                        android:textSize="11sp"
+                        android:backgroundTint="#2563EB"
+                        android:textColor="@android:color/white"
+                        android:layout_marginStart="8dp"
+                        android:stateListAnimator="@null"/>
+                </LinearLayout>
+
+                <!-- 第二行：月份+勾选项 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="年:"
+                        android:textSize="12sp"
+                        android:textColor="#374151"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerQualityYear"
+                        android:layout_width="60dp"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_edittext"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="月:"
+                        android:textSize="12sp"
+                        android:textColor="#374151"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="4dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerQualityMonth"
+                        android:layout_width="50dp"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_edittext"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"/>
+
+                    <CheckBox
+                        android:id="@+id/cbQualityByMonth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="按月质检"
+                        android:textSize="12sp"
+                        android:layout_marginStart="12dp"
+                        android:checked="false"/>
+
+                    <CheckBox
+                        android:id="@+id/cbQualityToday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="仅今日"
+                        android:textSize="12sp"
+                        android:layout_marginStart="8dp"
+                        android:checked="false"/>
+
+                    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1"/>
+
+                    <!-- 进度条 -->
+                    <ProgressBar
+                        android:id="@+id/progressQuality"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="60dp"
+                        android:layout_height="6dp"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressTint="#2563EB"/>
+
+                    <TextView
+                        android:id="@+id/tvQualityProgress"
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textSize="11sp"
+                        android:textColor="#374151"
+                        android:layout_marginStart="4dp"
+                        android:gravity="center"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 子Tab：任务列表 / 质检详情 / 统计报表 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:orientation="horizontal"
+                android:background="#E5E7EB">
+
+                <TextView
+                    android:id="@+id/tabQualityTask"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="任务列表"
+                    android:textSize="11sp"
+                    android:gravity="center"
+                    android:textColor="#374151"
+                    android:background="#FFFFFF"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#D1D5DB"/>
+
+                <TextView
+                    android:id="@+id/tabQualityDetail"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="质检详情"
+                    android:textSize="11sp"
+                    android:gravity="center"
+                    android:textColor="#6B7280"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#D1D5DB"/>
+
+                <TextView
+                    android:id="@+id/tabQualityReport"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="统计报表"
+                    android:textSize="11sp"
+                    android:gravity="center"
+                    android:textColor="#6B7280"
+                    android:clickable="true"
+                    android:focusable="true"/>
+            </LinearLayout>
+
+            <!-- 质检内容区 ViewFlipper -->
+            <ViewFlipper
+                android:id="@+id/viewFlipperQuality"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- 任务列表 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- 任务列表表头 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="22dp"
+                        android:orientation="horizontal"
+                        android:background="#E5E7EB"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp">
+                        <TextView android:layout_width="30dp" android:layout_height="match_parent"
+                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="40dp" android:layout_height="match_parent"
+                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="56dp" android:layout_height="match_parent"
+                            android:text="进度" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="90dp" android:layout_height="match_parent"
+                            android:text="开始时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="90dp" android:layout_height="match_parent"
+                            android:text="结束时间" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                    </LinearLayout>
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <LinearLayout
+                            android:id="@+id/llQualityTaskList"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"/>
+                    </ScrollView>
+                </LinearLayout>
+
+                <!-- 质检详情 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!-- 质检详情表头 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="22dp"
+                        android:orientation="horizontal"
+                        android:background="#E5E7EB"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp">
+                        <TextView android:layout_width="30dp" android:layout_height="match_parent"
+                            android:text="序" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="分组" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="站点" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="专业" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="巡检项目" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="结果" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="32dp" android:layout_height="match_parent"
+                            android:text="质检" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="质检问题" android:textSize="8sp" android:gravity="center" android:textColor="#374151"/>
+                    </LinearLayout>
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <LinearLayout
+                            android:id="@+id/llQualityDetailList"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"/>
+                    </ScrollView>
+                </LinearLayout>
+
+                <!-- 统计报表 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="8dp"
+                    android:background="#F5F7FA">
+
+                    <!-- 报表表头 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="22dp"
+                        android:orientation="horizontal"
+                        android:background="#1E3A5F">
+                        <TextView android:layout_width="50dp" android:layout_height="match_parent"
+                            android:text="分组" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="0dp" android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="成员" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="机房" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="机柜" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="拉远" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="铁塔" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="36dp" android:layout_height="match_parent"
+                            android:text="今日机" android:textSize="8sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="36dp" android:layout_height="match_parent"
+                            android:text="今日塔" android:textSize="8sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="36dp" android:layout_height="match_parent"
+                            android:text="合计" android:textSize="9sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="机房%" android:textSize="8sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                        <TextView android:layout_width="44dp" android:layout_height="match_parent"
+                            android:text="铁塔%" android:textSize="8sp" android:textColor="#FFFFFF" android:gravity="center"/>
+                    </LinearLayout>
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                        <LinearLayout
+                            android:id="@+id/llQualityReport"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"/>
+                    </ScrollView>
+                </LinearLayout>
+
+            </ViewFlipper>
+        </LinearLayout>
+
+    </ViewFlipper>
+
+</LinearLayout>
