@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -129,6 +130,11 @@ public class XunjianFragment extends Fragment {
     private volatile boolean isQualityRunning = false;
     private volatile int qualityYear = 2026;
     private volatile int qualityMonth = 3;
+    // 并发信号量：最多同时30个网络任务，速度快但不会压垮系统
+    private Semaphore qualitySemaphore = new Semaphore(30);
+    // 瀑布流行号计数（原子递增，线程安全）
+    private final AtomicInteger taskRowCounter   = new AtomicInteger(0);
+    private final AtomicInteger detailRowCounter = new AtomicInteger(0);
     private volatile boolean qualityByMonth = false;
     private volatile boolean qualityTodayOnly = false;
     private volatile String currentPlanName = "2026";
@@ -655,6 +661,8 @@ public class XunjianFragment extends Fragment {
         synchronized (qualityDetailRows) { qualityDetailRows.clear(); }
         taskRenderPending.set(false);
         detailRenderPending.set(false);
+        taskRowCounter.set(0);
+        detailRowCounter.set(0);
         taskSortCol = -1; taskSortAsc = true; updateTaskHeaders();
         detailSortCol = -1; detailSortAsc = true; updateDetailHeaders();
 
@@ -705,16 +713,27 @@ public class XunjianFragment extends Fragment {
             return;
         }
 
-        // 步骤3：并发处理（20线程池，平衡并发速度与系统压力）
+        // 步骤3：并发处理（CachedThreadPool无排队延迟，Semaphore限制真实并发30）
         if (qualityExecutor != null && !qualityExecutor.isShutdown()) {
             qualityExecutor.shutdownNow();
         }
-        qualityExecutor = Executors.newFixedThreadPool(20);
+        qualitySemaphore = new Semaphore(30);
+        taskRowCounter.set(0);
+        detailRowCounter.set(0);
+        qualityExecutor = Executors.newCachedThreadPool();
 
         for (int i = 0; i < qualityTotal; i++) {
             if (!isQualityRunning) break;
             final int idx = i;
-            qualityExecutor.submit(() -> processOneTask(idx));
+            qualityExecutor.submit(() -> {
+                try {
+                    qualitySemaphore.acquire();
+                    processOneTask(idx);
+                } catch (InterruptedException ignored) {
+                } finally {
+                    qualitySemaphore.release();
+                }
+            });
         }
 
         // 等待所有任务完成（超时 180 秒，每100ms检查一次，不阻塞主线程）
@@ -726,14 +745,12 @@ public class XunjianFragment extends Fragment {
             try { Thread.sleep(100); } catch (InterruptedException ie) { break; }
         }
 
-        // 完成：在主线程一次性渲染全部结果（运行期间列表完全不更新，只有这里才刷新UI）
+        // 完成：更新状态，渲染统计报表（任务列表和详情已由瀑布流实时填充完毕）
         mainHandler.post(() -> {
             progressQuality.setProgress(100);
             tvQualityProgress.setText("100%");
             isQualityRunning = false;
             btnQueryQuality.setEnabled(true);
-            sortAndRenderQualityTask();
-            sortAndRenderQualityDetail();
             renderQualityReport();
         });
     }
@@ -1167,13 +1184,22 @@ public class XunjianFragment extends Fragment {
         r.applymajor = applymajor; r.mainplanname = mainplanname; r.progress = progress;
         r.starttime = starttime; r.endtime = endtime; r.pollingperiod = pollingperiod;
         r.inspecttime = inspecttime; r.taskuser = taskuser;
-        // 只写缓存，不触发任何UI操作（运行期间完全不碰主线程列表）
         synchronized (qualityTaskRows) { qualityTaskRows.add(r); }
+        // 瀑布流：直接追加一行 View，不重建整个列表
+        final int rowIdx = taskRowCounter.incrementAndGet();
+        final QualityTaskRow finalR = r;
+        mainHandler.post(() -> {
+            if (llQualityTaskList != null) renderQualityTaskRow(rowIdx, finalR);
+        });
     }
 
     private void addQualityDetailRow(XunjianApi.AppQualityDetail d) {
-        // 只写缓存，不触发任何UI操作（运行期间完全不碰主线程列表）
         synchronized (qualityDetailRows) { qualityDetailRows.add(d); }
+        // 瀑布流：直接追加一行 View，不重建整个列表
+        final int rowIdx = detailRowCounter.incrementAndGet();
+        mainHandler.post(() -> {
+            if (llQualityDetailList != null) renderQualityDetailRow(rowIdx, d);
+        });
     }
 
     /**
@@ -1428,17 +1454,13 @@ public class XunjianFragment extends Fragment {
             fin = qualityFinished;
             tot = qualityTotal;
         }
-        // 进度条节流：每5%更新一次，避免每完成一个任务就post主线程（几百个任务=几百次post=卡顿）
+        // 每完成一个任务更新进度条（瀑布流模式下列表由addView追加，进度更新是唯一的主线程开销，极轻量）
         if (tot > 0) {
             final int pct = (int)((float) fin / tot * 100);
-            final int prevPct = (int)((float)(fin - 1) / tot * 100);
-            // 只有跨越5%整数倍，或是最后一个时才更新
-            if (pct / 5 != prevPct / 5 || fin == tot) {
-                mainHandler.post(() -> {
-                    if (progressQuality != null) progressQuality.setProgress(pct);
-                    if (tvQualityProgress != null) tvQualityProgress.setText(pct + "%");
-                });
-            }
+            mainHandler.post(() -> {
+                if (progressQuality != null) progressQuality.setProgress(pct);
+                if (tvQualityProgress != null) tvQualityProgress.setText(pct + "%");
+            });
         }
     }
 

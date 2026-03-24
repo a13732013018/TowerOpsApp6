@@ -403,36 +403,52 @@
                         android:layout_height="wrap_content"
                         android:text="全显"
                         android:textSize="12sp"
-                        android:layout_marginEnd="4dp"
+                        android:layout_marginStart="8dp"
                         android:checked="true"/>
 
                     <CheckBox
                         android:id="@+id/cbQualityByMonth"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="按月质检"
+                        android:text="按月"
                         android:textSize="12sp"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="8dp"
                         android:checked="false"/>
 
                     <CheckBox
                         android:id="@+id/cbQualityToday"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="仅今日"
+                        android:text="今日"
                         android:textSize="12sp"
                         android:layout_marginStart="8dp"
                         android:checked="false"/>
 
-                    <!-- 进度条：占满剩余空间 -->
+                </LinearLayout>
+
+                <!-- 第三行：进度条（独占整行，确保可见） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="进度:"
+                        android:textSize="12sp"
+                        android:textColor="#374151"/>
+
                     <ProgressBar
                         android:id="@+id/progressQuality"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="0dp"
-                        android:layout_height="14dp"
+                        android:layout_height="16dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="4dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
                         android:max="100"
                         android:progress="0"
                         android:progressTint="#2563EB"
@@ -440,13 +456,14 @@
 
                     <TextView
                         android:id="@+id/tvQualityProgress"
-                        android:layout_width="42dp"
+                        android:layout_width="48dp"
                         android:layout_height="wrap_content"
                         android:text="0%"
-                        android:textSize="12sp"
+                        android:textSize="13sp"
                         android:textColor="#1D4ED8"
                         android:textStyle="bold"
                         android:gravity="center"/>
+
                 </LinearLayout>
             </LinearLayout>
 
