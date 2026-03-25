@@ -44,18 +44,18 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="监控配置"
+                    android:text="🔧 监控配置"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="#1E40AF"
+                    android:textColor="#1D4ED8"
                     android:includeFontPadding="false"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="自动化运维"
+                    android:text="自动化运维 ›"
                     android:textSize="10sp"
-                    android:textColor="#60A5FA"
+                    android:textColor="#3B82F6"
                     android:includeFontPadding="false"/>
             </LinearLayout>
 
