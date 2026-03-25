@@ -1,6 +1,8 @@
 package com.towerops.app.ui;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,13 +19,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.towerops.app.R;
+import com.towerops.app.api.TowerLoginApi;
+import com.towerops.app.model.Session;
 import com.towerops.app.model.WorkOrder;
 
 import java.util.List;
 
 /**
  * 工单监控Fragment
- * 包含：配置控制面板（开关+按钮+阈值输入）、排序工具栏、工单列表
+ * 包含：配置控制面板（开关+按钮+阈值输入）、4A登录区、排序工具栏、工单列表
  */
 public class WorkOrderFragment extends Fragment {
 
@@ -41,6 +46,22 @@ public class WorkOrderFragment extends Fragment {
     private EditText etFeedbackMax;
     private EditText etAcceptMin;
     private EditText etAcceptMax;
+
+    // ===== 4A登录区控件 =====
+    private EditText et4aUsername;
+    private EditText et4aPassword;
+    private EditText et4aMsgCode;
+    private Button   btn4aSendCode;
+    private Button   btn4aLogin;
+    private TextView tv4aStatus;
+    private View     layout4aCodeRow;
+
+    // 4A登录状态
+    private TowerLoginApi towerLoginApi;
+    private String        msgId;          // refreshMsg 返回的 msgId
+    private boolean       codeSent = false;
+
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public static WorkOrderFragment newInstance() {
         return new WorkOrderFragment();
@@ -70,6 +91,28 @@ public class WorkOrderFragment extends Fragment {
         etAcceptMin     = view.findViewById(R.id.etAcceptMin);
         etAcceptMax     = view.findViewById(R.id.etAcceptMax);
 
+        // 绑定4A登录控件
+        et4aUsername    = view.findViewById(R.id.et4aUsername);
+        et4aPassword    = view.findViewById(R.id.et4aPassword);
+        et4aMsgCode     = view.findViewById(R.id.et4aMsgCode);
+        btn4aSendCode   = view.findViewById(R.id.btn4aSendCode);
+        btn4aLogin      = view.findViewById(R.id.btn4aLogin);
+        tv4aStatus      = view.findViewById(R.id.tv4aStatus);
+        layout4aCodeRow = view.findViewById(R.id.layout4aCodeRow);
+
+        // 初始化登录API
+        towerLoginApi = new TowerLoginApi();
+
+        // 恢复已保存的4A登录状态
+        Session s = Session.get();
+        if (s.tower4aSessionCookie != null && !s.tower4aSessionCookie.isEmpty()) {
+            update4aStatus(true);
+        }
+
+        // 设置按钮监听
+        btn4aSendCode.setOnClickListener(v -> doSendCode());
+        btn4aLogin.setOnClickListener(v    -> doConfirmLogin());
+
         // 绑定列表
         recyclerView = view.findViewById(R.id.recyclerWorkOrders);
         if (recyclerView != null) {
@@ -79,15 +122,179 @@ public class WorkOrderFragment extends Fragment {
         }
         setupSortButtons(view);
     }
-    
+
+    // ─── 4A登录流程 ──────────────────────────────────────────────────────────
+
+    /**
+     * 点击"获取验证码"：先 initLogin → doPrevLogin → refreshMsg
+     */
+    private void doSendCode() {
+        String username = et4aUsername.getText().toString().trim();
+        String password = et4aPassword.getText().toString().trim();
+        if (username.isEmpty() || password.isEmpty()) {
+            Toast.makeText(getContext(), "请输入4A账号和密码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btn4aSendCode.setEnabled(false);
+        btn4aSendCode.setText("请稍候...");
+        tv4aStatus.setText("登录中");
+        tv4aStatus.setTextColor(0xFF3B82F6);
+
+        new Thread(() -> {
+            // Step 1~3: 初始化（获取salt/公钥/checkMixedLogin）
+            TowerLoginApi.Result initResult = towerLoginApi.initLogin();
+            if (!initResult.success) {
+                showToast("初始化失败: " + initResult.message);
+                mainHandler.post(() -> {
+                    btn4aSendCode.setEnabled(true);
+                    btn4aSendCode.setText("获取验证码");
+                    tv4aStatus.setText("未登录");
+                    tv4aStatus.setTextColor(0xFFEF4444);
+                });
+                return;
+            }
+
+            // Step 4: doPrevLogin
+            TowerLoginApi.Result prevResult = towerLoginApi.doPrevLogin(username, password);
+            if (!prevResult.success) {
+                showToast(prevResult.message);
+                mainHandler.post(() -> {
+                    btn4aSendCode.setEnabled(true);
+                    btn4aSendCode.setText("获取验证码");
+                    tv4aStatus.setText("密码错误");
+                    tv4aStatus.setTextColor(0xFFEF4444);
+                });
+                return;
+            }
+
+            // 若直接登录成功（极少数）
+            if ("direct".equals(prevResult.data)) {
+                String cookie = towerLoginApi.getSessionCookie();
+                saveCookieAndNotify(cookie);
+                return;
+            }
+
+            // Step 5: refreshMsg（发送短信）
+            TowerLoginApi.Result smsResult = towerLoginApi.refreshMsg(username, password);
+            if (!smsResult.success) {
+                showToast("短信发送失败: " + smsResult.message);
+                mainHandler.post(() -> {
+                    btn4aSendCode.setEnabled(true);
+                    btn4aSendCode.setText("获取验证码");
+                    tv4aStatus.setText("未登录");
+                    tv4aStatus.setTextColor(0xFFEF4444);
+                });
+                return;
+            }
+
+            msgId = smsResult.data;
+            codeSent = true;
+            showToast(smsResult.message.isEmpty() ? "验证码已发送" : smsResult.message);
+
+            mainHandler.post(() -> {
+                btn4aSendCode.setEnabled(true);
+                btn4aSendCode.setText("重发验证码");
+                tv4aStatus.setText("待验证");
+                tv4aStatus.setTextColor(0xFFEAB308);
+                // 显示验证码行
+                if (layout4aCodeRow != null) layout4aCodeRow.setVisibility(View.VISIBLE);
+            });
+
+        }).start();
+    }
+
+    /**
+     * 点击"确认登录"：doNextLogin 提交短信验证码
+     */
+    private void doConfirmLogin() {
+        if (!codeSent || msgId == null) {
+            Toast.makeText(getContext(), "请先点击"获取验证码"", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String msgCode = et4aMsgCode.getText().toString().trim();
+        if (msgCode.isEmpty()) {
+            Toast.makeText(getContext(), "请输入短信验证码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String username = et4aUsername.getText().toString().trim();
+        String password = et4aPassword.getText().toString().trim();
+
+        btn4aLogin.setEnabled(false);
+        btn4aLogin.setText("验证中...");
+
+        new Thread(() -> {
+            TowerLoginApi.Result result = towerLoginApi.doNextLogin(username, password, msgId, msgCode);
+            if (result.success) {
+                String cookie = towerLoginApi.getSessionCookie();
+                saveCookieAndNotify(cookie);
+            } else {
+                showToast(result.message);
+                mainHandler.post(() -> {
+                    btn4aLogin.setEnabled(true);
+                    btn4aLogin.setText("确认登录");
+                });
+            }
+        }).start();
+    }
+
+    /** 保存Cookie到Session并更新UI */
+    private void saveCookieAndNotify(String cookie) {
+        Session s = Session.get();
+        s.tower4aSessionCookie = cookie != null ? cookie : "";
+        if (getContext() != null) {
+            s.saveTower4aCookie(getContext());
+        }
+        mainHandler.post(() -> {
+            update4aStatus(true);
+            btn4aSendCode.setEnabled(true);
+            btn4aSendCode.setText("已登录");
+            btn4aSendCode.setEnabled(false);
+            if (btn4aLogin != null) {
+                btn4aLogin.setEnabled(false);
+                btn4aLogin.setText("确认登录");
+            }
+            if (layout4aCodeRow != null) layout4aCodeRow.setVisibility(View.GONE);
+            Toast.makeText(getContext(), "4A登录成功 ✓", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    /** 更新4A状态文字颜色 */
+    private void update4aStatus(boolean loggedIn) {
+        if (tv4aStatus == null) return;
+        if (loggedIn) {
+            tv4aStatus.setText("已登录");
+            tv4aStatus.setTextColor(0xFF10B981);
+            if (btn4aSendCode != null) {
+                btn4aSendCode.setText("已登录");
+                btn4aSendCode.setEnabled(false);
+            }
+        } else {
+            tv4aStatus.setText("未登录");
+            tv4aStatus.setTextColor(0xFFEF4444);
+            if (btn4aSendCode != null) {
+                btn4aSendCode.setText("获取验证码");
+                btn4aSendCode.setEnabled(true);
+            }
+        }
+    }
+
+    private void showToast(String msg) {
+        mainHandler.post(() -> {
+            if (getContext() != null)
+                Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    // ─── 排序按钮 ─────────────────────────────────────────────────────────────
+
     private void setupSortButtons(View view) {
         TextView btnSortBillTime = view.findViewById(R.id.btnSortBillTime);
         TextView btnSortFeedbackTime = view.findViewById(R.id.btnSortFeedbackTime);
         TextView btnSortAlertTime = view.findViewById(R.id.btnSortAlertTime);
         TextView btnSortAlertStatus = view.findViewById(R.id.btnSortAlertStatus);
 
-        // 按钮背景资源
-        int bgPrimary = R.drawable.bg_tag_primary;
+        int bgPrimary   = R.drawable.bg_tag_primary;
         int bgSecondary = R.drawable.bg_tag_secondary;
 
         if (btnSortBillTime != null) {
@@ -97,7 +304,6 @@ public class WorkOrderFragment extends Fragment {
                 adapter.setSortMode(cur == WorkOrderAdapter.SortMode.BILL_TIME_DESC
                         ? WorkOrderAdapter.SortMode.BILL_TIME_ASC
                         : WorkOrderAdapter.SortMode.BILL_TIME_DESC);
-                // 更新按钮样式
                 updateSortButtonStyles(btnSortBillTime, btnSortFeedbackTime, btnSortAlertTime, btnSortAlertStatus, bgPrimary, bgSecondary);
             });
         }
@@ -108,7 +314,6 @@ public class WorkOrderFragment extends Fragment {
                 adapter.setSortMode(cur == WorkOrderAdapter.SortMode.FEEDBACK_TIME_DESC
                         ? WorkOrderAdapter.SortMode.FEEDBACK_TIME_ASC
                         : WorkOrderAdapter.SortMode.FEEDBACK_TIME_DESC);
-                // 更新按钮样式
                 updateSortButtonStyles(btnSortBillTime, btnSortFeedbackTime, btnSortAlertTime, btnSortAlertStatus, bgPrimary, bgSecondary);
             });
         }
@@ -119,7 +324,6 @@ public class WorkOrderFragment extends Fragment {
                 adapter.setSortMode(cur == WorkOrderAdapter.SortMode.ALERT_TIME_DESC
                         ? WorkOrderAdapter.SortMode.ALERT_TIME_ASC
                         : WorkOrderAdapter.SortMode.ALERT_TIME_DESC);
-                // 更新按钮样式
                 updateSortButtonStyles(btnSortBillTime, btnSortFeedbackTime, btnSortAlertTime, btnSortAlertStatus, bgPrimary, bgSecondary);
             });
         }
@@ -130,19 +334,16 @@ public class WorkOrderFragment extends Fragment {
                 adapter.setSortMode(cur == WorkOrderAdapter.SortMode.ALERT_STATUS_ALARM
                         ? WorkOrderAdapter.SortMode.ALERT_STATUS_RECOVER
                         : WorkOrderAdapter.SortMode.ALERT_STATUS_ALARM);
-                // 更新按钮样式
                 updateSortButtonStyles(btnSortBillTime, btnSortFeedbackTime, btnSortAlertTime, btnSortAlertStatus, bgPrimary, bgSecondary);
             });
         }
     }
 
-    /** 更新排序按钮样式，高亮当前选中的排序按钮 */
     private void updateSortButtonStyles(TextView btnBill, TextView btnFeedback, TextView btnAlert, TextView btnStatus,
-                                          int bgPrimary, int bgSecondary) {
+                                        int bgPrimary, int bgSecondary) {
         if (adapter == null) return;
         WorkOrderAdapter.SortMode cur = adapter.getSortMode();
 
-        // 先全部设为次要样式
         btnBill.setBackgroundResource(bgSecondary);
         btnBill.setTextColor(requireContext().getColor(R.color.text_secondary));
         btnFeedback.setBackgroundResource(bgSecondary);
@@ -152,7 +353,6 @@ public class WorkOrderFragment extends Fragment {
         btnStatus.setBackgroundResource(bgSecondary);
         btnStatus.setTextColor(requireContext().getColor(R.color.text_secondary));
 
-        // 当前选中的按钮设为主要样式
         switch (cur) {
             case BILL_TIME_DESC:
             case BILL_TIME_ASC:
@@ -181,40 +381,23 @@ public class WorkOrderFragment extends Fragment {
         }
     }
 
-    /**
-     * 设置工单数据
-     */
+    // ─── 数据方法 ─────────────────────────────────────────────────────────────
+
     public void setData(List<WorkOrder> orders) {
-        if (adapter != null) {
-            adapter.setData(orders);
-        }
+        if (adapter != null) adapter.setData(orders);
     }
 
-    /**
-     * 更新单条工单状态
-     */
     public void updateStatus(int rowIndex, String billsn, String content) {
-        if (adapter != null) {
-            adapter.updateStatus(rowIndex, billsn, content);
-        }
+        if (adapter != null) adapter.updateStatus(rowIndex, billsn, content);
     }
 
-    /**
-     * 获取Adapter
-     */
     public WorkOrderAdapter getAdapter() {
         return adapter;
     }
 
-    /**
-     * 设置Adapter(由Activity注入)
-     */
     public void setAdapter(WorkOrderAdapter adapter) {
         this.adapter = adapter;
-        // 如果RecyclerView已经初始化,立即设置adapter
-        if (recyclerView != null) {
-            recyclerView.setAdapter(adapter);
-        }
+        if (recyclerView != null) recyclerView.setAdapter(adapter);
     }
 
     // ===== 配置区控件公共访问方法 =====

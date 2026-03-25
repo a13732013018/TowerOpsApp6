@@ -144,6 +144,18 @@ public class Session {
     private static final String KEY_TOWER4A_COOKIE = "tower4a_session_cookie";
 
     /**
+     * 保存铁塔4A SESSION Cookie 到 SharedPreferences
+     * 在4A登录成功后调用（WorkOrderFragment）
+     */
+    public void saveTower4aCookie(android.content.Context ctx) {
+        ctx.getApplicationContext()
+           .getSharedPreferences(PREF_SESSION, android.content.Context.MODE_PRIVATE)
+           .edit()
+           .putString(KEY_TOWER4A_COOKIE, tower4aSessionCookie)
+           .apply();
+    }
+
+    /**
      * 将 appConfig 持久化到 SharedPreferences。
      * 在 MainActivity.buildConfig() 写入 appConfig 后立刻调用。
      */
