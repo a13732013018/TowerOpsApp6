@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    工单卡片：左侧彩色状态条（告警橙/正常绿/处理蓝）+ 右侧信息区
-    视觉层次：工单号蓝色 → 站点名大字加粗 → 接单人/时间灰色
+    工单卡片 v5：
+    - 无 CardView 阴影依赖，用 FrameLayout + bg_card_v5 实现极致质感
+    - 顶部 3dp 彩色渐变横条（代替 CardView elevation）
+    - 左侧 4dp 状态竖线
+    - 背景从纯白改为极浅冷白渐变 #FAFCFF→#FFFFFF
 -->
-<androidx.cardview.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="10dp"
     android:layout_marginEnd="10dp"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="#FFFFFF">
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    android:orientation="vertical"
+    android:background="@drawable/bg_card_v5"
+    android:elevation="4dp">
 
-    <!-- 整体横向：左侧色条 + 内容区 -->
+    <!-- 顶部彩色渐变横条 3dp -->
+    <View
+        android:id="@+id/viewTopStripe"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@drawable/bg_card_top_stripe"/>
+
+    <!-- 横向主体：左竖线 + 内容 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- 左侧状态色条（4dp宽，渐变色） -->
+        <!-- 左侧状态色竖条 4dp -->
         <View
             android:id="@+id/viewStatusStripe"
             android:layout_width="4dp"
@@ -38,18 +47,17 @@
             android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:paddingTop="11dp"
-            android:paddingBottom="11dp">
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
 
-            <!-- 第一行：序号 + 工单号 + 告警状态标签 -->
+            <!-- 第一行：序号气泡 + 工单号 + 告警状态标签 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="7dp">
+                android:layout_marginBottom="6dp">
 
-                <!-- 序号圆形气泡 -->
                 <TextView
                     android:id="@+id/tvIndex"
                     android:layout_width="18dp"
@@ -68,7 +76,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="工单号"
-                    android:textColor="#2563EB"
+                    android:textColor="#1D4ED8"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:layout_marginStart="8dp"
@@ -100,18 +108,18 @@
                 android:textColor="#0F172A"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="9dp"
+                android:layout_marginBottom="8dp"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:lineSpacingMultiplier="1.2"
                 android:includeFontPadding="false"/>
 
-            <!-- 分割线（极细） -->
+            <!-- 分割线 -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
                 android:background="#EEF2FF"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="7dp"/>
 
             <!-- 第三行：接单人 + 创建时间 -->
             <LinearLayout
@@ -119,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
+                android:layout_marginBottom="5dp">
 
                 <TextView
                     android:id="@+id/tvAcceptOp"
@@ -143,7 +151,7 @@
                     android:includeFontPadding="false"/>
             </LinearLayout>
 
-            <!-- 第四行：最近处理信息 -->
+            <!-- 第四行：处理信息 -->
             <TextView
                 android:id="@+id/tvDealInfo"
                 android:layout_width="match_parent"
@@ -158,12 +166,12 @@
                 android:drawablePadding="5dp"
                 android:includeFontPadding="false"/>
 
-            <!-- 第五行：工单历时 + 上次反馈时间 同行 -->
+            <!-- 第五行：工单历时 + 上次反馈 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="4dp">
+                android:layout_marginBottom="3dp">
 
                 <TextView
                     android:id="@+id/tvTimeDiff2"
@@ -218,4 +226,4 @@
         </LinearLayout>
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</LinearLayout>

@@ -76,12 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
     // UI 控件 —— 配置区控件现已迁移至 WorkOrderFragment，通过 getter 懒获取
     private TextView        tvUserInfo, tvProgress, tvNextRun, tvPowerOutageCountStatus, tvRoundComplete, btnLogout;
-
-    // ===== 🔥 数字时钟控件 =====
-    private View            countdownPanel;
-    private TextView        tvDigitMin1, tvDigitMin2, tvDigitSec1, tvDigitSec2;
-    private View            clockProgressFill;
-    private int             clockTotalSec   = 0;   // 当前倒计时总秒数（用于进度条比例）
+    // 状态指示点
+    private View            statusDot;
 
     // ===== 停电监控相关控件 =====
     private TabLayout        tabLayout;
@@ -261,10 +257,11 @@ public class MainActivity extends AppCompatActivity {
         monitorService.stopMonitor();
         syncButtonState();
         tvProgress.setText("已停止");
+        tvProgress.setTextColor(android.graphics.Color.parseColor("#94A3B8"));
+        if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
         tvRoundComplete.setText("");
-        tvPowerOutageCountStatus.setText("停电 0");
+        tvPowerOutageCountStatus.setText("⚡ 0");
         stopCountDown();
-        // 清空停电列表，避免旧数据残留
         PowerOutageFragment pof = getPowerOutageFragment();
         if (pof != null) pof.clearData();
     }
@@ -302,15 +299,19 @@ public class MainActivity extends AppCompatActivity {
         Button btnStart = wof.getBtnStartMonitor();
         Button btnStop  = wof.getBtnStopMonitor();
         if (monitorService != null && monitorService.isRunning()) {
-            // 监控中：只改文字，不禁用（避免系统变灰）
             btnStart.setText("监控中");
             btnStart.setEnabled(true);
             btnStop.setEnabled(true);
+            // 运行时：状态点变青色，文字变青绿
+            if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_running);
+            tvProgress.setTextColor(android.graphics.Color.parseColor("#22D3EE"));
         } else {
-            // 已停止：恢复"开启监控"
             btnStart.setText("开启监控");
             btnStart.setEnabled(true);
             btnStop.setEnabled(true);
+            // 停止时：状态点恢复白色，文字变柔绿
+            if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
+            tvProgress.setTextColor(android.graphics.Color.parseColor("#86EFAC"));
         }
     }
 
@@ -401,14 +402,7 @@ public class MainActivity extends AppCompatActivity {
         tvPowerOutageCountStatus = findViewById(R.id.tvPowerOutageCountStatus);
         tvRoundComplete          = findViewById(R.id.tvRoundComplete);
         btnLogout                = findViewById(R.id.btnLogout);
-
-        // ===== 🔥 数字时钟控件绑定 =====
-        countdownPanel  = findViewById(R.id.countdownPanel);
-        tvDigitMin1     = findViewById(R.id.tvDigitMin1);
-        tvDigitMin2     = findViewById(R.id.tvDigitMin2);
-        tvDigitSec1     = findViewById(R.id.tvDigitSec1);
-        tvDigitSec2     = findViewById(R.id.tvDigitSec2);
-        clockProgressFill = findViewById(R.id.clockProgressFill);
+        statusDot                = findViewById(R.id.statusDot);
 
         // ===== Tab / ViewPager =====
         tabLayout   = findViewById(R.id.tabLayout);
@@ -601,69 +595,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 启动本地倒计时，更新数字时钟UI显示。
+     * 启动本地倒计时，tvNextRun 显示"MM:SS"格式，紧凑内联。
      * 多次调用时自动取消上次再重新开始。
      */
     private void startCountDown(int delaySec) {
         stopCountDown();
-        clockTotalSec = delaySec;
-        // 显示时钟面板
-        if (countdownPanel != null) countdownPanel.setVisibility(View.VISIBLE);
-        updateClockDigits(delaySec, delaySec);
+        setNextRunText(delaySec);
         countDownTimer = new CountDownTimer(delaySec * 1000L, 1000L) {
             @Override
             public void onTick(long millisUntilFinished) {
-                int remaining = (int)(millisUntilFinished / 1000);
-                updateClockDigits(remaining, clockTotalSec);
+                setNextRunText((int)(millisUntilFinished / 1000));
             }
             @Override
             public void onFinish() {
-                updateClockDigits(0, clockTotalSec);
-                if (tvNextRun != null) tvNextRun.setText("执行中...");
+                tvNextRun.setText("执行中");
             }
         }.start();
     }
 
-    /**
-     * 更新数字时钟四个格子 + 进度条 + 下次时间标签
-     */
-    private void updateClockDigits(int remaining, int total) {
-        int min = remaining / 60;
-        int sec = remaining % 60;
-        String ms = String.format(java.util.Locale.getDefault(), "%02d", min);
-        String ss = String.format(java.util.Locale.getDefault(), "%02d", sec);
-        if (tvDigitMin1 != null) tvDigitMin1.setText(String.valueOf(ms.charAt(0)));
-        if (tvDigitMin2 != null) tvDigitMin2.setText(String.valueOf(ms.charAt(1)));
-        if (tvDigitSec1 != null) tvDigitSec1.setText(String.valueOf(ss.charAt(0)));
-        if (tvDigitSec2 != null) tvDigitSec2.setText(String.valueOf(ss.charAt(1)));
-        // 进度条：宽度按比例
-        if (clockProgressFill != null && total > 0) {
-            float ratio = (float) remaining / total;
-            clockProgressFill.post(() -> {
-                android.view.ViewGroup.LayoutParams lp = clockProgressFill.getLayoutParams();
-                android.view.View parent = (android.view.View) clockProgressFill.getParent();
-                if (parent != null) {
-                    lp.width = (int)(parent.getWidth() * ratio);
-                    clockProgressFill.setLayoutParams(lp);
-                }
-            });
-        }
-        // 下次执行时间
-        if (tvNextRun != null && remaining > 0) {
-            long nextMs = System.currentTimeMillis() + remaining * 1000L;
-            java.util.Date nextDate = new java.util.Date(nextMs);
-            String nextStr = new SimpleDateFormat("下次执行：HH:mm:ss", java.util.Locale.getDefault()).format(nextDate);
-            tvNextRun.setText(nextStr);
-        }
+    /** 格式化剩余秒数为 MM:SS 并写入 tvNextRun */
+    private void setNextRunText(int sec) {
+        int m = sec / 60;
+        int s = sec % 60;
+        tvNextRun.setText(String.format(java.util.Locale.getDefault(), "%02d:%02d", m, s));
     }
 
-    /** 停止并销毁本地倒计时，隐藏时钟面板 */
+    /** 停止并销毁本地倒计时 */
     private void stopCountDown() {
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
         }
-        if (countdownPanel != null) countdownPanel.setVisibility(View.GONE);
         if (tvNextRun != null) tvNextRun.setText("");
     }
 
