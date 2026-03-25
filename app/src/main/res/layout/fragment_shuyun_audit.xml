@@ -209,7 +209,13 @@
                 android:textSize="10sp"
                 android:textColor="#6B7280"
                 android:fontFamily="monospace"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="4dp" />
+
+            <ListView
+                android:id="@+id/lvCityTodoList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
             <!-- 分割线 -->
             <View
@@ -256,7 +262,14 @@
                 android:text="暂无省监控工单"
                 android:textSize="10sp"
                 android:textColor="#6B7280"
-                android:fontFamily="monospace" />
+                android:fontFamily="monospace"
+                android:layout_marginBottom="4dp" />
+
+            <ListView
+                android:id="@+id/lvCityFinishedList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
