@@ -36,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button    btnGetSms;
     private Button    btnLogin;
     private TextView  tvStatus;
+    private TextView  tvGoTower4aLogin; // 跳转4A登录入口
     private FrameLayout flCaptcha;      // 验证码容器
 
     private static final String CAPTCHA_URL =
@@ -81,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         btnGetSms         = findViewById(R.id.btnGetSms);
         btnLogin          = findViewById(R.id.btnLogin);
         tvStatus          = findViewById(R.id.tvStatus);
+        tvGoTower4aLogin  = findViewById(R.id.tvGoTower4aLogin);
 
                   // 设置账号下拉框（使用自定义样式，白色文字）
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -98,6 +100,13 @@ public class LoginActivity extends AppCompatActivity {
         btnGetSms.setOnClickListener(v -> doGetSms());
 
         btnLogin.setOnClickListener(v -> doLogin());
+
+        // 跳转到铁塔4A登录界面
+        if (tvGoTower4aLogin != null) {
+            tvGoTower4aLogin.setOnClickListener(v -> {
+                startActivity(new Intent(LoginActivity.this, TowerLoginActivity.class));
+            });
+        }
 
         // 启动时自动加载验证码
         loadCaptcha();

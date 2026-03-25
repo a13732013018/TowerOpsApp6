@@ -375,6 +375,19 @@
                         android:minHeight="18dp"
                         android:gravity="center"
                         android:includeFontPadding="false"/>
+
+                    <!-- 铁塔4A系统登录入口 -->
+                    <TextView
+                        android:id="@+id/tvGoTower4aLogin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:text="使用铁塔4A账号登录 →"
+                        android:textSize="13sp"
+                        android:textColor="#60A5FA"
+                        android:paddingVertical="6dp"
+                        android:includeFontPadding="false"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

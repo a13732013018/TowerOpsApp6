@@ -60,6 +60,13 @@ public class Session {
      */
     public volatile String zhilianConfig = "";
 
+    // ---------- 铁塔4A系统登录相关 ----------
+    /**
+     * 铁塔4A系统 SESSION Cookie（如 SESSION=xxxx）
+     * 登录成功后由 TowerLoginActivity 写入
+     */
+    public volatile String tower4aSessionCookie = "";
+
     // ---------- 数运工单相关 ----------
     /**
      * 数运APP端登录token
@@ -132,6 +139,9 @@ public class Session {
     private static final String KEY_SHUYUN_PC_IP = "shuyun_pc_ip";
     private static final String KEY_SHUYUN_CITY_AREA = "shuyun_city_area";
     private static final String KEY_COUNTY_MANAGER_CODE = "county_manager_code";
+
+    // ---------- 铁塔4A持久化Key ----------
+    private static final String KEY_TOWER4A_COOKIE = "tower4a_session_cookie";
 
     /**
      * 将 appConfig 持久化到 SharedPreferences。
@@ -228,6 +238,12 @@ public class Session {
         String savedCountyCode = sp.getString(KEY_COUNTY_MANAGER_CODE, "");
         if (!savedCountyCode.isEmpty()) {
             countyManagerCode = savedCountyCode;
+        }
+
+        // 恢复铁塔4A Cookie
+        String saved4aCookie = sp.getString(KEY_TOWER4A_COOKIE, "");
+        if (!saved4aCookie.isEmpty()) {
+            tower4aSessionCookie = saved4aCookie;
         }
     }
 
