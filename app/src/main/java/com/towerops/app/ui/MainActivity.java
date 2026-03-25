@@ -14,9 +14,11 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,6 +76,12 @@ public class MainActivity extends AppCompatActivity {
 
     // UI 控件 —— 配置区控件现已迁移至 WorkOrderFragment，通过 getter 懒获取
     private TextView        tvUserInfo, tvProgress, tvNextRun, tvPowerOutageCountStatus, tvRoundComplete, btnLogout;
+
+    // ===== 🔥 数字时钟控件 =====
+    private View            countdownPanel;
+    private TextView        tvDigitMin1, tvDigitMin2, tvDigitSec1, tvDigitSec2;
+    private View            clockProgressFill;
+    private int             clockTotalSec   = 0;   // 当前倒计时总秒数（用于进度条比例）
 
     // ===== 停电监控相关控件 =====
     private TabLayout        tabLayout;
@@ -255,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
         tvProgress.setText("已停止");
         tvRoundComplete.setText("");
         tvPowerOutageCountStatus.setText("停电 0");
-        tvNextRun.setText("");
         stopCountDown();
         // 清空停电列表，避免旧数据残留
         PowerOutageFragment pof = getPowerOutageFragment();
@@ -394,6 +401,14 @@ public class MainActivity extends AppCompatActivity {
         tvPowerOutageCountStatus = findViewById(R.id.tvPowerOutageCountStatus);
         tvRoundComplete          = findViewById(R.id.tvRoundComplete);
         btnLogout                = findViewById(R.id.btnLogout);
+
+        // ===== 🔥 数字时钟控件绑定 =====
+        countdownPanel  = findViewById(R.id.countdownPanel);
+        tvDigitMin1     = findViewById(R.id.tvDigitMin1);
+        tvDigitMin2     = findViewById(R.id.tvDigitMin2);
+        tvDigitSec1     = findViewById(R.id.tvDigitSec1);
+        tvDigitSec2     = findViewById(R.id.tvDigitSec2);
+        clockProgressFill = findViewById(R.id.clockProgressFill);
 
         // ===== Tab / ViewPager =====
         tabLayout   = findViewById(R.id.tabLayout);
@@ -586,30 +601,70 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 启动本地倒计时，更新UI显示。
+     * 启动本地倒计时，更新数字时钟UI显示。
      * 多次调用时自动取消上次再重新开始。
      */
     private void startCountDown(int delaySec) {
         stopCountDown();
-        tvNextRun.setText("剩余 " + delaySec + " 秒进入下一轮");
+        clockTotalSec = delaySec;
+        // 显示时钟面板
+        if (countdownPanel != null) countdownPanel.setVisibility(View.VISIBLE);
+        updateClockDigits(delaySec, delaySec);
         countDownTimer = new CountDownTimer(delaySec * 1000L, 1000L) {
             @Override
             public void onTick(long millisUntilFinished) {
-                tvNextRun.setText("剩余 " + (millisUntilFinished / 1000) + " 秒进入下一轮");
+                int remaining = (int)(millisUntilFinished / 1000);
+                updateClockDigits(remaining, clockTotalSec);
             }
             @Override
             public void onFinish() {
-                tvNextRun.setText("执行中...");
+                updateClockDigits(0, clockTotalSec);
+                if (tvNextRun != null) tvNextRun.setText("执行中...");
             }
         }.start();
     }
 
-    /** 停止并销毁本地倒计时 */
+    /**
+     * 更新数字时钟四个格子 + 进度条 + 下次时间标签
+     */
+    private void updateClockDigits(int remaining, int total) {
+        int min = remaining / 60;
+        int sec = remaining % 60;
+        String ms = String.format(java.util.Locale.getDefault(), "%02d", min);
+        String ss = String.format(java.util.Locale.getDefault(), "%02d", sec);
+        if (tvDigitMin1 != null) tvDigitMin1.setText(String.valueOf(ms.charAt(0)));
+        if (tvDigitMin2 != null) tvDigitMin2.setText(String.valueOf(ms.charAt(1)));
+        if (tvDigitSec1 != null) tvDigitSec1.setText(String.valueOf(ss.charAt(0)));
+        if (tvDigitSec2 != null) tvDigitSec2.setText(String.valueOf(ss.charAt(1)));
+        // 进度条：宽度按比例
+        if (clockProgressFill != null && total > 0) {
+            float ratio = (float) remaining / total;
+            clockProgressFill.post(() -> {
+                android.view.ViewGroup.LayoutParams lp = clockProgressFill.getLayoutParams();
+                android.view.View parent = (android.view.View) clockProgressFill.getParent();
+                if (parent != null) {
+                    lp.width = (int)(parent.getWidth() * ratio);
+                    clockProgressFill.setLayoutParams(lp);
+                }
+            });
+        }
+        // 下次执行时间
+        if (tvNextRun != null && remaining > 0) {
+            long nextMs = System.currentTimeMillis() + remaining * 1000L;
+            java.util.Date nextDate = new java.util.Date(nextMs);
+            String nextStr = new SimpleDateFormat("下次执行：HH:mm:ss", java.util.Locale.getDefault()).format(nextDate);
+            tvNextRun.setText(nextStr);
+        }
+    }
+
+    /** 停止并销毁本地倒计时，隐藏时钟面板 */
     private void stopCountDown() {
         if (countDownTimer != null) {
             countDownTimer.cancel();
             countDownTimer = null;
         }
+        if (countdownPanel != null) countdownPanel.setVisibility(View.GONE);
+        if (tvNextRun != null) tvNextRun.setText("");
     }
 
     // ── 后台保活：厂商白名单 ──────────────────────────────────────────────

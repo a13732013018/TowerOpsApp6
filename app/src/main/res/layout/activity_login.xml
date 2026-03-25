@@ -352,13 +352,14 @@
                         android:id="@+id/btnLogin"
                         android:layout_width="match_parent"
                         android:layout_height="58dp"
-                        android:background="@drawable/bg_button_primary_gradient"
+                        android:background="@drawable/bg_btn_login"
                         android:text="立即登录"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#FFFFFF"
                         android:letterSpacing="0.12"
                         android:stateListAnimator="@null"
+                        android:elevation="6dp"
                         android:includeFontPadding="false"/>
 
                     <!-- 状态提示 -->

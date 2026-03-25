@@ -116,10 +116,10 @@
     <LinearLayout
         android:id="@+id/statusBar"
         android:layout_width="0dp"
-        android:layout_height="38dp"
+        android:layout_height="36dp"
         android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
         android:background="@drawable/bg_status_bar_gradient"
         android:gravity="center_vertical"
         android:elevation="3dp"
@@ -130,18 +130,18 @@
         <!-- 状态胶囊（就绪/运行中） -->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
+            android:layout_height="22dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_badge_success"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <View
-                android:layout_width="6dp"
-                android:layout_height="6dp"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
                 android:background="@drawable/bg_circle_deco_large"
-                android:layout_marginEnd="5dp"/>
+                android:layout_marginEnd="4dp"/>
 
             <TextView
                 android:id="@+id/tvProgress"
@@ -149,17 +149,17 @@
                 android:layout_height="wrap_content"
                 android:text="就绪"
                 android:textColor="#059669"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
                 android:includeFontPadding="false"/>
         </LinearLayout>
 
         <View
             android:layout_width="1dp"
-            android:layout_height="16dp"
+            android:layout_height="14dp"
             android:background="#D1D5DB"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"/>
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
 
         <TextView
             android:id="@+id/tvRoundComplete"
@@ -168,19 +168,18 @@
             android:layout_weight="1"
             android:text=""
             android:textColor="#4B5563"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:includeFontPadding="false"/>
 
         <!-- 停电数量胶囊 -->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
+            android:layout_height="22dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_badge_error"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:layout_marginEnd="10dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
                 android:id="@+id/tvPowerOutageCountStatus"
@@ -188,19 +187,190 @@
                 android:layout_height="wrap_content"
                 android:text="⚡ 停电: 0"
                 android:textColor="#DC2626"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
                 android:includeFontPadding="false"/>
         </LinearLayout>
+    </LinearLayout>
 
+    <!-- ==================== 🔥 数字倒计时面板（深蓝科技感） ==================== -->
+    <LinearLayout
+        android:id="@+id/countdownPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_countdown_panel"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp"
+        android:elevation="2dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/statusBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 标签行 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NEXT EXECUTION IN"
+            android:textColor="#3a5fa0"
+            android:textSize="8sp"
+            android:letterSpacing="0.20"
+            android:includeFontPadding="false"
+            android:layout_marginBottom="6dp"/>
+
+        <!-- 数字时钟行 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="6dp">
+
+            <!-- 分钟组 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvDigitMin1"
+                        android:layout_width="32dp"
+                        android:layout_height="44dp"
+                        android:text="0"
+                        android:textColor="#60a5fa"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_digit_box"
+                        android:fontFamily="monospace"
+                        android:includeFontPadding="false"
+                        android:layout_marginEnd="2dp"/>
+
+                    <TextView
+                        android:id="@+id/tvDigitMin2"
+                        android:layout_width="32dp"
+                        android:layout_height="44dp"
+                        android:text="0"
+                        android:textColor="#60a5fa"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_digit_box"
+                        android:fontFamily="monospace"
+                        android:includeFontPadding="false"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="分"
+                    android:textColor="#2d5090"
+                    android:textSize="8sp"
+                    android:layout_marginTop="2dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 冒号分隔 -->
+            <TextView
+                android:id="@+id/tvClockColon"
+                android:layout_width="16dp"
+                android:layout_height="44dp"
+                android:text=":"
+                android:textColor="#1e4080"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="monospace"
+                android:includeFontPadding="false"/>
+
+            <!-- 秒组 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvDigitSec1"
+                        android:layout_width="32dp"
+                        android:layout_height="44dp"
+                        android:text="0"
+                        android:textColor="#60a5fa"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_digit_box"
+                        android:fontFamily="monospace"
+                        android:includeFontPadding="false"
+                        android:layout_marginEnd="2dp"/>
+
+                    <TextView
+                        android:id="@+id/tvDigitSec2"
+                        android:layout_width="32dp"
+                        android:layout_height="44dp"
+                        android:text="0"
+                        android:textColor="#60a5fa"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:background="@drawable/bg_digit_box"
+                        android:fontFamily="monospace"
+                        android:includeFontPadding="false"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="秒"
+                    android:textColor="#2d5090"
+                    android:textSize="8sp"
+                    android:layout_marginTop="2dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 进度条 -->
+        <FrameLayout
+            android:layout_width="200dp"
+            android:layout_height="3dp"
+            android:background="@drawable/bg_clock_progress"
+            android:layout_marginBottom="5dp">
+
+            <View
+                android:id="@+id/clockProgressFill"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:background="@drawable/bg_clock_progress_fill"/>
+        </FrameLayout>
+
+        <!-- 下次执行时间文字 -->
         <TextView
             android:id="@+id/tvNextRun"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textColor="#2563EB"
-            android:textSize="11sp"
+            android:textColor="#3a5fa0"
+            android:textSize="9sp"
+            android:letterSpacing="0.05"
             android:includeFontPadding="false"/>
+
     </LinearLayout>
 
     <!-- 状态栏底部阴影线 -->
@@ -209,7 +379,7 @@
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:background="#DCE8FF"
-        app:layout_constraintTop_toBottomOf="@id/statusBar"
+        app:layout_constraintTop_toBottomOf="@id/countdownPanel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
