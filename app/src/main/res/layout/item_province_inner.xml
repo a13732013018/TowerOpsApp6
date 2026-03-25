@@ -215,7 +215,7 @@
 
                     <View
                         android:id="@+id/viewHeatProgress"
-                        android:layout_width="40%"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:background="@drawable/bg_progress_normal" />
                 </FrameLayout>
