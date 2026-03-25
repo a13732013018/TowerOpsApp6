@@ -1,116 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    停电监控行：
-    - 左侧3dp红色预警条（电压异常时特别显眼）
-    - 站名加粗 + 电压红色突出 + 负载绿色 + 类型tag + 告警时间
-    - 支持 foreground ripple 点击反馈
+    停电监控列表项 v6 APEX：
+    - 顶部三色横条（红→橙→黄，告警紧张感）
+    - 左侧红色热度竖条
+    - 电压数值红色突出 + 迷你热力进度条
+    - Ripple点击反馈
 -->
-<LinearLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:background="#FFFFFF"
-    android:foreground="?attr/selectableItemBackground"
-    android:gravity="center_vertical">
+    android:layout_marginStart="6dp"
+    android:layout_marginEnd="6dp"
+    android:layout_marginTop="3dp"
+    android:layout_marginBottom="1dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/background_secondary">
 
-    <!-- 左侧红色紧张感细线 -->
-    <View
-        android:layout_width="3dp"
-        android:layout_height="match_parent"
-        android:minHeight="36dp"
-        android:background="@drawable/bg_outage_stripe"/>
-
-    <!-- 内容区 -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:orientation="vertical"
+        android:foreground="?attr/selectableItemBackground">
 
-        <!-- 序号 -->
-        <TextView
-            android:id="@+id/tvIndex"
-            android:layout_width="16dp"
+        <!-- 顶部三色横条（红→橙→黄）-->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/bg_card_top_stripe_outage"/>
+
+        <!-- 主内容横向排列 -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1"
-            android:textColor="#CBD5E1"
-            android:textSize="9sp"
-            android:gravity="center"
-            android:includeFontPadding="false"/>
+            android:orientation="horizontal">
 
-        <!-- 站点名称（主信息） -->
-        <TextView
-            android:id="@+id/tvStName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="站点名称"
-            android:textColor="#0F172A"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_marginStart="6dp"
-            android:includeFontPadding="false"/>
+            <!-- 左侧红色竖条 -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:minHeight="44dp"
+                android:background="@drawable/bg_outage_stripe"/>
 
-        <!-- 电压（关键告警数据，红色大字） -->
-        <TextView
-            android:id="@+id/tvDcVoltage"
-            android:layout_width="46dp"
-            android:layout_height="wrap_content"
-            android:text="0.00V"
-            android:textColor="#EF4444"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:gravity="end"
-            android:layout_marginStart="4dp"
-            android:includeFontPadding="false"/>
+            <!-- 内容区 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
 
-        <!-- 负载电流（绿色） -->
-        <TextView
-            android:id="@+id/tvDcLoadCurrent"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:text="0.00A"
-            android:textColor="#10B981"
-            android:textSize="10sp"
-            android:gravity="end"
-            android:layout_marginStart="4dp"
-            android:includeFontPadding="false"/>
+                <!-- 序号（圆形数字） -->
+                <TextView
+                    android:id="@+id/tvIndex"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:text="1"
+                    android:textColor="#EF4444"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_circle_red_outline"
+                    android:includeFontPadding="false"/>
 
-        <!-- 类型标签（精致） -->
-        <TextView
-            android:id="@+id/tvCause"
-            android:layout_width="32dp"
-            android:layout_height="18dp"
-            android:text="停电"
-            android:textColor="#EA580C"
-            android:textSize="8sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginStart="5dp"
-            android:background="@drawable/bg_tag_warning"
-            android:includeFontPadding="false"/>
+                <!-- 站点名称 -->
+                <TextView
+                    android:id="@+id/tvStName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="站点名称"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:layout_marginStart="7dp"
+                    android:includeFontPadding="false"/>
 
-        <!-- 告警时间 -->
-        <TextView
-            android:id="@+id/tvAlarmTime"
-            android:layout_width="96dp"
-            android:layout_height="wrap_content"
-            android:text="时间"
-            android:textColor="#94A3B8"
-            android:textSize="9sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:gravity="end"
-            android:layout_marginStart="5dp"
-            android:includeFontPadding="false"/>
+                <!-- 电压（关键数据，大红字） -->
+                <LinearLayout
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="end"
+                    android:layout_marginStart="4dp">
+
+                    <TextView
+                        android:id="@+id/tvDcVoltage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0V"
+                        android:textColor="#EF4444"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:gravity="end"
+                        android:includeFontPadding="false"/>
+
+                    <!-- 电压热力进度条 -->
+                    <FrameLayout
+                        android:id="@+id/frameVoltageBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="3dp"
+                        android:layout_marginTop="2dp"
+                        android:background="#FEE2E2">
+
+                        <View
+                            android:id="@+id/viewVoltageBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="3dp"
+                            android:background="@drawable/bg_progress_critical"/>
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- 负载电流（绿色） -->
+                <TextView
+                    android:id="@+id/tvDcLoadCurrent"
+                    android:layout_width="42dp"
+                    android:layout_height="wrap_content"
+                    android:text="0.0A"
+                    android:textColor="#10B981"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:gravity="end"
+                    android:layout_marginStart="4dp"
+                    android:includeFontPadding="false"/>
+
+                <!-- 类型标签 -->
+                <TextView
+                    android:id="@+id/tvCause"
+                    android:layout_width="32dp"
+                    android:layout_height="18dp"
+                    android:text="停电"
+                    android:textColor="#EA580C"
+                    android:textSize="8sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/bg_tag_warning"
+                    android:includeFontPadding="false"/>
+
+                <!-- 告警时间 -->
+                <TextView
+                    android:id="@+id/tvAlarmTime"
+                    android:layout_width="96dp"
+                    android:layout_height="wrap_content"
+                    android:text="时间"
+                    android:textColor="#94A3B8"
+                    android:textSize="9sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:layout_marginStart="5dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- 站点编码（隐藏） -->
@@ -127,4 +177,4 @@
         android:layout_height="0dp"
         android:visibility="gone"/>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

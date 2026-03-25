@@ -1,103 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 数运工单卡片 v6 APEX — 绿色主题 + 三色横条 + 热度竖条 -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
-    app:cardBackgroundColor="@android:color/white">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:orientation="vertical">
 
-        <!-- 顶部：状态标签 -->
+        <!-- 顶部三色渐变横条（绿→青→蓝） -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/bg_card_top_stripe_shuyun"/>
+
+        <!-- 主内容区 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:padding="10dp">
 
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="待处理"
-                android:textSize="11sp"
-                android:textColor="@android:color/white"
-                android:background="@drawable/bg_tag_primary"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
+            <!-- 左侧热度竖条 -->
+            <View
+                android:id="@+id/viewHeatStripe"
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_card_heat_normal"/>
 
-            <TextView
-                android:id="@+id/tvCreateTime"
+            <!-- 中间内容 -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="2025-01-01 12:00:00"
-                android:textSize="11sp"
-                android:textColor="#6B7280"
-                android:gravity="end" />
+                android:orientation="vertical">
+
+                <!-- 第一行：序号 + 站点名称 + 状态 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvIndex"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:gravity="center"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        android:background="@drawable/bg_circle_primary"/>
+
+                    <TextView
+                        android:id="@+id/tvSiteName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:textSize="13sp"
+                        android:textColor="#0F172A"
+                        android:textStyle="bold"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:text="站点名称"/>
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/bg_tag_primary"
+                        android:text="待处理"/>
+
+                </LinearLayout>
+
+                <!-- 第二行：任务名称 -->
+                <TextView
+                    android:id="@+id/tvTaskName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:textSize="11sp"
+                    android:textColor="#475569"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="任务名称"/>
+
+                <!-- 第三行：创建时间 -->
+                <TextView
+                    android:id="@+id/tvCreateTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="10sp"
+                    android:textColor="#94A3B8"
+                    android:drawablePadding="3dp"
+                    android:text="创建时间"/>
+
+                <!-- 第四行：操作按钮 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="end">
+
+                    <Button
+                        android:id="@+id/btnAccept"
+                        android:layout_width="72dp"
+                        android:layout_height="28dp"
+                        android:text="接单"
+                        android:textSize="11sp"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/bg_btn_primary"
+                        android:stateListAnimator="@null"
+android:letterSpacing="0"
+                        android:visibility="gone"/>
+
+                    <Button
+                        android:id="@+id/btnRevert"
+                        android:layout_width="72dp"
+                        android:layout_height="28dp"
+                        android:text="回单"
+                        android:textSize="11sp"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/bg_btn_success"
+                        android:stateListAnimator="@null"
+android:letterSpacing="0"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- 站点名称 -->
-        <TextView
-            android:id="@+id/tvSiteName"
+        <!-- 底部热度进度条 -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="站点名称"
-            android:textSize="15sp"
-            android:textColor="#1F2937"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <!-- 任务名称 -->
-        <TextView
-            android:id="@+id/tvTaskName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="任务名称"
-            android:textSize="13sp"
-            android:textColor="#4B5563"
-            android:layout_marginTop="4dp"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <!-- 操作按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:gravity="end">
-
-            <Button
-                android:id="@+id/btnAccept"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="接单"
-                android:textSize="12sp"
-                android:backgroundTint="#2563EB"
-                android:textColor="@android:color/white" />
-
-            <Button
-                android:id="@+id/btnRevert"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="回单"
-                android:textSize="12sp"
-                android:backgroundTint="#10B981"
-                android:textColor="@android:color/white"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+            android:layout_height="3dp"
+            android:background="@drawable/bg_progress_track">
+            <View
+                android:id="@+id/viewHeatProgress"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_progress_normal"/>
+        </FrameLayout>
 
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

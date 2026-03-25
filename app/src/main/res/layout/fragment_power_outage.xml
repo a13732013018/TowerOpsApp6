@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:background="@color/background_primary">
 
-    <!-- 面板标题条（蓝色渐变顶部，与其他Tab统一） -->
+    <!-- ══════════ 顶部面板标题条（红色告警风格） ══════════ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="34dp"
@@ -14,22 +14,22 @@
         android:background="@drawable/bg_panel_header"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"
-        android:elevation="1dp">
+        android:elevation="2dp">
 
         <View
             android:layout_width="3dp"
             android:layout_height="16dp"
-            android:background="@drawable/bg_outage_stripe"
+            android:background="#EF4444"
             android:layout_marginEnd="8dp"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="停电监控"
+            android:text="🔴 停电监控"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="#1E40AF"
+            android:textColor="#B91C1C"
             android:includeFontPadding="false"/>
 
         <TextView
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:text="实时告警监测"
             android:textSize="10sp"
-            android:textColor="#60A5FA"
+            android:textColor="#F87171"
             android:includeFontPadding="false"/>
     </LinearLayout>
 
@@ -123,19 +123,13 @@
         </HorizontalScrollView>
     </LinearLayout>
 
-    <!-- 分割线 -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/divider"/>
-
     <!-- 表头 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="28dp"
+        android:layout_height="26dp"
         android:orientation="horizontal"
-        android:background="#EEF2FF"
-        android:paddingStart="8dp"
+        android:background="#FFF1F2"
+        android:paddingStart="14dp"
         android:paddingEnd="8dp"
         android:gravity="center_vertical">
 
@@ -143,7 +137,7 @@
             android:layout_width="18dp"
             android:layout_height="wrap_content"
             android:text="#"
-            android:textColor="@color/text_tertiary"
+            android:textColor="#F87171"
             android:textSize="9sp"
             android:gravity="center"
             android:includeFontPadding="false"/>
@@ -153,17 +147,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="站点名称"
-            android:textColor="@color/text_caption"
+            android:textColor="#B91C1C"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="7dp"
             android:includeFontPadding="false"/>
 
         <TextView
-            android:layout_width="42dp"
+            android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:text="电压(V)"
-            android:textColor="@color/text_caption"
+            android:textColor="#B91C1C"
             android:textSize="9sp"
             android:textStyle="bold"
             android:gravity="end"
@@ -171,7 +165,7 @@
             android:includeFontPadding="false"/>
 
         <TextView
-            android:layout_width="38dp"
+            android:layout_width="42dp"
             android:layout_height="wrap_content"
             android:text="负载(A)"
             android:textColor="@color/text_caption"
@@ -182,7 +176,7 @@
             android:includeFontPadding="false"/>
 
         <TextView
-            android:layout_width="30dp"
+            android:layout_width="32dp"
             android:layout_height="wrap_content"
             android:text="类型"
             android:textColor="@color/text_caption"
@@ -193,13 +187,12 @@
             android:includeFontPadding="false"/>
 
         <TextView
-            android:layout_width="94dp"
+            android:layout_width="96dp"
             android:layout_height="wrap_content"
             android:text="告警时间"
             android:textColor="@color/text_caption"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:maxLines="1"
             android:gravity="end"
             android:layout_marginStart="5dp"
             android:includeFontPadding="false"/>
@@ -209,7 +202,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/divider"/>
+        android:background="#FECACA"/>
 
     <!-- 停电列表 -->
     <androidx.recyclerview.widget.RecyclerView
@@ -217,6 +210,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/background_primary"/>
+        android:background="@color/background_primary"
+        android:clipToPadding="false"
+        android:paddingTop="2dp"
+        android:paddingBottom="8dp"/>
 
 </LinearLayout>

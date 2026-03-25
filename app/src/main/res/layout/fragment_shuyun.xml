@@ -4,43 +4,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="@color/background_primary">
 
-    <!-- 子Tab切换：监控 | 审核 | 省内待办 -->
+    <!-- ══════════ 顶部面板标题条（绿色数运风格） ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_panel_header"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:elevation="2dp">
+
+        <View
+            android:layout_width="3dp"
+            android:layout_height="16dp"
+            android:background="#059669"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📊 数运工单"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#065F46"
+            android:includeFontPadding="false"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="数据运营中心"
+            android:textSize="10sp"
+            android:textColor="#34D399"
+            android:includeFontPadding="false"/>
+    </LinearLayout>
+
+    <!-- ══════════ 子Tab切换（滚动模式，绿色主题） ══════════ -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutShuyunSub"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:background="@android:color/white"
-        app:tabIndicatorColor="#2563EB"
-        app:tabSelectedTextColor="#2563EB"
-        app:tabTextColor="#666666"
+        android:layout_height="38dp"
+        android:background="@color/background_secondary"
+        android:elevation="2dp"
+        app:tabIndicatorColor="#059669"
+        app:tabSelectedTextColor="#065F46"
+        app:tabTextColor="@color/text_tertiary"
         app:tabMode="scrollable"
         app:tabGravity="fill"
-        app:tabTextAppearance="@style/TabTextSub">
+        app:tabIndicatorHeight="3dp"
+        app:tabIndicatorFullWidth="false"
+        app:tabRippleColor="#1A059669"
+        app:tabTextAppearance="@style/TabTextStyle"
+        app:tabPaddingStart="8dp"
+        app:tabPaddingEnd="8dp"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="数运监控" />
+    <!-- Tab底部线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="数运审核" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="省内待办" />
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <!-- 内容区域：ViewPager2用于子Tab切换 -->
+    <!-- ══════════ 内容区域 ══════════ -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerShuyunSub"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/>
 
 </LinearLayout>

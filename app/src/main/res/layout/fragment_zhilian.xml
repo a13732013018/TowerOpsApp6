@@ -4,238 +4,400 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="@color/background_primary">
 
-    <!-- 状态栏 -->
+    <!-- ══════════ 顶部面板标题条（与工单Tab统一风格） ══════════ -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="34dp"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_panel_header"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:elevation="2dp">
+
+        <View
+            android:layout_width="3dp"
+            android:layout_height="16dp"
+            android:background="#A855F7"
+            android:layout_marginEnd="8dp"/>
 
         <TextView
-            android:id="@+id/tvZhilianStatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="智联监控未启动"
-            android:textSize="14sp"
-            android:textColor="#333333"
-            android:textStyle="bold" />
+            android:text="⚡ 智联工单"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#7C3AED"
+            android:includeFontPadding="false"/>
 
+        <!-- 实时时钟 -->
         <TextView
             android:id="@+id/tvCurrentTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="--:--:--"
-            android:textSize="13sp"
-            android:textColor="#6B7280"
+            android:textSize="11sp"
+            android:textColor="#8B5CF6"
             android:fontFamily="monospace"
-            android:layout_marginEnd="12dp" />
+            android:layout_marginEnd="12dp"
+            android:includeFontPadding="false"/>
 
+        <!-- 未领取胶囊 -->
         <TextView
             android:id="@+id/tvUnclaimedCount"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="未领取: 0"
-            android:textSize="13sp"
+            android:layout_height="20dp"
+            android:text="待领: 0"
+            android:textSize="10sp"
+            android:textStyle="bold"
             android:textColor="#2563EB"
-            android:layout_marginEnd="12dp" />
+            android:background="@drawable/bg_countdown_inline"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="6dp"
+            android:includeFontPadding="false"/>
 
+        <!-- 已领取胶囊 -->
         <TextView
             android:id="@+id/tvClaimedCount"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="已领取: 0"
-            android:textSize="13sp"
-            android:textColor="#10B981" />
+            android:layout_height="20dp"
+            android:text="已领: 0"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#059669"
+            android:background="@drawable/bg_badge_success"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"/>
     </LinearLayout>
 
-    <!-- 控制面板 -->
-    <LinearLayout
+    <!-- ══════════ 控制面板（CardView，与工单Tab风格一致） ══════════ -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="@android:color/white"
-        android:layout_marginTop="1dp">
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="2dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="@color/background_secondary">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="vertical">
 
-        <CheckBox
-            android:id="@+id/cbAutoAccept"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="自动接单"
-            android:textSize="13sp"
-            android:checked="true" />
+            <!-- 面板内标题行 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="#F5F0FF"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
 
-            <ImageView
-                android:id="@+id/ivAutoAcceptInfo"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="4dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:tint="#9CA3AF" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="监控配置"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#7C3AED"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:id="@+id/tvZhilianStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="未启动"
+                    android:textSize="10sp"
+                    android:textColor="#94A3B8"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 控制区域 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical">
+
+                <!-- 自动接单 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <CheckBox
+                        android:id="@+id/cbAutoAccept"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="自动接单"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:buttonTint="#7C3AED"
+                        android:checked="true"
+                        android:minHeight="0dp"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"/>
+
+                    <ImageView
+                        android:id="@+id/ivAutoAcceptInfo"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="3dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        android:tint="#C4B5FD"/>
+                </LinearLayout>
+
+                <!-- 自动回单 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <CheckBox
+                        android:id="@+id/cbAutoRevert"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="自动回单"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:buttonTint="#7C3AED"
+                        android:checked="true"
+                        android:minHeight="0dp"
+                        android:paddingTop="2dp"
+                        android:paddingBottom="2dp"/>
+
+                    <ImageView
+                        android:id="@+id/ivAutoRevertInfo"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="3dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        android:tint="#C4B5FD"/>
+                </LinearLayout>
+
+                <!-- 操作按钮 -->
+                <Button
+                    android:id="@+id/btnStartZhilian"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1.1"
+                    android:layout_marginStart="6dp"
+                    android:text="启动监控"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/bg_btn_zhilian_start"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:includeFontPadding="false"/>
+
+                <Button
+                    android:id="@+id/btnStopZhilian"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="0.8"
+                    android:layout_marginStart="4dp"
+                    android:text="停止"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/bg_button_gray"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:enabled="false"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
         </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginStart="12dp">
-
-        <CheckBox
-            android:id="@+id/cbAutoRevert"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="自动回单"
-            android:textSize="13sp"
-            android:checked="true" />
-
-            <ImageView
-                android:id="@+id/ivAutoRevertInfo"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginStart="4dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:tint="#9CA3AF" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/btnStartZhilian"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="启动监控"
-            android:textSize="12sp"
-            android:backgroundTint="#2563EB"
-            android:textColor="@android:color/white" />
-
-        <Button
-            android:id="@+id/btnStopZhilian"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="停止"
-            android:textSize="12sp"
-            android:backgroundTint="#EF4444"
-            android:textColor="@android:color/white"
-            android:layout_marginStart="8dp"
-            android:enabled="false" />
-    </LinearLayout>
-
-    <!-- Tab 切换 -->
+    <!-- ══════════ 子Tab：未领取 | 已领取 ══════════ -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutZhilian"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@android:color/white"
-        android:layout_marginTop="8dp"
-        app:tabIndicatorColor="#2563EB"
-        app:tabSelectedTextColor="#2563EB"
-        app:tabTextColor="#666666"
+        android:layout_height="36dp"
+        android:background="@color/background_secondary"
+        android:elevation="2dp"
+        app:tabIndicatorColor="#7C3AED"
+        app:tabSelectedTextColor="#7C3AED"
+        app:tabTextColor="@color/text_tertiary"
         app:tabMode="fixed"
-        app:tabGravity="fill">
+        app:tabGravity="fill"
+        app:tabIndicatorHeight="3dp"
+        app:tabIndicatorFullWidth="false"
+        app:tabTextAppearance="@style/TabTextStyle"
+        app:tabPaddingStart="6dp"
+        app:tabPaddingEnd="6dp">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="未领取" />
+            android:text="未领取"/>
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="已领取" />
-
+            android:text="已领取"/>
     </com.google.android.material.tabs.TabLayout>
 
-    <!-- 列表区域 -->
+    <!-- Tab底部线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"/>
+
+    <!-- ══════════ 列表区域 ══════════ -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="1dp">
+        android:layout_weight="1">
 
         <!-- 未领取列表 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvUnclaimed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
+            android:padding="6dp"
             android:clipToPadding="false"
-            android:visibility="visible" />
+            android:visibility="visible"/>
 
         <!-- 已领取列表 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvClaimed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
+            android:padding="6dp"
             android:clipToPadding="false"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <!-- 空状态 -->
-        <TextView
+        <LinearLayout
             android:id="@+id/tvEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="暂无数据"
-            android:textSize="16sp"
-            android:textColor="#999999"
-            android:visibility="gone" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📭"
+                android:textSize="36sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="暂无工单"
+                android:textSize="14sp"
+                android:textColor="@color/text_tertiary"
+                android:layout_marginTop="8dp"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
     </FrameLayout>
 
-    <!-- 日志区域 -->
+    <!-- ══════════ 暗黑日志区域（极致终端风） ══════════ -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="100dp"
         android:orientation="vertical"
-        android:background="#1F2937"
-        android:layout_marginTop="1dp">
+        android:background="#0D1117">
 
-        <TextView
+        <!-- 日志标题栏 -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="运行日志"
-            android:textSize="12sp"
-            android:textColor="#9CA3AF"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:background="#111827" />
+            android:layout_height="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#161B22"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
 
+            <!-- 终端三点 -->
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="#EF4444"
+                android:layout_marginEnd="4dp"/>
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="#F59E0B"
+                android:layout_marginEnd="4dp"/>
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="#10B981"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SYSTEM LOG"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:textColor="#8B949E"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.1"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="● LIVE"
+                android:textSize="8sp"
+                android:textColor="#3FB950"
+                android:fontFamily="monospace"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+
+        <!-- 日志内容 -->
         <ScrollView
             android:id="@+id/svLog"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:scrollbars="none">
 
             <TextView
                 android:id="@+id/tvLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#E5E7EB"
+                android:textSize="10sp"
+                android:textColor="#79C0FF"
                 android:fontFamily="monospace"
-                android:lineSpacingMultiplier="1.2" />
+                android:lineSpacingMultiplier="1.4"
+                android:includeFontPadding="false"/>
         </ScrollView>
     </LinearLayout>
 
