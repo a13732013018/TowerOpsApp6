@@ -209,7 +209,7 @@ public class WorkOrderFragment extends Fragment {
      */
     private void doConfirmLogin() {
         if (!codeSent || msgId == null) {
-            Toast.makeText(getContext(), "请先点击"获取验证码"", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "请先点击[获取验证码]", Toast.LENGTH_SHORT).show();
             return;
         }
         String msgCode = et4aMsgCode.getText().toString().trim();
