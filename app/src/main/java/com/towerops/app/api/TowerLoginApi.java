@@ -8,12 +8,19 @@ import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,10 +54,35 @@ public class TowerLoginApi {
     private String sessionCookie; // 登录成功后的SESSION
 
     public TowerLoginApi() {
+        // 内存CookieJar：自动保存和携带Cookie，保持登录会话一致性
+        CookieJar cookieJar = new CookieJar() {
+            private final Map<String, List<Cookie>> cookieStore = new HashMap<>();
+
+            @Override
+            public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                String host = url.host();
+                List<Cookie> existing = cookieStore.containsKey(host)
+                        ? cookieStore.get(host) : new ArrayList<>();
+                // 更新/追加Cookie
+                for (Cookie newCookie : cookies) {
+                    existing.removeIf(c -> c.name().equals(newCookie.name()));
+                    existing.add(newCookie);
+                }
+                cookieStore.put(host, existing);
+            }
+
+            @Override
+            public List<Cookie> loadForRequest(HttpUrl url) {
+                List<Cookie> cookies = cookieStore.get(url.host());
+                return cookies != null ? cookies : new ArrayList<>();
+            }
+        };
+
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
                 .followRedirects(true)
+                .cookieJar(cookieJar)   // 关键：自动管理Cookie
                 .build();
     }
 
