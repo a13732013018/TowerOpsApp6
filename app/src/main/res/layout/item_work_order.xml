@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    工单卡片 v5：
-    - 无 CardView 阴影依赖，用 FrameLayout + bg_card_v5 实现极致质感
-    - 顶部 3dp 彩色渐变横条（代替 CardView elevation）
-    - 左侧 4dp 状态竖线
-    - 背景从纯白改为极浅冷白渐变 #FAFCFF→#FFFFFF
+    工单卡片 v6 APEX:
+    - 顶部 4dp 三色横条（蓝→青→紫）+ 光泽感
+    - 左侧 4dp 热度竖条（按优先级变色：红/橙/绿）
+    - 卡片底部：历时徽章 + 热度进度条 + 状态文字
+    - 整体白底圆角16dp + 蓝色阴影
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -18,12 +18,11 @@
     android:background="@drawable/bg_card_v5"
     android:elevation="4dp">
 
-    <!-- 顶部彩色渐变横条 3dp -->
+    <!-- 顶部三色渐变横条 4dp -->
     <View
-        android:id="@+id/viewTopStripe"
         android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="@drawable/bg_card_top_stripe"/>
+        android:layout_height="4dp"
+        android:background="@drawable/bg_card_top_stripe_v6"/>
 
     <!-- 横向主体：左竖线 + 内容 -->
     <LinearLayout
@@ -31,13 +30,13 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- 左侧状态色竖条 4dp -->
+        <!-- 左侧热度色竖条 4dp（默认橙色，代码动态切换） -->
         <View
-            android:id="@+id/viewStatusStripe"
+            android:id="@+id/viewHeatStripe"
             android:layout_width="4dp"
             android:layout_height="match_parent"
-            android:background="@drawable/bg_card_stripe_warning"
-            android:minHeight="60dp"/>
+            android:background="@drawable/bg_card_heat_warning"
+            android:minHeight="64dp"/>
 
         <!-- 右侧内容区 -->
         <LinearLayout
@@ -56,15 +55,15 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
+                android:layout_marginBottom="5dp">
 
                 <TextView
                     android:id="@+id/tvIndex"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
                     android:text="1"
                     android:textColor="#FFFFFF"
-                    android:textSize="9sp"
+                    android:textSize="8sp"
                     android:textStyle="bold"
                     android:gravity="center"
                     android:background="@drawable/bg_index_bubble"
@@ -77,24 +76,25 @@
                     android:layout_weight="1"
                     android:text="工单号"
                     android:textColor="#1D4ED8"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="7dp"
                     android:singleLine="true"
                     android:ellipsize="end"
+                    android:fontFamily="monospace"
                     android:includeFontPadding="false"/>
 
                 <TextView
                     android:id="@+id/tvAlertStatus"
                     android:layout_width="wrap_content"
-                    android:layout_height="20dp"
+                    android:layout_height="19dp"
                     android:text="告警中"
                     android:textColor="#F97316"
-                    android:textSize="9sp"
+                    android:textSize="8sp"
                     android:textStyle="bold"
                     android:background="@drawable/bg_tag_warning"
-                    android:paddingStart="7dp"
-                    android:paddingEnd="7dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
                     android:gravity="center"
                     android:includeFontPadding="false"/>
             </LinearLayout>
@@ -106,15 +106,15 @@
                 android:layout_height="wrap_content"
                 android:text="站点名 · 工单标题"
                 android:textColor="#0F172A"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="7dp"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:lineSpacingMultiplier="1.2"
                 android:includeFontPadding="false"/>
 
-            <!-- 分割线 -->
+            <!-- 细分割线 -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
@@ -127,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="5dp">
+                android:layout_marginBottom="4dp">
 
                 <TextView
                     android:id="@+id/tvAcceptOp"
@@ -136,7 +136,7 @@
                     android:layout_weight="1"
                     android:text="接单人：-"
                     android:textColor="#64748B"
-                    android:textSize="11sp"
+                    android:textSize="10sp"
                     android:drawableStart="@drawable/ic_person"
                     android:drawablePadding="4dp"
                     android:includeFontPadding="false"/>
@@ -147,7 +147,8 @@
                     android:layout_height="wrap_content"
                     android:text="创建：-"
                     android:textColor="#94A3B8"
-                    android:textSize="10sp"
+                    android:textSize="9sp"
+                    android:fontFamily="monospace"
                     android:includeFontPadding="false"/>
             </LinearLayout>
 
@@ -158,69 +159,96 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textColor="#059669"
-                android:textSize="11sp"
-                android:layout_marginBottom="4dp"
+                android:textSize="10sp"
+                android:layout_marginBottom="3dp"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:drawableStart="@drawable/ic_check_circle"
-                android:drawablePadding="5dp"
+                android:drawablePadding="4dp"
                 android:includeFontPadding="false"/>
 
-            <!-- 第五行：工单历时 + 上次反馈 -->
+            <!-- 第五行：上次反馈 + 告警时间 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="3dp">
-
-                <TextView
-                    android:id="@+id/tvTimeDiff2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="工单历时：-"
-                    android:textColor="#2563EB"
-                    android:textSize="11sp"
-                    android:drawableStart="@drawable/ic_time"
-                    android:drawablePadding="4dp"
-                    android:includeFontPadding="false"/>
+                android:layout_marginBottom="8dp">
 
                 <TextView
                     android:id="@+id/tvTimeDiff"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="上次反馈：尚未"
-                    android:textColor="#94A3B8"
-                    android:textSize="10sp"
-                    android:includeFontPadding="false"/>
-            </LinearLayout>
-
-            <!-- 第六行：告警时间 + 当前状态 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvAlertTime"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text=""
-                    android:textColor="#F97316"
-                    android:textSize="11sp"
-                    android:drawableStart="@drawable/ic_warning"
-                    android:drawablePadding="4dp"
+                    android:text="上次反馈：尚未"
+                    android:textColor="#94A3B8"
+                    android:textSize="9sp"
                     android:includeFontPadding="false"/>
 
+                <TextView
+                    android:id="@+id/tvAlertTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#F97316"
+                    android:textSize="9sp"
+                    android:drawableStart="@drawable/ic_warning"
+                    android:drawablePadding="3dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 底部行：历时徽章 + 热度进度条 + 状态文字 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="2dp">
+
+                <!-- 工单历时徽章 -->
+                <TextView
+                    android:id="@+id/tvTimeDiff2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="历时 -"
+                    android:textColor="#2563EB"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_duration_badge"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:fontFamily="monospace"
+                    android:includeFontPadding="false"
+                    android:layout_marginEnd="8dp"/>
+
+                <!-- 热度进度条（外轨） -->
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_progress_track">
+
+                    <View
+                        android:id="@+id/viewHeatProgress"
+                        android:layout_width="0dp"
+                        android:layout_height="4dp"
+                        android:layout_gravity="start|center_vertical"
+                        android:background="@drawable/bg_progress_warning"/>
+                </FrameLayout>
+
+                <!-- 状态文字 -->
                 <TextView
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="等待处理"
                     android:textColor="#F97316"
-                    android:textSize="10sp"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp"
                     android:includeFontPadding="false"/>
+
             </LinearLayout>
 
         </LinearLayout>

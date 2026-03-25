@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -158,11 +159,10 @@ public class WorkOrderAdapter extends RecyclerView.Adapter<WorkOrderAdapter.VH> 
         h.tvAcceptOp.setText("接单：" + (wo.acceptOperator.isEmpty() ? "未接单" : wo.acceptOperator));
         h.tvCreateTime.setText(wo.createTime.length() > 16 ? wo.createTime.substring(0, 16) : wo.createTime);
         h.tvDealInfo.setText(wo.dealInfo.isEmpty() ? "" : "处理：" + wo.dealInfo);
-        // 工单历时（从创建到现在）
-        h.tvTimeDiff2.setText("工单历时：" + formatMinutes(wo.timeDiff2));
-        // 距上次反馈：显示具体时间 + 经过分钟数，两段信息都展示
+        // 工单历时（历时徽章格式）
+        h.tvTimeDiff2.setText("历时 " + formatMinutes(wo.timeDiff2));
+        // 距上次反馈
         if (wo.lastOperateTime != null && !wo.lastOperateTime.isEmpty()) {
-            // 截取时间到分钟（最多16位），如 "2026-03-15 14:30"
             String showTime = wo.lastOperateTime.length() > 16
                     ? wo.lastOperateTime.substring(0, 16) : wo.lastOperateTime;
             h.tvTimeDiff.setText("上次反馈：" + showTime + "（" + formatMinutes(wo.timeDiff1) + "前）");
@@ -180,23 +180,60 @@ public class WorkOrderAdapter extends RecyclerView.Adapter<WorkOrderAdapter.VH> 
         }
         h.tvStatus.setText(wo.statusCol == null ? "" : wo.statusCol);
 
-        // 告警状态颜色 —— 只有两种：告警中 / 已恢复
+        // ───── 🔥 v6: 热度等级（按工单历时分钟数）─────
+        // timeDiff2 = 工单历时分钟
+        // ≥720分钟（12h）紧急  ≥360分钟（6h）警告  否则正常
+        final int CRIT_MIN  = 720;
+        final int WARN_MIN  = 360;
+        if (wo.timeDiff2 >= CRIT_MIN) {
+            // 紧急：红橙热度
+            if (h.viewHeatStripe   != null) h.viewHeatStripe.setBackgroundResource(R.drawable.bg_card_heat_critical);
+            if (h.viewHeatProgress != null) h.viewHeatProgress.setBackgroundResource(R.drawable.bg_progress_critical);
+            h.tvAlertStatus.setTextColor(Color.parseColor("#EF4444"));
+        } else if (wo.timeDiff2 >= WARN_MIN) {
+            // 警告：黄橙热度
+            if (h.viewHeatStripe   != null) h.viewHeatStripe.setBackgroundResource(R.drawable.bg_card_heat_warning);
+            if (h.viewHeatProgress != null) h.viewHeatProgress.setBackgroundResource(R.drawable.bg_progress_warning);
+            h.tvAlertStatus.setTextColor(Color.parseColor("#F59E0B"));
+        } else {
+            // 正常：绿色
+            if (h.viewHeatStripe   != null) h.viewHeatStripe.setBackgroundResource(R.drawable.bg_card_heat_normal);
+            if (h.viewHeatProgress != null) h.viewHeatProgress.setBackgroundResource(R.drawable.bg_progress_normal);
+            h.tvAlertStatus.setTextColor(Color.parseColor("#10B981"));
+        }
+
+        // 热度进度条宽度比例（以1440分钟=24h为100%）
+        if (h.viewHeatProgress != null) {
+            float ratio = Math.min(1f, wo.timeDiff2 / 1440f);
+            h.viewHeatProgress.post(() -> {
+                View parent = (View) h.viewHeatProgress.getParent();
+                if (parent != null && parent.getWidth() > 0) {
+                    ViewGroup.LayoutParams lp = h.viewHeatProgress.getLayoutParams();
+                    lp.width = (int) (parent.getWidth() * ratio);
+                    if (lp.width < 8) lp.width = 8; // 最小宽度 8px
+                    h.viewHeatProgress.setLayoutParams(lp);
+                }
+            });
+        }
+
+        // 告警状态标签
         if ("告警中".equals(wo.alertStatus)) {
             h.tvAlertStatus.setText("⚡告警中");
-            h.tvAlertStatus.setTextColor(Color.parseColor("#ff6b35"));
         } else {
             h.tvAlertStatus.setText("✓已恢复");
-            h.tvAlertStatus.setTextColor(Color.parseColor("#40c080"));
+            if (h.viewHeatStripe   != null) h.viewHeatStripe.setBackgroundResource(R.drawable.bg_card_heat_normal);
+            if (h.viewHeatProgress != null) h.viewHeatProgress.setBackgroundResource(R.drawable.bg_progress_normal);
+            h.tvAlertStatus.setTextColor(Color.parseColor("#10B981"));
         }
 
         // 状态列颜色
         String sc = wo.statusCol == null ? "" : wo.statusCol;
         if (sc.contains("成功") || sc.contains("完毕")) {
-            h.tvStatus.setTextColor(Color.parseColor("#40c080"));
+            h.tvStatus.setTextColor(Color.parseColor("#10B981"));
         } else if (sc.contains("失败") || sc.contains("异常") || sc.contains("拦截")) {
-            h.tvStatus.setTextColor(Color.parseColor("#e94560"));
+            h.tvStatus.setTextColor(Color.parseColor("#EF4444"));
         } else {
-            h.tvStatus.setTextColor(Color.parseColor("#e0c060"));
+            h.tvStatus.setTextColor(Color.parseColor("#F59E0B"));
         }
     }
 
@@ -207,20 +244,25 @@ public class WorkOrderAdapter extends RecyclerView.Adapter<WorkOrderAdapter.VH> 
         TextView tvIndex, tvBillSn, tvAlertStatus, tvTitle,
                  tvAcceptOp, tvCreateTime, tvDealInfo,
                  tvTimeDiff2, tvTimeDiff, tvAlertTime, tvStatus;
+        // v6 新增
+        View     viewHeatStripe;
+        View     viewHeatProgress;
 
         VH(View v) {
             super(v);
-            tvIndex       = v.findViewById(R.id.tvIndex);
-            tvBillSn      = v.findViewById(R.id.tvBillSn);
-            tvAlertStatus = v.findViewById(R.id.tvAlertStatus);
-            tvTitle       = v.findViewById(R.id.tvTitle);
-            tvAcceptOp    = v.findViewById(R.id.tvAcceptOp);
-            tvCreateTime  = v.findViewById(R.id.tvCreateTime);
-            tvDealInfo    = v.findViewById(R.id.tvDealInfo);
-            tvTimeDiff2   = v.findViewById(R.id.tvTimeDiff2);
-            tvTimeDiff    = v.findViewById(R.id.tvTimeDiff);
-            tvAlertTime   = v.findViewById(R.id.tvAlertTime);
-            tvStatus      = v.findViewById(R.id.tvStatus);
+            tvIndex          = v.findViewById(R.id.tvIndex);
+            tvBillSn         = v.findViewById(R.id.tvBillSn);
+            tvAlertStatus    = v.findViewById(R.id.tvAlertStatus);
+            tvTitle          = v.findViewById(R.id.tvTitle);
+            tvAcceptOp       = v.findViewById(R.id.tvAcceptOp);
+            tvCreateTime     = v.findViewById(R.id.tvCreateTime);
+            tvDealInfo       = v.findViewById(R.id.tvDealInfo);
+            tvTimeDiff2      = v.findViewById(R.id.tvTimeDiff2);
+            tvTimeDiff       = v.findViewById(R.id.tvTimeDiff);
+            tvAlertTime      = v.findViewById(R.id.tvAlertTime);
+            tvStatus         = v.findViewById(R.id.tvStatus);
+            viewHeatStripe   = v.findViewById(R.id.viewHeatStripe);
+            viewHeatProgress = v.findViewById(R.id.viewHeatProgress);
         }
     }
 

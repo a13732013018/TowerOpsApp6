@@ -14,6 +14,9 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorSet;
+import android.animation.PropertyValuesHolder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -78,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView        tvUserInfo, tvProgress, tvNextRun, tvPowerOutageCountStatus, tvRoundComplete, btnLogout;
     // 状态指示点
     private View            statusDot;
+    // 状态点脉冲动画
+    private AnimatorSet     dotAnimator;
 
     // ===== 停电监控相关控件 =====
     private TabLayout        tabLayout;
@@ -258,7 +263,10 @@ public class MainActivity extends AppCompatActivity {
         syncButtonState();
         tvProgress.setText("已停止");
         tvProgress.setTextColor(android.graphics.Color.parseColor("#94A3B8"));
-        if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
+        if (statusDot != null) {
+            stopDotPulse();
+            statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
+        }
         tvRoundComplete.setText("");
         tvPowerOutageCountStatus.setText("⚡ 0");
         stopCountDown();
@@ -302,16 +310,53 @@ public class MainActivity extends AppCompatActivity {
             btnStart.setText("监控中");
             btnStart.setEnabled(true);
             btnStop.setEnabled(true);
-            // 运行时：状态点变青色，文字变青绿
-            if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_running);
+            // 运行时：状态点变青色，文字变青绿，启动脉冲动画
+            if (statusDot != null) {
+                statusDot.setBackgroundResource(R.drawable.bg_status_dot_running);
+                startDotPulse();
+            }
             tvProgress.setTextColor(android.graphics.Color.parseColor("#22D3EE"));
         } else {
             btnStart.setText("开启监控");
             btnStart.setEnabled(true);
             btnStop.setEnabled(true);
-            // 停止时：状态点恢复白色，文字变柔绿
-            if (statusDot != null) statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
+            // 停止时：状态点恢复白色，停止动画
+            if (statusDot != null) {
+                stopDotPulse();
+                statusDot.setBackgroundResource(R.drawable.bg_status_dot_idle);
+            }
             tvProgress.setTextColor(android.graphics.Color.parseColor("#86EFAC"));
+        }
+    }
+
+    /** 启动 statusDot 脉冲动画（缩放+透明度交替循环） */
+    private void startDotPulse() {
+        stopDotPulse();
+        if (statusDot == null) return;
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(statusDot, "scaleX", 1f, 1.8f, 1f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(statusDot, "scaleY", 1f, 1.8f, 1f);
+        ObjectAnimator alpha  = ObjectAnimator.ofFloat(statusDot, "alpha",  1f, 0.4f, 1f);
+        dotAnimator = new AnimatorSet();
+        dotAnimator.playTogether(scaleX, scaleY, alpha);
+        dotAnimator.setDuration(1800);
+        dotAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+        // 无限循环
+        scaleX.setRepeatCount(ObjectAnimator.INFINITE);
+        scaleY.setRepeatCount(ObjectAnimator.INFINITE);
+        alpha.setRepeatCount(ObjectAnimator.INFINITE);
+        dotAnimator.start();
+    }
+
+    /** 停止 statusDot 脉冲动画，恢复初始状态 */
+    private void stopDotPulse() {
+        if (dotAnimator != null) {
+            dotAnimator.cancel();
+            dotAnimator = null;
+        }
+        if (statusDot != null) {
+            statusDot.setScaleX(1f);
+            statusDot.setScaleY(1f);
+            statusDot.setAlpha(1f);
         }
     }
 
