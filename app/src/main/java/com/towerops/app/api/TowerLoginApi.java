@@ -92,6 +92,8 @@ public class TowerLoginApi {
             try (Response resp = client.newCall(req2).execute()) {
                 if (!resp.isSuccessful()) return new Result(false, "获取公钥失败: " + resp.code(), null);
                 publicKey = resp.body().string().replace("\"", "").trim();
+                // 去掉公钥中可能存在的换行和空格，确保Base64解析正常
+                publicKey = publicKey.replaceAll("[\\r\\n\\s]", "");
             }
 
             // 生成本次登录的随机r（32位hex）
@@ -126,7 +128,6 @@ public class TowerLoginApi {
             String encLoginCode = rsaEncrypt(salt);   // loginCode = 加密salt
 
             FormBody body = new FormBody.Builder()
-                    .add("r",          loginR)
                     .add("loginCode",  encLoginCode)
                     .add("csrftoken",  "")
                     .add("username",   encUsername)
@@ -174,7 +175,6 @@ public class TowerLoginApi {
             String encPassword = rsaEncrypt(password);
 
             FormBody body = new FormBody.Builder()
-                    .add("r",         loginR)
                     .add("csrftoken", "")
                     .add("username",  encUsername)
                     .add("password",  encPassword)
@@ -217,7 +217,6 @@ public class TowerLoginApi {
             String r = String.valueOf(Math.random());
 
             FormBody body = new FormBody.Builder()
-                    .add("r",          r)
                     .add("csrftoken",  "")
                     .add("msgCode",    msgCode)
                     .add("msgId",      msgId)
