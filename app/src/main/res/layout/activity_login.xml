@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_primary"
+    android:background="@color/colorPrimaryDark"
     android:fillViewport="true">
 
+    <!-- 深蓝渐变底色背景 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,102 +19,119 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="60dp"
-            android:layout_marginBottom="40dp">
+            android:layout_marginTop="64dp"
+            android:layout_marginBottom="36dp">
 
+            <!-- Logo卡片 -->
             <androidx.cardview.widget.CardView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="8dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto">
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="12dp"
+                app:cardBackgroundColor="#1D4ED8">
 
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_logo_tower"
                     android:background="@drawable/bg_button_primary_gradient"
-                    android:padding="20dp"/>
+                    android:padding="18dp"/>
             </androidx.cardview.widget.CardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="铁塔运维助手"
-                android:textSize="28sp"
+                android:textSize="26sp"
                 android:textStyle="bold"
-                android:textColor="@color/colorPrimary"
-                android:letterSpacing="0.02"
-                android:layout_marginTop="24dp"/>
+                android:textColor="#FFFFFF"
+                android:letterSpacing="0.05"
+                android:layout_marginTop="22dp"
+                android:includeFontPadding="false"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tower Operations"
-                android:textSize="14sp"
-                android:textStyle="normal"
-                android:textColor="@color/text_tertiary"
-                android:letterSpacing="0.12"
-                android:layout_marginTop="6dp"/>
+                android:text="Tower Operations System"
+                android:textSize="13sp"
+                android:textColor="#7DD3FC"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="6dp"
+                android:includeFontPadding="false"/>
         </LinearLayout>
 
-        <!-- 登录卡片 -->
+        <!-- 登录卡片（白色浮层） -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginBottom="40dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/background_secondary"
-            xmlns:app="http://schemas.android.com/apk/res-auto">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="16dp"
+            app:cardBackgroundColor="@color/background_secondary">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="28dp">
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:paddingTop="28dp"
+                android:paddingBottom="24dp">
+
+                <!-- 卡片标题 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="账号登录"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="20dp"
+                    android:includeFontPadding="false"/>
 
                 <!-- 账号选择 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="选择账号"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:layout_marginBottom="10dp"/>
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="8dp"
+                    android:includeFontPadding="false"/>
 
                 <Spinner
                     android:id="@+id/spinnerAccount"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/bg_input_white"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:layout_marginBottom="24dp"/>
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:layout_marginBottom="20dp"/>
 
                 <!-- 图形验证码 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="图形验证码"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_secondary"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_marginBottom="8dp"
+                    android:includeFontPadding="false"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="10dp">
 
                     <FrameLayout
                         android:id="@+id/flCaptcha"
                         android:layout_width="0dp"
-                        android:layout_height="52dp"
+                        android:layout_height="50dp"
                         android:layout_weight="2"
                         android:background="@drawable/bg_input_white"
                         android:clickable="true"
@@ -123,45 +142,47 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="fitCenter"
-                            android:padding="10dp"/>
+                            android:padding="8dp"/>
                     </FrameLayout>
 
                     <Button
                         android:id="@+id/btnRefreshCaptcha"
                         android:layout_width="0dp"
-                        android:layout_height="52dp"
+                        android:layout_height="50dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="10dp"
                         android:background="@drawable/bg_button_secondary_white"
                         android:text="刷新"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_inverse"/>
+                        android:textColor="@color/text_inverse"
+                        android:includeFontPadding="false"/>
                 </LinearLayout>
 
                 <EditText
                     android:id="@+id/etVerifyCode"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="50dp"
                     android:background="@drawable/bg_input_white"
                     android:hint="请输入图形验证码"
                     android:textColorHint="@color/text_tertiary"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
                     android:inputType="text"
-                    android:layout_marginBottom="24dp"/>
+                    android:layout_marginBottom="20dp"/>
 
                 <!-- PIN码 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="短信验证码 / PIN码"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_secondary"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_marginBottom="8dp"
+                    android:includeFontPadding="false"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -171,41 +192,43 @@
                     <EditText
                         android:id="@+id/etPin"
                         android:layout_width="0dp"
-                        android:layout_height="52dp"
+                        android:layout_height="50dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_input_white"
                         android:hint="请输入PIN码"
                         android:textColorHint="@color/text_tertiary"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:inputType="text"/>
 
                     <Button
                         android:id="@+id/btnGetSms"
-                        android:layout_width="110dp"
-                        android:layout_height="52dp"
-                        android:layout_marginStart="12dp"
+                        android:layout_width="108dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="10dp"
                         android:background="@drawable/bg_button_primary_gradient"
                         android:text="获取验证码"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_inverse"/>
+                        android:textColor="@color/text_inverse"
+                        android:includeFontPadding="false"/>
                 </LinearLayout>
 
                 <!-- 登录按钮 -->
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="52dp"
                     android:layout_marginTop="24dp"
                     android:background="@drawable/bg_button_primary_gradient"
-                    android:text="登 录"
-                    android:textSize="17sp"
+                    android:text="登  录"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_inverse"
-                    android:letterSpacing="0.1"/>
+                    android:letterSpacing="0.08"
+                    android:includeFontPadding="false"/>
 
                 <!-- 状态提示 -->
                 <TextView
@@ -213,12 +236,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="14dp"
                     android:text=""
-                    android:textSize="14sp"
-                    android:textStyle="normal"
+                    android:textSize="13sp"
                     android:textColor="@color/error"
-                    android:minHeight="20dp"/>
+                    android:minHeight="18dp"
+                    android:includeFontPadding="false"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

@@ -3,31 +3,40 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:background="@android:color/white">
+    android:background="@color/list_item_background"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="9dp"
+    android:paddingBottom="9dp">
 
-    <!-- 第一行：序号 地市 工单号 当前环节 -->
+    <!-- 第一行：序号 + 工单号 + 环节（当前任务） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="5dp">
 
         <TextView
             android:id="@+id/tvKHIndex"
-            android:layout_width="24dp"
-            android:layout_height="wrap_content"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:textSize="9sp"
-            android:textColor="#888888"
+            android:textColor="#94A3B8"
             android:gravity="center"
             android:includeFontPadding="false"/>
 
+        <!-- 地市标签 -->
         <TextView
             android:id="@+id/tvKHCityName"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_marginStart="4dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
             android:textSize="9sp"
-            android:textColor="#444444"
+            android:textColor="@color/text_secondary"
+            android:background="@color/border_light"
             android:gravity="center"
             android:includeFontPadding="false"/>
 
@@ -36,40 +45,46 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="9sp"
-            android:textColor="#2563EB"
+            android:layout_marginStart="6dp"
+            android:textSize="10sp"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
             android:singleLine="true"
             android:ellipsize="end"
             android:includeFontPadding="false"/>
 
         <TextView
             android:id="@+id/tvKHJobName"
-            android:layout_width="80dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
             android:textSize="9sp"
-            android:textColor="#E65C00"
+            android:textColor="@color/warning"
             android:textStyle="bold"
-            android:gravity="end"
+            android:gravity="center"
             android:singleLine="true"
             android:ellipsize="end"
+            android:background="@drawable/bg_tag_warning"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
             android:includeFontPadding="false"/>
 
     </LinearLayout>
 
-    <!-- 第二行：站点名称 + 分组 -->
+    <!-- 第二行：站点名称（主要信息，大字加粗） + 分组标签 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="3dp">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="5dp">
 
         <TextView
             android:id="@+id/tvKHStationName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11sp"
-            android:textColor="#1a1a2e"
+            android:textSize="13sp"
+            android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:singleLine="true"
             android:ellipsize="end"
@@ -78,51 +93,50 @@
         <TextView
             android:id="@+id/tvKHGroupName"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="1dp"
-            android:paddingBottom="1dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:paddingStart="7dp"
+            android:paddingEnd="7dp"
             android:textSize="9sp"
-            android:textColor="#2563EB"
+            android:textColor="@color/colorPrimary"
             android:background="@drawable/bg_tag_inactive"
+            android:gravity="center"
             android:includeFontPadding="false"/>
 
     </LinearLayout>
 
-    <!-- 第三行：工单类型 | 任务类型 -->
+    <!-- 第三行：工单类型 | 任务类型（次要信息） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="2dp">
+        android:layout_marginBottom="5dp">
 
         <TextView
             android:id="@+id/tvKHFlowName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="9sp"
-            android:textColor="#666666"
+            android:textSize="10sp"
+            android:textColor="@color/text_caption"
             android:singleLine="true"
             android:ellipsize="end"
             android:includeFontPadding="false"/>
 
-        <TextView
-            android:layout_width="4dp"
-            android:layout_height="wrap_content"
-            android:text="|"
-            android:textSize="9sp"
-            android:textColor="#cccccc"/>
+        <View
+            android:layout_width="1dp"
+            android:layout_height="12dp"
+            android:background="@color/divider"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"/>
 
         <TextView
             android:id="@+id/tvKHDataName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="9sp"
-            android:textColor="#666666"
+            android:textSize="10sp"
+            android:textColor="@color/text_caption"
             android:singleLine="true"
             android:ellipsize="end"
             android:includeFontPadding="false"/>
@@ -134,15 +148,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="2dp">
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/tvKHCreateTime"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="9sp"
-            android:textColor="#888888"
+            android:textSize="10sp"
+            android:textColor="@color/text_tertiary"
             android:singleLine="true"
             android:ellipsize="end"
             android:includeFontPadding="false"/>
@@ -151,18 +165,19 @@
             android:id="@+id/tvKHAccestaff"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:textSize="9sp"
-            android:textColor="#2563EB"
+            android:layout_marginStart="8dp"
+            android:textSize="10sp"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
             android:includeFontPadding="false"/>
 
     </LinearLayout>
 
-    <!-- 分割线 -->
+    <!-- 底部分割线 -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginTop="6dp"
-        android:background="#E5E7EB"/>
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/border_light"/>
 
 </LinearLayout>

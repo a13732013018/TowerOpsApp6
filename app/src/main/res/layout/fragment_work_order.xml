@@ -11,67 +11,82 @@
         android:id="@+id/controlPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="2dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
         app:cardBackgroundColor="@color/background_secondary">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
 
-            <!-- 第一行：三个开关 + 按钮 -->
+            <!-- 第一行：三个开关 + 操作按钮 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
+                android:layout_marginBottom="8dp">
 
                 <CheckBox
                     android:id="@+id/cbAutoFeedback"
                     android:layout_width="0dp"
-                    android:layout_height="26dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="自动反馈"
                     android:textColor="@color/text_primary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
-                    android:checked="true"/>
+                    android:checked="true"
+                    android:minHeight="0dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"/>
 
                 <CheckBox
                     android:id="@+id/cbAutoAccept"
                     android:layout_width="0dp"
-                    android:layout_height="26dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="自动接单"
                     android:textColor="@color/text_primary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
-                    android:checked="true"/>
+                    android:checked="true"
+                    android:minHeight="0dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"/>
 
                 <CheckBox
                     android:id="@+id/cbAutoRevert"
                     android:layout_width="0dp"
-                    android:layout_height="26dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="自动回单"
                     android:textColor="@color/text_primary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     android:buttonTint="@color/colorPrimary"
-                    android:checked="true"/>
+                    android:checked="true"
+                    android:minHeight="0dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"/>
 
                 <Button
                     android:id="@+id/btnStartMonitor"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1.3"
-                    android:layout_marginStart="4dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1.2"
+                    android:layout_marginStart="6dp"
                     android:text="开启监控"
                     android:textSize="11sp"
                     android:textStyle="bold"
@@ -79,15 +94,16 @@
                     android:background="@drawable/bg_button_primary_gradient"
                     android:stateListAnimator="@null"
                     android:letterSpacing="0"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"/>
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:includeFontPadding="false"/>
 
                 <Button
                     android:id="@+id/btnStopMonitor"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="0.9"
-                    android:layout_marginStart="3dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="0.8"
+                    android:layout_marginStart="4dp"
                     android:text="停止"
                     android:textSize="11sp"
                     android:textStyle="bold"
@@ -95,274 +111,293 @@
                     android:background="@drawable/bg_button_gray"
                     android:stateListAnimator="@null"
                     android:letterSpacing="0"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"/>
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:includeFontPadding="false"/>
             </LinearLayout>
 
-            <!-- 第二行：轮询 + 阈值 -->
+            <!-- 分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/border_light"
+                android:layout_marginBottom="7dp"/>
+
+            <!-- 第二行：参数设置（轮询/反馈/接单 阈值） -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- 轮询 -->
+                <!-- 轮询组 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="轮询"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_caption"
                     android:textSize="10sp"
                     android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etIntervalMin"
                     android:layout_width="32dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="2dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="~"
-                    android:textColor="@color/text_secondary"
+                    android:text="-"
+                    android:textColor="@color/text_tertiary"
                     android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="1dp"/>
+                    android:layout_marginStart="2dp"/>
 
                 <EditText
                     android:id="@+id/etIntervalMax"
                     android:layout_width="32dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="1dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="120"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="秒"
+                    android:text="s"
                     android:textColor="@color/text_tertiary"
                     android:textSize="9sp"
-                    android:layout_marginStart="1dp"/>
+                    android:layout_marginStart="2dp"/>
 
+                <!-- 分隔竖线 -->
                 <View
                     android:layout_width="1dp"
                     android:layout_height="14dp"
                     android:background="@color/divider"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"/>
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"/>
 
-                <!-- 反馈阈值 -->
+                <!-- 反馈组 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="反馈"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_caption"
                     android:textSize="10sp"
                     android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etFeedbackMin"
                     android:layout_width="28dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="2dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="70"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="~"
-                    android:textColor="@color/text_secondary"
+                    android:text="-"
+                    android:textColor="@color/text_tertiary"
                     android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="1dp"/>
+                    android:layout_marginStart="2dp"/>
 
                 <EditText
                     android:id="@+id/etFeedbackMax"
                     android:layout_width="28dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="1dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
+                <!-- 分隔竖线 -->
                 <View
                     android:layout_width="1dp"
                     android:layout_height="14dp"
                     android:background="@color/divider"
-                    android:layout_marginStart="3dp"
-                    android:layout_marginEnd="3dp"/>
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"/>
 
-                <!-- 接单阈值 -->
+                <!-- 接单组 -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="接单"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/text_caption"
                     android:textSize="10sp"
                     android:textStyle="bold"/>
 
                 <EditText
                     android:id="@+id/etAcceptMin"
                     android:layout_width="28dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="2dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="4dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="60"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="~"
-                    android:textColor="@color/text_secondary"
+                    android:text="-"
+                    android:textColor="@color/text_tertiary"
                     android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="1dp"/>
+                    android:layout_marginStart="2dp"/>
 
                 <EditText
                     android:id="@+id/etAcceptMax"
                     android:layout_width="28dp"
-                    android:layout_height="24dp"
-                    android:layout_marginStart="1dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/bg_input_white"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
                     android:text="90"
                     android:textColor="@color/text_primary"
-                    android:textSize="9sp"
+                    android:textSize="10sp"
                     android:textStyle="bold"
                     android:inputType="number"
-                    android:gravity="center"/>
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- 排序工具栏 -->
+    <!-- ==================== 排序工具栏 ==================== -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="38dp"
+        android:orientation="horizontal"
         android:background="@color/background_secondary"
-        android:padding="12dp"
-        android:elevation="2dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center_vertical"
+        android:elevation="1dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="排序"
+            android:textColor="@color/text_tertiary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="8dp"/>
 
-            <TextView
+        <View
+            android:layout_width="1dp"
+            android:layout_height="14dp"
+            android:background="@color/divider"
+            android:layout_marginEnd="8dp"/>
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="排序："
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:textStyle="bold"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <HorizontalScrollView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:scrollbars="none"
-                android:layout_marginStart="8dp">
-
-                <LinearLayout
+                <TextView
+                    android:id="@+id/btnSortBillTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_height="26dp"
+                    android:text="工单历时 ↓"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_tag_primary"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
 
-                    <TextView
-                        android:id="@+id/btnSortBillTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:text="工单历时 ↓"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_inverse"
-                        android:background="@drawable/bg_tag_primary"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:gravity="center"/>
+                <TextView
+                    android:id="@+id/btnSortFeedbackTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="26dp"
+                    android:text="反馈历时 ↕"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@drawable/bg_tag_secondary"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center"
+                    android:layout_marginStart="6dp"
+                    android:includeFontPadding="false"/>
 
-                    <TextView
-                        android:id="@+id/btnSortFeedbackTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:text="反馈历时 ↕"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_secondary"
-                        android:background="@drawable/bg_tag_secondary"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:gravity="center"
-                        android:layout_marginStart="8dp"/>
+                <TextView
+                    android:id="@+id/btnSortAlertTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="26dp"
+                    android:text="告警时间 ↕"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@drawable/bg_tag_secondary"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center"
+                    android:layout_marginStart="6dp"
+                    android:includeFontPadding="false"/>
 
-                    <TextView
-                        android:id="@+id/btnSortAlertTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:text="告警时间 ↕"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_secondary"
-                        android:background="@drawable/bg_tag_secondary"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:gravity="center"
-                        android:layout_marginStart="8dp"/>
-
-                    <TextView
-                        android:id="@+id/btnSortAlertStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:text="告警状态 ↕"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_secondary"
-                        android:background="@drawable/bg_tag_secondary"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:gravity="center"
-                        android:layout_marginStart="8dp"/>
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/btnSortAlertStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="26dp"
+                    android:text="告警状态 ↕"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:background="@drawable/bg_tag_secondary"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:gravity="center"
+                    android:layout_marginStart="6dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+        </HorizontalScrollView>
     </LinearLayout>
 
     <!-- 分割线 -->
@@ -371,7 +406,7 @@
         android:layout_height="1dp"
         android:background="@color/divider"/>
 
-    <!-- 工单列表 -->
+    <!-- ==================== 工单列表 ==================== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerWorkOrders"
         android:layout_width="match_parent"
@@ -379,6 +414,7 @@
         android:layout_weight="1"
         android:background="@color/background_primary"
         android:clipToPadding="false"
-        android:padding="8dp"/>
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"/>
 
 </LinearLayout>
