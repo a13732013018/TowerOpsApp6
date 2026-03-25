@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 登录页背景：深邃蓝紫渐变，135度斜向 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient
-        android:angle="135"
-        android:startColor="#0f0c29"
-        android:centerColor="#302b63"
-        android:endColor="#24243e"
-        android:type="linear" />
+        android:angle="150"
+        android:startColor="#0D1B3E"
+        android:centerColor="#102C6E"
+        android:endColor="#1A1040"
+        android:type="linear"/>
 </shape>

@@ -22,6 +22,46 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 面板标题条（蓝色渐变顶部） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_panel_header"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="16dp"
+                    android:background="@drawable/bg_card_stripe_info"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="监控配置"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E40AF"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="自动化运维"
+                    android:textSize="10sp"
+                    android:textColor="#60A5FA"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -300,6 +340,7 @@
                     android:inputType="number"
                     android:gravity="center"
                     android:includeFontPadding="false"/>
+            </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

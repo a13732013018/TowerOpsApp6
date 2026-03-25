@@ -1,183 +1,217 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    任务工单卡片：全卡片样式，左侧工单类型颜色条
+    - 考核工单：蓝色条
+    - 验收遗留/退服稽核等：橙色条
+    - 信息层次：序号圆泡+工单号 → 站点名大字 → 流程/数据 → 时间/接单人
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="@color/list_item_background"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
-    android:paddingTop="9dp"
-    android:paddingBottom="9dp">
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
-    <!-- 第一行：序号 + 工单号 + 环节（当前任务） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="5dp">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvKHIndex"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:textSize="9sp"
-            android:textColor="#94A3B8"
-            android:gravity="center"
-            android:includeFontPadding="false"/>
-
-        <!-- 地市标签 -->
-        <TextView
-            android:id="@+id/tvKHCityName"
-            android:layout_width="wrap_content"
-            android:layout_height="18dp"
-            android:layout_marginStart="4dp"
-            android:paddingStart="5dp"
-            android:paddingEnd="5dp"
-            android:textSize="9sp"
-            android:textColor="@color/text_secondary"
-            android:background="@color/border_light"
-            android:gravity="center"
-            android:includeFontPadding="false"/>
-
-        <TextView
-            android:id="@+id/tvKHOrderNum"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="6dp"
-            android:textSize="10sp"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:includeFontPadding="false"/>
-
-        <TextView
-            android:id="@+id/tvKHJobName"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:textSize="9sp"
-            android:textColor="@color/warning"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:background="@drawable/bg_tag_warning"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:includeFontPadding="false"/>
-
-    </LinearLayout>
-
-    <!-- 第二行：站点名称（主要信息，大字加粗） + 分组标签 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="5dp">
-
-        <TextView
-            android:id="@+id/tvKHStationName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:includeFontPadding="false"/>
-
-        <TextView
-            android:id="@+id/tvKHGroupName"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_marginStart="8dp"
-            android:paddingStart="7dp"
-            android:paddingEnd="7dp"
-            android:textSize="9sp"
-            android:textColor="@color/colorPrimary"
-            android:background="@drawable/bg_tag_inactive"
-            android:gravity="center"
-            android:includeFontPadding="false"/>
-
-    </LinearLayout>
-
-    <!-- 第三行：工单类型 | 任务类型（次要信息） -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="5dp">
-
-        <TextView
-            android:id="@+id/tvKHFlowName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="10sp"
-            android:textColor="@color/text_caption"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:includeFontPadding="false"/>
-
+        <!-- 左侧工单类型色条（考核蓝 / 其他橙） -->
         <View
-            android:layout_width="1dp"
-            android:layout_height="12dp"
-            android:background="@color/divider"
-            android:layout_marginStart="6dp"
-            android:layout_marginEnd="6dp"/>
+            android:id="@+id/viewKHStripe"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card_stripe_info"
+            android:minHeight="50dp"/>
 
-        <TextView
-            android:id="@+id/tvKHDataName"
+        <!-- 右侧内容区 -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="10sp"
-            android:textColor="@color/text_caption"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:includeFontPadding="false"/>
+            android:orientation="vertical"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
 
+            <!-- 第一行：序号气泡 + 地市标签 + 工单号 + 工单类型tag -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/tvKHIndex"
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:textSize="9sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="@drawable/bg_index_bubble"
+                    android:includeFontPadding="false"/>
+
+                <!-- 地市标签（精致圆角） -->
+                <TextView
+                    android:id="@+id/tvKHCityName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="17dp"
+                    android:layout_marginStart="5dp"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:textSize="9sp"
+                    android:textColor="#475569"
+                    android:background="@drawable/bg_city_badge"
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:id="@+id/tvKHOrderNum"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:textSize="10sp"
+                    android:textColor="#2563EB"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"/>
+
+                <!-- 工单类型标签（更精致） -->
+                <TextView
+                    android:id="@+id/tvKHJobName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:textSize="9sp"
+                    android:textColor="#EA580C"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:background="@drawable/bg_tag_warning"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 第二行：站点名（主要信息大字加粗）+ 分组标签 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/tvKHStationName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:textColor="#0F172A"
+                    android:textStyle="bold"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:id="@+id/tvKHGroupName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="8dp"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:textSize="9sp"
+                    android:textColor="#2563EB"
+                    android:background="@drawable/bg_tag_inactive"
+                    android:gravity="center"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 极细分割线 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#EEF2FF"
+                android:layout_marginBottom="6dp"/>
+
+            <!-- 第三行：工单流程 | 数据类型 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="5dp">
+
+                <TextView
+                    android:id="@+id/tvKHFlowName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="10sp"
+                    android:textColor="#64748B"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"/>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="10dp"
+                    android:background="#E2E8F0"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvKHDataName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="10sp"
+                    android:textColor="#64748B"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+            <!-- 第四行：创建→完成时间 | 接单人（蓝色加粗） -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvKHCreateTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="10sp"
+                    android:textColor="#94A3B8"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:id="@+id/tvKHAccestaff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="10sp"
+                    android:textColor="#2563EB"
+                    android:textStyle="bold"
+                    android:includeFontPadding="false"/>
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- 第四行：创建时间 → 要求完成时间 | 接单人 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:id="@+id/tvKHCreateTime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="10sp"
-            android:textColor="@color/text_tertiary"
-            android:singleLine="true"
-            android:ellipsize="end"
-            android:includeFontPadding="false"/>
-
-        <TextView
-            android:id="@+id/tvKHAccestaff"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="10sp"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
-            android:includeFontPadding="false"/>
-
-    </LinearLayout>
-
-    <!-- 底部分割线 -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="@color/border_light"/>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

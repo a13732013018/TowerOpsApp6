@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 工单监控控制面板背景：顶部蓝色渐变标题条 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#EFF6FF"
+        android:endColor="#DBEAFE"
+        android:angle="180"/>
+    <corners android:topLeftRadius="12dp" android:topRightRadius="12dp"/>
+</shape>

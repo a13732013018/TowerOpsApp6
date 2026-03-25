@@ -5,6 +5,42 @@
     android:orientation="vertical"
     android:background="@color/background_primary">
 
+    <!-- 面板标题条（蓝色渐变顶部，与其他Tab统一） -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_panel_header"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:elevation="1dp">
+
+        <View
+            android:layout_width="3dp"
+            android:layout_height="16dp"
+            android:background="@drawable/bg_outage_stripe"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="停电监控"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#1E40AF"
+            android:includeFontPadding="false"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="实时告警监测"
+            android:textSize="10sp"
+            android:textColor="#60A5FA"
+            android:includeFontPadding="false"/>
+    </LinearLayout>
+
     <!-- 排序工具栏 -->
     <LinearLayout
         android:layout_width="match_parent"
