@@ -152,6 +152,9 @@ public class KaoHeOrderFragment extends Fragment {
                 android.R.layout.simple_spinner_item, CITY_AREA_NAMES);
         countyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCounty.setAdapter(countyAdapter);
+        // 默认选中平阳县（index=1）
+        spinnerCounty.setSelection(1);
+        selectedCountyIndex = 1;
     }
 
     private void setupListeners() {

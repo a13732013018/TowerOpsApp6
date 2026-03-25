@@ -159,7 +159,7 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="true"/>
+                    android:checked="false"/>
 
                 <CheckBox
                     android:id="@+id/cbKHFilter14"
@@ -171,7 +171,7 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="true"/>
+                    android:checked="false"/>
 
                 <CheckBox
                     android:id="@+id/cbKHFilter15"
@@ -183,7 +183,7 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="true"/>
+                    android:checked="false"/>
 
                 <CheckBox
                     android:id="@+id/cbKHFilter16"
@@ -195,7 +195,7 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="true"/>
+                    android:checked="false"/>
 
                 <CheckBox
                     android:id="@+id/cbKHFilter22"
@@ -207,9 +207,9 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="true"/>
+                    android:checked="false"/>
 
-                <!-- 全不选 → 考核工单 -->
+                <!-- 全不选 → 考核工单；默认勾选 -->
                 <CheckBox
                     android:id="@+id/cbKHFilter18"
                     android:layout_width="0dp"
@@ -220,7 +220,7 @@
                     android:minHeight="0dp"
                     android:paddingTop="1dp"
                     android:paddingBottom="1dp"
-                    android:checked="false"/>
+                    android:checked="true"/>
 
             </LinearLayout>
 
