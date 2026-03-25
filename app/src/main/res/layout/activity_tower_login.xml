@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_dark"
+    android:background="@color/background_primary"
     android:fillViewport="true">
 
     <LinearLayout
@@ -15,20 +15,14 @@
         android:paddingTop="60dp"
         android:paddingBottom="40dp">
 
-        <!-- Logo区域 -->
-        <ImageView
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_logo_tower"
-            android:layout_marginBottom="12dp" />
-
+        <!-- 标题区域 -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="铁塔4A系统登录"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/text_primary"
             android:layout_marginBottom="6dp" />
 
         <TextView
@@ -36,7 +30,7 @@
             android:layout_height="wrap_content"
             android:text="4a.chinatowercom.cn"
             android:textSize="12sp"
-            android:textColor="#64748B"
+            android:textColor="@color/text_tertiary"
             android:layout_marginBottom="40dp" />
 
         <!-- 登录卡片 -->
@@ -53,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:text="账号"
                 android:textSize="12sp"
-                android:textColor="#94A3B8"
+                android:textColor="@color/text_secondary"
                 android:layout_marginBottom="6dp" />
 
             <EditText
@@ -63,8 +57,8 @@
                 android:background="@drawable/bg_input_blue"
                 android:paddingHorizontal="12dp"
                 android:textSize="14sp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColor="@color/input_text"
+                android:textColorHint="@color/text_tertiary"
                 android:hint="请输入账号"
                 android:inputType="text"
                 android:singleLine="true"
@@ -76,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:text="密码"
                 android:textSize="12sp"
-                android:textColor="#94A3B8"
+                android:textColor="@color/text_secondary"
                 android:layout_marginBottom="6dp" />
 
             <EditText
@@ -86,8 +80,8 @@
                 android:background="@drawable/bg_input_blue"
                 android:paddingHorizontal="12dp"
                 android:textSize="14sp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColor="@color/input_text"
+                android:textColorHint="@color/text_tertiary"
                 android:hint="请输入密码"
                 android:inputType="textPassword"
                 android:singleLine="true"
@@ -111,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:text="短信验证码"
                 android:textSize="12sp"
-                android:textColor="#94A3B8"
+                android:textColor="@color/text_secondary"
                 android:layout_marginBottom="6dp" />
 
             <EditText
@@ -121,8 +115,8 @@
                 android:background="@drawable/bg_input_blue"
                 android:paddingHorizontal="12dp"
                 android:textSize="18sp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#64748B"
+                android:textColor="@color/input_text"
+                android:textColorHint="@color/text_tertiary"
                 android:hint="请输入6位验证码"
                 android:inputType="number"
                 android:maxLength="6"
@@ -137,7 +131,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="13sp"
-                android:textColor="#94A3B8"
+                android:textColor="@color/text_secondary"
                 android:gravity="center"
                 android:minHeight="20dp"
                 android:layout_marginBottom="16dp" />
