@@ -6,141 +6,219 @@
     android:orientation="vertical"
     android:background="@color/background_primary">
 
-    <!-- ====== 顶部控制栏：日期 + 查询按钮 ====== -->
+    <!-- ══════════════════════════════════════════
+         顶部品牌面板标题条  (橙色·指标查询主题)
+    ══════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_panel_header">
+
+        <!-- 左侧橙色强调竖线 -->
+        <View
+            android:layout_width="3dp"
+            android:layout_height="18dp"
+            android:background="#F59E0B"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="指标查询"
+            android:textSize="12sp"
+            android:textColor="#1D4ED8"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvMetricsStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:text="请输入日期后查询"
+            android:textSize="10sp"
+            android:textColor="#6B7280"
+            android:gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginEnd="10dp" />
+    </LinearLayout>
+
+    <!-- ══════════════════════════════════════════
+         日期查询控制面板 (CardView)
+    ══════════════════════════════════════════ -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="6dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginTop="6dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
         app:cardBackgroundColor="@color/background_secondary">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- 控制面板标题条 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_panel_header">
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="14dp"
+                    android:background="#F59E0B"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="日期选择"
+                    android:textSize="10sp"
+                    android:textColor="#1D4ED8"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="› 电压 · 负载 · 功率因数 · 三相不平衡"
+                    android:textSize="9sp"
+                    android:textColor="#6B7280"
+                    android:layout_marginEnd="10dp" />
+            </LinearLayout>
+
+            <!-- 日期 + 按钮 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="日期"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp"
-                android:textStyle="bold"/>
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical">
 
-            <!-- 日期减1天 -->
-            <Button
-                android:id="@+id/btnDateMinus"
-                android:layout_width="28dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="4dp"
-                android:text="◀"
-                android:textSize="10sp"
-                android:textColor="@color/text_inverse"
-                android:background="@drawable/bg_button_gray"
-                android:stateListAnimator="@null"
-                android:letterSpacing="0"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="日期"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/etMetricsDate"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="3dp"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/bg_input_white"
-                android:paddingStart="6dp"
-                android:paddingEnd="6dp"
-                android:text=""
-                android:hint="yyyy-mm-dd"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp"
-                android:inputType="text"
-                android:gravity="center"
-                android:singleLine="true"/>
+                <!-- 日期减1天 -->
+                <Button
+                    android:id="@+id/btnDateMinus"
+                    android:layout_width="28dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="6dp"
+                    android:text="◀"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_button_gray"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp" />
 
-            <!-- 日期加1天 -->
-            <Button
-                android:id="@+id/btnDatePlus"
-                android:layout_width="28dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="6dp"
-                android:text="▶"
-                android:textSize="10sp"
-                android:textColor="@color/text_inverse"
-                android:background="@drawable/bg_button_gray"
-                android:stateListAnimator="@null"
-                android:letterSpacing="0"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"/>
+                <EditText
+                    android:id="@+id/etMetricsDate"
+                    android:layout_width="0dp"
+                    android:layout_height="32dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:background="@drawable/bg_input_white"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:text=""
+                    android:hint="yyyy-mm-dd"
+                    android:textColor="@color/text_primary"
+                    android:textSize="11sp"
+                    android:inputType="text"
+                    android:gravity="center"
+                    android:singleLine="true" />
 
-            <Button
-                android:id="@+id/btnMetricsQuery"
-                android:layout_width="64dp"
-                android:layout_height="36dp"
-                android:text="查询"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_inverse"
-                android:background="@drawable/bg_button_primary_gradient"
-                android:stateListAnimator="@null"
-                android:letterSpacing="0"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"/>
+                <!-- 日期加1天 -->
+                <Button
+                    android:id="@+id/btnDatePlus"
+                    android:layout_width="28dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="▶"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_button_gray"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp" />
 
-            <Button
-                android:id="@+id/btnMetricsQueryAll"
-                android:layout_width="64dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:text="查全部"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_inverse"
-                android:background="@drawable/bg_button_gray"
-                android:stateListAnimator="@null"
-                android:letterSpacing="0"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"/>
+                <Button
+                    android:id="@+id/btnMetricsQuery"
+                    android:layout_width="60dp"
+                    android:layout_height="36dp"
+                    android:text="查询"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_button_primary_gradient"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <Button
+                    android:id="@+id/btnMetricsQueryAll"
+                    android:layout_width="64dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
+                    android:text="查全部"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_inverse"
+                    android:background="@drawable/bg_button_gray"
+                    android:stateListAnimator="@null"
+                    android:letterSpacing="0"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- ====== 子Tab：7个指标 ====== -->
+    <!-- ══════════════════════════════════════════
+         子Tab：7个指标
+    ══════════════════════════════════════════ -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabMetrics"
         android:layout_width="match_parent"
         android:layout_height="34dp"
         android:background="@color/background_secondary"
+        android:layout_marginTop="5dp"
+        android:elevation="1dp"
         app:tabIndicatorColor="@color/colorPrimary"
         app:tabSelectedTextColor="@color/colorPrimary"
         app:tabTextColor="@color/text_secondary"
         app:tabMode="scrollable"
         app:tabGravity="center"
         app:tabIndicatorHeight="2dp"
-        app:tabTextAppearance="@style/TabTextSub"/>
+        app:tabTextAppearance="@style/TabTextSub" />
 
-    <!-- ====== 状态提示 ====== -->
-    <TextView
-        android:id="@+id/tvMetricsStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="2dp"
-        android:text="请输入日期后点击查询"
-        android:textColor="@color/text_secondary"
-        android:textSize="10sp"/>
-
-    <!-- ====== 表格区域（双层滚动：横向+纵向） ====== -->
+    <!-- ══════════════════════════════════════════
+         表格区域（双层滚动：横向+纵向）
+    ══════════════════════════════════════════ -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_marginTop="2dp"
         android:scrollbars="horizontal">
 
         <LinearLayout
@@ -152,9 +230,10 @@
             <LinearLayout
                 android:id="@+id/llMetricsHeader"
                 android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_height="30dp"
                 android:orientation="horizontal"
-                android:background="@color/background_secondary"/>
+                android:background="#EEF2FF"
+                android:elevation="1dp" />
 
             <!-- 表格内容（纵向滚动） -->
             <ScrollView
@@ -167,7 +246,7 @@
                     android:id="@+id/llMetricsRows"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="vertical" />
             </ScrollView>
         </LinearLayout>
     </HorizontalScrollView>

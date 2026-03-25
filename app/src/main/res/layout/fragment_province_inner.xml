@@ -4,293 +4,399 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="#F0F4FF">
 
-    <!-- 查询控制面板 -->
+    <!-- ══════════════════════════════════════════
+         顶部品牌面板标题条  (青绿色·省内待办主题)
+    ══════════════════════════════════════════ -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp"
-        android:background="@android:color/white"
-        android:layout_marginTop="4dp">
+        android:layout_height="34dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_panel_header">
 
-        <!-- 第一行：站名搜索 -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- 左侧青绿色强调竖线 -->
+        <View
+            android:layout_width="3dp"
+            android:layout_height="18dp"
+            android:background="#0EA5E9"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="6dp">
+            android:layout_weight="1"
+            android:text="省内待办"
+            android:textSize="12sp"
+            android:textColor="#1D4ED8"
+            android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/etSearchStation"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="80"
-                android:hint="输入站名查找"
-                android:textSize="11sp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:background="@drawable/bg_spinner"
-                android:singleLine="true" />
-
-            <Button
-                android:id="@+id/btnSearch"
-                android:layout_width="70dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="6dp"
-                android:text="查找"
-                android:textSize="11sp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#10B981"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null"
-                android:gravity="center" />
-        </LinearLayout>
-
-        <!-- 第二行：小组选择 + 工单类型 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="6dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="小组:"
-                android:textSize="12sp"
-                android:textColor="#333333" />
-
-            <Spinner
-                android:id="@+id/spinnerPIGroup"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_spinner"
-                android:padding="4dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="类型:"
-                android:textSize="12sp"
-                android:textColor="#333333"
-                android:layout_marginStart="6dp" />
-
-            <Spinner
-                android:id="@+id/spinnerPIOrderType"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_spinner"
-                android:padding="4dp" />
-        </LinearLayout>
-
-        <!-- 第三行：区县 + 处理人 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="6dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="区县:"
-                android:textSize="12sp"
-                android:textColor="#333333" />
-
-            <Spinner
-                android:id="@+id/spinnerPICounty"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_spinner"
-                android:padding="4dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="人员:"
-                android:textSize="12sp"
-                android:textColor="#333333"
-                android:layout_marginStart="6dp" />
-
-            <Spinner
-                android:id="@+id/spinnerPIPerson"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_spinner"
-                android:padding="4dp" />
-        </LinearLayout>
-
-        <!-- 第四行：查询按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="4dp">
-
-            <Button
-                android:id="@+id/btnPIQuery"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:text="我的待办"
-                android:textSize="11sp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#2563EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnToSignQuery"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:text="待签工单"
-                android:textSize="11sp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#8B5CF6"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnRandomPlan"
-                android:layout_width="0dp"
-                android:layout_height="34dp"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:text="随机上站"
-                android:textSize="11sp"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#F59E0B"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-        </LinearLayout>
-
-        <!-- 排序按钮（5个按钮：站名、完成时间、工单类型、数量、接单人） -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="排序:"
-                android:textSize="10sp"
-                android:textColor="#666666" />
-
-            <Button
-                android:id="@+id/btnSortStation"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="站名"
-                android:textSize="10sp"
-                android:textColor="#333333"
-                android:backgroundTint="#E5E7EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnSortTime"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="完成时间"
-                android:textSize="10sp"
-                android:textColor="#333333"
-                android:backgroundTint="#E5E7EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnSortType"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="工单类型"
-                android:textSize="10sp"
-                android:textColor="#333333"
-                android:backgroundTint="#E5E7EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnSortCount"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="数量"
-                android:textSize="10sp"
-                android:textColor="#333333"
-                android:backgroundTint="#E5E7EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btnSortHandler"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="接单人"
-                android:textSize="10sp"
-                android:textColor="#333333"
-                android:backgroundTint="#E5E7EB"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:stateListAnimator="@null" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvPIStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:text="就绪"
+            android:textSize="10sp"
+            android:textColor="#2563EB"
+            android:gravity="center"
+            android:background="@drawable/bg_tag_primary_light"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginEnd="10dp" />
     </LinearLayout>
 
-    <!-- 状态栏 -->
-    <TextView
-        android:id="@+id/tvPIStatus"
+    <!-- ══════════════════════════════════════════
+         查询控制面板 (CardView)
+    ══════════════════════════════════════════ -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="就绪，请选择小组后点击查询"
-        android:textSize="10sp"
-        android:textColor="#2563EB"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:background="#EFF6FF" />
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginTop="6dp"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="#FFFFFF">
 
-    <!-- 工单列表（占主体空间） -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 控制面板标题条 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_panel_header">
+
+                <View
+                    android:layout_width="3dp"
+                    android:layout_height="14dp"
+                    android:background="#0EA5E9"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="查询过滤"
+                    android:textSize="10sp"
+                    android:textColor="#1D4ED8"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="› 站名 · 小组 · 区县 · 人员"
+                    android:textSize="9sp"
+                    android:textColor="#6B7280"
+                    android:layout_marginEnd="10dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <!-- 第一行：站名搜索 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <EditText
+                        android:id="@+id/etSearchStation"
+                        android:layout_width="0dp"
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        android:hint="输入站名快速查找"
+                        android:textSize="11sp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:background="@drawable/bg_spinner"
+                        android:singleLine="true" />
+
+                    <Button
+                        android:id="@+id/btnSearch"
+                        android:layout_width="60dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="6dp"
+                        android:text="查找"
+                        android:textSize="11sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_btn_success"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <!-- 第二行：小组 + 类型 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="小组"
+                        android:textSize="11sp"
+                        android:textColor="#374151"
+                        android:textStyle="bold"
+                        android:minWidth="26dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerPIGroup"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_spinner"
+                        android:padding="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="类型"
+                        android:textSize="11sp"
+                        android:textColor="#374151"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="26dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerPIOrderType"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_spinner"
+                        android:padding="4dp" />
+                </LinearLayout>
+
+                <!-- 第三行：区县 + 人员 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="区县"
+                        android:textSize="11sp"
+                        android:textColor="#374151"
+                        android:textStyle="bold"
+                        android:minWidth="26dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerPICounty"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_spinner"
+                        android:padding="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="人员"
+                        android:textSize="11sp"
+                        android:textColor="#374151"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="26dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerPIPerson"
+                        android:layout_width="0dp"
+                        android:layout_height="30dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_spinner"
+                        android:padding="4dp" />
+                </LinearLayout>
+
+                <!-- 分割线 -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#F3F4F6"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- 查询按钮行 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
+
+                    <Button
+                        android:id="@+id/btnPIQuery"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1"
+                        android:text="我的待办"
+                        android:textSize="11sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_button_primary_gradient"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null" />
+
+                    <Button
+                        android:id="@+id/btnToSignQuery"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="待签工单"
+                        android:textSize="11sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_btn_city_audit"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null" />
+
+                    <Button
+                        android:id="@+id/btnRandomPlan"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="随机上站"
+                        android:textSize="11sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/bg_btn_county_audit"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null" />
+                </LinearLayout>
+
+                <!-- 排序按钮行（tag 样式） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="排序"
+                        android:textSize="10sp"
+                        android:textColor="#6B7280"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="4dp" />
+
+                    <Button
+                        android:id="@+id/btnSortStation"
+                        android:layout_width="0dp"
+                        android:layout_height="24dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="站名"
+                        android:textSize="9sp"
+                        android:textColor="#374151"
+                        android:background="@drawable/bg_sort_btn"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+
+                    <Button
+                        android:id="@+id/btnSortTime"
+                        android:layout_width="0dp"
+                        android:layout_height="24dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="完成时间"
+                        android:textSize="9sp"
+                        android:textColor="#374151"
+                        android:background="@drawable/bg_sort_btn"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+
+                    <Button
+                        android:id="@+id/btnSortType"
+                        android:layout_width="0dp"
+                        android:layout_height="24dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="工单类型"
+                        android:textSize="9sp"
+                        android:textColor="#374151"
+                        android:background="@drawable/bg_sort_btn"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+
+                    <Button
+                        android:id="@+id/btnSortCount"
+                        android:layout_width="0dp"
+                        android:layout_height="24dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="数量"
+                        android:textSize="9sp"
+                        android:textColor="#374151"
+                        android:background="@drawable/bg_sort_btn"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+
+                    <Button
+                        android:id="@+id/btnSortHandler"
+                        android:layout_width="0dp"
+                        android:layout_height="24dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="接单人"
+                        android:textSize="9sp"
+                        android:textColor="#374151"
+                        android:background="@drawable/bg_sort_btn"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:stateListAnimator="@null"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- ══════════════════════════════════════════
+         工单列表（占主体空间）
+    ══════════════════════════════════════════ -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvProvinceInnerOrders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:padding="6dp"
         android:clipToPadding="false"
         android:scrollbars="vertical" />

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 省内待办热度进度条：正常绿 -->
+<!-- 危险/停止按钮：红色渐变 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
-        android:startColor="#10B981"
-        android:endColor="#06B6D4"
-        android:angle="0"
+        android:startColor="#EF4444"
+        android:endColor="#DC2626"
+        android:angle="135"
         android:type="linear" />
-    <corners android:radius="2dp" />
+    <corners android:radius="6dp" />
 </shape>
